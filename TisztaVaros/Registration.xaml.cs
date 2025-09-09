@@ -55,6 +55,7 @@ namespace TisztaVaros
                 MessageBox.Show("Na mehet a regisztráció!");
             }
         }
+        // Előellenőrzés
         private bool PreCheck_Reg()
         {
             Inp_Name.Text = Inp_Name.Text.Trim();
@@ -88,6 +89,7 @@ namespace TisztaVaros
             }
             return true;
         }
+        // Placeholder animáció
         private void T_Changed(object sender, RoutedEventArgs e)
         {
             TextBox a_tb= sender as TextBox;
@@ -138,6 +140,7 @@ namespace TisztaVaros
             }
             l_list[a].Margin = margin;
         }
+        // Jelszó mutatása/elrejtése
         private void PswOnOff(object sender, RoutedEventArgs e)
         {
             int b = b_list.IndexOf(sender) % 2;
