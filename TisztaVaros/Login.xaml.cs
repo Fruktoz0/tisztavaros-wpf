@@ -39,7 +39,7 @@ namespace TisztaVaros
                 MessageBox.Show("Na mehet a Login!");
             }
         }
-
+        // Előellenőrzés
         private bool PreCheck_Login()
         {
             Inp_Email.Text = Inp_Email.Text.Trim();
@@ -55,6 +55,7 @@ namespace TisztaVaros
             }
             return true;
         }
+        // Placeholder animáció
         private void T_Changed(object sender, RoutedEventArgs e)
         {
             TextBox a_TB = sender as TextBox;
@@ -92,6 +93,7 @@ namespace TisztaVaros
             }
             l_list[a].Margin = margin;
         }
+        // Jelszó mutatása/elrejtése
         private void PswOnOff(object sender, RoutedEventArgs e)
         {
             hide_y = !hide_y;
