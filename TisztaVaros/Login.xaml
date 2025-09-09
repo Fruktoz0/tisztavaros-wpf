@@ -1,0 +1,90 @@
+﻿<Window x:Class="TisztaVaros.Login"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TisztaVaros"
+        mc:Ignorable="d"
+        Title="Login" Height="450" Width="800" ResizeMode="NoResize">
+    <Window.Resources>
+        <Style TargetType="{x:Type TextBox}">
+            <Style.Resources>
+                <Style TargetType="{x:Type Border}">
+                    <Setter Property="CornerRadius" Value="7" />
+                </Style>
+            </Style.Resources>
+        </Style>
+        <Style TargetType="{x:Type Button}">
+            <Style.Resources>
+                <Style TargetType="{x:Type Border}">
+                    <Setter Property="CornerRadius" Value="7" />
+                </Style>
+            </Style.Resources>
+        </Style>
+    </Window.Resources>
+
+    <Grid Background="#FFFDf5">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1.5*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel 
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center" >
+            <Image Width="350" Source="https://smd.hu/Team/tisztavaros_logo_Middle.png" />
+        </StackPanel>
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="0.7*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="0.9*"/>
+                <RowDefinition Height="0.9*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="0.7*"/>
+            </Grid.RowDefinitions>
+            <Label Grid.Row="1" Content="BEJELENTKEZÉS:" 
+                   FontSize="25" 
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"/>
+            <TextBox Grid.Row="2" TextChanged="T_Changed"
+                     Name="Inp_Email" FontSize="16"                     
+                     FontWeight="Bold" Width="250" Height="40"
+                     HorizontalContentAlignment="Center" 
+                     VerticalContentAlignment="Center"/>
+            <Label Grid.Row="2" x:Name="txtEmailPlaceholder" Content="email"
+                   VerticalContentAlignment="Center"
+                   Background="Transparent" Opacity="0.5"
+                   Margin="40,24,216,28" Width="60" Height="23"
+                   IsHitTestVisible="False"/>
+            <TextBox Grid.Row="3" TextChanged="T_Changed" Tag="Inp_Psw"
+                     Panel.ZIndex="1"
+                     Name="Inp_PSW" FontSize="16" MaxLength="12"                   
+                FontWeight="Bold" Width="250" Height="40"
+                HorizontalContentAlignment="Center" 
+                VerticalContentAlignment="Center"/>
+            <Label Grid.Row="3" x:Name="txtPswPlaceholder" Content="jelszó"
+                   Panel.ZIndex="2"
+                   VerticalContentAlignment="Center"
+                   Background="Transparent" Opacity="0.5"
+                   Margin="40,24,216,28" Width="60" Height="28"
+                   IsHitTestVisible="False"/>
+
+            <Image Grid.Row="2" Panel.ZIndex="4" MouseUp="PswOnOff"
+                   Width="20" Margin="255,75,35,0"
+                   Grid.RowSpan="2">
+                <Image.Source>
+                    <BitmapImage UriSource="https://smd.hu/Team/show_psw.png" />
+                </Image.Source>
+            </Image>
+            <Button Grid.Row="4" Click="Server_Login" 
+                    Content="BEJELENTKEZÉS" Width="250" Margin="15"
+                    FontSize="15" Foreground="White"
+                    Background="#6FB1A5">
+                <Button.BitmapEffect>
+                    <DropShadowBitmapEffect Color="Gray" Direction="-80"
+                    ShadowDepth="5" Softness=".5" />
+                </Button.BitmapEffect>
+            </Button>
+        </Grid>
+    </Grid>
+</Window>
