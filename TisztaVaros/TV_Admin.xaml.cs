@@ -68,16 +68,6 @@ namespace TisztaVaros
             CB_U_User_Role.ItemsSource = allRoles;
             CB_U_User_Status.ItemsSource = allStatus;
             SolidColorBrush b_szurke = U_User_Search.Background as SolidColorBrush;
-            if (App.postit != "")
-            {
-                U_Postit.Visibility = Visibility.Visible;
-                U_Postit.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FF6EF525"));
-            }
-            else
-            {
-                U_Postit.Visibility = Visibility.Hidden;
-            }
-
         }
         private void Logo_Click(object sender, EventArgs e)
         {
@@ -468,8 +458,6 @@ namespace TisztaVaros
                 if (new_user_psw != "xx" && new_user_psw != "x")
                 {
                     App.postit += "PSW for '" + U_User_Email.Text + "': '" + new_user_psw + "'\n";
-                    U_Postit.Visibility = Visibility.Visible;
-                    U_Postit.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FF6EF525"));
                     string new_userId = await connection.Admin_AddNewUser(U_User_Email.Text, U_User_Name.Text, new_user_psw);
                     sel_user.id = new_userId;
                     Update_User();
