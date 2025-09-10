@@ -6,10 +6,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.NetworkInformation;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Xml.Linq;
 
 namespace TisztaVaros
 {
@@ -22,31 +24,71 @@ namespace TisztaVaros
         public static TV_User l_user;
         private string baseURL = "http://localhost:3002";
 
-        public async Task<bool> AdminUpdate_User(TV_User a_user)
+
+        public async Task<string> Admin_AddNewUser(string a_email, string a_name, string a_pws)
         {
-            HttpClient client = new HttpClient();
-            HttpResponseMessage response = new HttpResponseMessage();
-            Message getMessage = new Message();
-            List<TV_User> list_user = new List<TV_User>();
+            string a_route = "/api/auth/admin/register";
+            string url = Get_URL() + a_route;
             string responseText = "";
-            string url = Get_URL() + "/api/admin/user_all";
+            var jsonData = new
+            {
+                username = a_name,
+                email = a_email,
+                password = a_pws,
+                confirmPassword = a_pws
+            };
             try
             {
-                string stringifiedJson = JsonConvert.SerializeObject(a_user);
+                HttpClient client = new HttpClient();
+                HttpResponseMessage response = new HttpResponseMessage();
+                string stringifiedJson = JsonConvert.SerializeObject(jsonData);
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
                 StringContent sendThis = new StringContent(stringifiedJson, Encoding.UTF8, "Application/JSON");
-                response = await client.PutAsync(url, sendThis);
-                responseText = await response.Content.ReadAsStringAsync();
-                //MessageBox.Show(responseText);
+                response = await client.PostAsync(url, sendThis);
                 response.EnsureSuccessStatusCode();
-                return true;
+                responseText = await response.Content.ReadAsStringAsync();
+                string correctedText = responseText.Replace("userId", "id");
+                TV_User new_user = JsonConvert.DeserializeObject<TV_User>(correctedText);
+                return new_user.id;
             }
             catch (Exception e)
             {
-                MessageBox.Show(e.Message);
-                return false;
+                MessageBox.Show(a_route + "\n\n" + e.Message);
             }
+            return "22";
         }
+        public async Task<string> Check_ExistUser(string a_email, string a_name)
+        {
+            string a_route = "/api/admin/user_chk";
+            string url = Get_URL() + a_route;
+            string responseText = "";
+            var jsonData = new
+            {
+                email = a_email == "" ? "*" : a_email,
+                username = a_name == "" ? "*" : a_name
+            };
+            try
+            {
+                HttpClient client = new HttpClient();
+                HttpResponseMessage response = new HttpResponseMessage();
+                string stringifiedJson = JsonConvert.SerializeObject(jsonData);
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
+                StringContent sendThis = new StringContent(stringifiedJson, Encoding.UTF8, "Application/JSON");
+                response = await client.PostAsync(url, sendThis);
+                responseText = await response.Content.ReadAsStringAsync();
+                //MessageBox.Show(responseText);
+                response.EnsureSuccessStatusCode();
+                Message found = JsonConvert.DeserializeObject<Message>(responseText);
+                //MessageBox.Show(found.message);
+                return found.message;
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(a_route + "\n\n" + e.Message);
+            }
+            return "22";
+        }
+
         public async Task<List<TV_User>> Search_User(string a_name, string a_email)
         {
             HttpClient client = new HttpClient();
@@ -76,6 +118,31 @@ namespace TisztaVaros
                 MessageBox.Show(e.Message);
             }
             return list_user;
+        }
+        public async Task<bool> AdminUpdate_User(TV_User a_user)
+        {
+            HttpClient client = new HttpClient();
+            HttpResponseMessage response = new HttpResponseMessage();
+            Message getMessage = new Message();
+            List<TV_User> list_user = new List<TV_User>();
+            string responseText = "";
+            string url = Get_URL() + "/api/admin/user_all";
+            try
+            {
+                string stringifiedJson = JsonConvert.SerializeObject(a_user);
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
+                StringContent sendThis = new StringContent(stringifiedJson, Encoding.UTF8, "Application/JSON");
+                response = await client.PutAsync(url, sendThis);
+                responseText = await response.Content.ReadAsStringAsync();
+                //MessageBox.Show(responseText);
+                response.EnsureSuccessStatusCode();
+                return true;
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+                return false;
+            }
         }
         public async Task<List<TV_Inst>> Get_Institutions()
         {

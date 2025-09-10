@@ -1,0 +1,50 @@
+﻿<Window x:Class="TisztaVaros.InputBox"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TisztaVaros"
+        mc:Ignorable="d"
+        Title="Password Input:" Height="150" Width="400" ResizeMode="NoResize">
+    <Window.Resources>
+        <Style TargetType="{x:Type TextBox}">
+            <Style.Resources>
+                <Style TargetType="{x:Type Border}">
+                    <Setter Property="CornerRadius" Value="4" />
+                </Style>
+            </Style.Resources>
+        </Style>
+        <Style TargetType="{x:Type Button}">
+            <Style.Resources>
+                <Style TargetType="{x:Type Border}">
+                    <Setter Property="CornerRadius" Value="3" />
+                </Style>
+            </Style.Resources>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="197*"/>
+            <ColumnDefinition Width="3*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1.3*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="0.3*"/>
+        </Grid.RowDefinitions>
+        <Label Grid.Row="0" Grid.Column="0" Content="Password:" FontSize="18" FontWeight="Bold" Width="120"
+               HorizontalAlignment="Left" HorizontalContentAlignment="Right" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="0" Grid.Column="0" Name="User_Password" FontSize="16" FontWeight="Bold" MaxLength="12"
+                 HorizontalContentAlignment="Center"  VerticalContentAlignment="Center" Padding="0,0,0,3" Margin="125,10,14,10"/>
+        <Button Grid.Row="1" Name="GetPswOK" Click="Get_PSW_OK" Content="OK" Margin="125,5,168,5" FontSize="17" Foreground="White" Background="#6FB1A5">
+            <Button.BitmapEffect>
+                <DropShadowBitmapEffect Color="Gray" Direction="-80" ShadowDepth="5" Softness=".5" />
+            </Button.BitmapEffect>
+        </Button>
+        <Button Grid.Row="1" Name="GetPswCancel" Click="Get_PSW_Cancel" Content="Cancel" Margin="276,5,14,5" FontSize="17" Foreground="White" Background="#6FB1A5">
+            <Button.BitmapEffect>
+                <DropShadowBitmapEffect Color="Gray" Direction="-80" ShadowDepth="5" Softness=".5" />
+            </Button.BitmapEffect>
+        </Button>
+    </Grid>
+</Window>

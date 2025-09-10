@@ -73,7 +73,7 @@
                    Margin="40,15,216,18" Width="60" Height="23"
                    IsHitTestVisible="False"/>
             <TextBox Grid.Row="4" Name="Inp_PSW" FontSize="16"  
-                     TextChanged="T_Changed"  MaxLength="12"
+                     TextChanged="T_Changed" MaxLength="12"
                      FontWeight="Bold" Width="250" Height="40"
                      HorizontalContentAlignment="Center" 
                      VerticalContentAlignment="Center"/>

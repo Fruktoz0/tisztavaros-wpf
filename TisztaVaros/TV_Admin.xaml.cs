@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Printing;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -12,6 +13,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
@@ -42,7 +44,16 @@ namespace TisztaVaros
         List<string> allRoles = new List<string>() { "user", "institution", "inspector", "admin" };
         List<string> allStatus = new List<string>() { "active", "inactive", "archived" };
         TV_User sel_user;
+        public static string new_user_psw = "";
         bool u_search_y = true;
+
+        [DllImport("user32.dll")]
+        static extern IntPtr GetSystemMenu(IntPtr hWnd, bool bRevert);
+        [DllImport("user32.dll")]
+        static extern bool EnableMenuItem(IntPtr hMenu, uint uIDEnableItem, uint uEnable);
+        const uint MF_GRAYED = 0x00000001;
+        const uint MF_ENABLED = 0x00000000;
+        const uint SC_CLOSE = 0xF060;
         public TV_Admin()
         {
             InitializeComponent();
@@ -76,12 +87,6 @@ namespace TisztaVaros
             Report_Number_N.Content = report_db.ToString();
             int vote_db = await connection.Server_Get_db("/api/votes/vote_db");
             Vote_Number_N.Content = vote_db.ToString();
-        }
-
-        private void Win_Mozog(object sender, EventArgs e)
-        {
-            MainWindow.a_top = this.Top;
-            MainWindow.a_left = this.Left;
         }
 
         private void Get_Admin_Users(object sender, RoutedEventArgs e)
@@ -388,10 +393,7 @@ namespace TisztaVaros
         }
         private void User_Name_Clear(object sender, RoutedEventArgs e)
         {
-            if (u_search_y)
-            {
-                U_User_Name.Text = "";
-            }
+            S_User_Name.Text = "";
         }
         private void Inst_ListView_Click(object sender, RoutedEventArgs e)
         {
@@ -406,13 +408,14 @@ namespace TisztaVaros
 
         private void User_Email_Clear(object sender, RoutedEventArgs e)
         {
-            if (u_search_y)
-            {
-                U_User_Email.Text = "";
-            }
+            S_User_Email.Text = "";
         }
 
         private void User_Clear(object sender, RoutedEventArgs e)
+        {
+            User_ClearData();
+        }
+        private void User_ClearData()
         {
             U_User_Name.Text = "";
             U_User_Email.Text = "";
@@ -425,7 +428,57 @@ namespace TisztaVaros
             sel_user = new TV_User();
         }
 
-        private void User_Save(object sender, RoutedEventArgs e)
+        private async void User_SaveAsNew(object sender, RoutedEventArgs e)
+        {
+            string e_user = await connection.Check_ExistUser(U_User_Email.Text, U_User_Name.Text);
+            if (e_user == "00")
+            {
+                InputBox psw_input = new InputBox();
+                new_user_psw = "x";
+                psw_input.Closed += Bezarka;
+
+                var hwnd = new WindowInteropHelper(this).Handle;
+                IntPtr hMenu = GetSystemMenu(hwnd, false);
+                EnableMenuItem(hMenu, SC_CLOSE, MF_GRAYED);
+
+                this.IsEnabled = false;
+                psw_input.Top = this.Top + this.Height / 2 - psw_input.Height / 2;
+                psw_input.Left = this.Left + this.Width / 2 - psw_input.Width / 2;
+                psw_input.Show();
+                while (new_user_psw == "x")
+                {
+                    await Task.Delay(500);
+                }
+                if (new_user_psw != "xx" && new_user_psw != "x")
+                {
+                    ;
+                    string new_userId = await connection.Admin_AddNewUser(U_User_Email.Text, U_User_Name.Text, new_user_psw);
+                    sel_user.id = new_userId;
+                    Update_User();
+                    Get_User_List(S_User_Name.Text, S_User_Email.Text);
+                }
+            }
+            else
+            {
+                if (e_user == "01")
+                {
+                    MessageBox.Show("Email már létezik!");
+                    return;
+                }
+                if (e_user == "11")
+                {
+                    MessageBox.Show("Név és Email már létezik!");
+                    return;
+                }
+                if (e_user == "10")
+                {
+                    MessageBox.Show("Név már létezik!");
+                    return;
+                }
+                MessageBox.Show("Egészen más Hiba!!");
+            }
+        }
+        private async void User_Save(object sender, RoutedEventArgs e)
         {
             bool do_y = false;
             do_y = do_y || U_User_Name.Text != sel_user.username || U_User_Email.Text != sel_user.email || U_User_Zip.Text != sel_user.zipCode
@@ -460,11 +513,55 @@ namespace TisztaVaros
                 {
                     sel_user.institutionId = null;
                 }
-                Update_User();
+                bool upd_y = await connection.AdminUpdate_User(sel_user);
+                if (upd_y)
+                {
+                    int a_index = list_user.FindIndex(u => u.id == sel_user.id);
+                    if (a_index > -1)
+                    {
+                        //list_user[a_index] = sel_user;
+                        //ListView_User.Items.Refresh();
+                        Get_User_List(S_User_Name.Text, S_User_Email.Text);
+                        User_ClearData();
+                        MessageBox.Show("Elvileg Frissítve");
+                    }
+                    else
+                    {
+                        MessageBox.Show("Update Hiba!");
+                    }
+                }
+                else { MessageBox.Show("Hiba"); }
+                //Update_User();
             }
         }
         private async void Update_User()
         {
+            sel_user.username = U_User_Name.Text;
+            sel_user.email = U_User_Email.Text;
+            if (U_User_Zip.Text != "")
+            {
+                sel_user.zipCode = U_User_Zip.Text;
+            }
+            else
+            {
+                sel_user.zipCode = null;
+            }
+            sel_user.city = U_User_City.Text;
+            sel_user.address = U_User_Address.Text;
+            sel_user.role = CB_U_User_Role.SelectedItem.ToString();
+            sel_user.isActive = CB_U_User_Status.SelectedItem.ToString();
+            if (CB_U_User_Inst.SelectedItem.ToString() != "")
+            {
+                TV_Inst a_found = list_inst.Find(i => i.name == CB_U_User_Inst.SelectedItem.ToString());
+                if (a_found != null)
+                {
+                    sel_user.institutionId = a_found.id;
+                }
+            }
+            else
+            {
+                sel_user.institutionId = null;
+            }
             bool upd_y = await connection.AdminUpdate_User(sel_user);
             if (upd_y)
             {
@@ -477,13 +574,6 @@ namespace TisztaVaros
             }
             else { MessageBox.Show("Hiba"); }
         }
-
-
-        private void User_SaveNew(object sender, RoutedEventArgs e)
-        {
-
-        }
-
         private void User_OnKeyDownHandler(object sender, KeyEventArgs e)
         {
             if (sender.Equals(S_User_Name) || sender.Equals(S_User_Email))
@@ -493,6 +583,17 @@ namespace TisztaVaros
                     Get_User_List(S_User_Name.Text, S_User_Email.Text);
                 }
             }
+        }
+        private async void Bezarka(object sender, EventArgs e)
+        {
+            var hwnd = new WindowInteropHelper(this).Handle;
+            IntPtr hMenu = GetSystemMenu(hwnd, false);
+            EnableMenuItem(hMenu, SC_CLOSE, MF_ENABLED);
+            this.IsEnabled = true;
+        }
+        private void Win_Mozog(object sender, EventArgs e)
+        {
+            this.Title = "Tiszta Város - Admin (Top: " + this.Top + " Left: " + this.Left + ")";
         }
     }
 }
