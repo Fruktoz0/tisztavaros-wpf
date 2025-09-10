@@ -1,0 +1,498 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Printing;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Media.Media3D;
+using System.Windows.Shapes;
+using System.Xml.Linq;
+using static System.Net.Mime.MediaTypeNames;
+
+namespace TisztaVaros
+{
+    /// <summary>
+    /// Interaction logic for TV_Admin.xaml
+    /// </summary>
+    public partial class TV_Admin : Window
+    {
+        ServerConnection connection;
+        string colorUnSelectButton = "#6FB1A5";
+        string colorSelectButton = "#FF1298BB";
+        string bus_Yellow = "#FFFFD700";
+        string bus_Akt = "#F80";
+        List<Button> b_all = new List<Button>();
+        List<StackPanel> sp_h_all = new List<StackPanel>();
+        List<StackPanel> sp_m_all = new List<StackPanel>();
+        List<TV_User> list_user = new List<TV_User>();
+        List<TV_Inst> list_inst = new List<TV_Inst>();
+        bool[] order_user_y = new bool[10] { true, true, true, true, true, true, true, true, true, true };
+        bool[] order_inst_y = new bool[5] { true, true, true, true, true };
+        List<string> inst_Names = new List<string>();
+        List<string> allRoles = new List<string>() { "user", "institution", "inspector", "admin" };
+        List<string> allStatus = new List<string>() { "active", "inactive", "archived" };
+        TV_User sel_user;
+        bool u_search_y = true;
+        public TV_Admin()
+        {
+            InitializeComponent();
+            connection = new ServerConnection();
+            LocationChanged += new EventHandler(Win_Mozog);
+            b_all = [B_Users, B_Cats, B_Institutions, B_Reports, B_Challenges];
+            sp_h_all = [Header_Users, Header_Cats, Header_Institutions, Header_Reports, Header_Challenges];
+            sp_m_all = [Main_Users, Main_Cats, Main_Institutions, Main_Reports, Main_Challenges];
+            Stack_Main_Ini();
+            Get_Inst_List();
+            HTTP_Local.IsChecked = App.local_y;
+            CB_U_User_Role.ItemsSource = allRoles;
+            CB_U_User_Status.ItemsSource = allStatus;
+        }
+        private void Logo_Click(object sender, EventArgs e)
+        {
+            Stack_Main_Ini();
+        }
+
+        private void Stack_Main_Ini()
+        {
+            ReColor_All("Ini");
+            Get_All_db();
+        }
+
+        private async void Get_All_db()
+        {
+            int user_db = await connection.Server_Get_db("/api/admin/user_db");
+            User_Number_N.Content = user_db.ToString();
+            int report_db = await connection.Server_Get_db("/api/reports/report_db");
+            Report_Number_N.Content = report_db.ToString();
+            int vote_db = await connection.Server_Get_db("/api/votes/vote_db");
+            Vote_Number_N.Content = vote_db.ToString();
+        }
+
+        private void Win_Mozog(object sender, EventArgs e)
+        {
+            MainWindow.a_top = this.Top;
+            MainWindow.a_left = this.Left;
+        }
+
+        private void Get_Admin_Users(object sender, RoutedEventArgs e)
+        {
+            Button a_Button = sender as Button;
+            ReColorButtons(a_Button);
+        }
+
+        private void Get_Admin_Categories(object sender, RoutedEventArgs e)
+        {
+            Button a_Button = sender as Button;
+            ReColorButtons(a_Button);
+            //OldalSav.Visibility = Visibility.Visible;
+        }
+
+        void ReColorButtons(Button a_Button)
+        {
+            string a_sel = a_Button.Name.Split('_')[1];
+            ReColor_All(a_sel);
+            a_Button.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(colorSelectButton));
+        }
+        void ReColor_All(string a_sel)
+        {
+            foreach (Button b in b_all)
+            {
+                b.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(colorUnSelectButton));
+            }
+            foreach (StackPanel sp in sp_h_all)
+            {
+                sp.Visibility = Visibility.Hidden;
+                if (sp.Name.Split('_')[1] == a_sel)
+                {
+                    sp.Visibility = Visibility.Visible;
+                }
+            }
+            foreach (StackPanel sp in sp_m_all)
+            {
+                sp.Visibility = Visibility.Hidden;
+                if (sp.Name.Split('_')[1] == a_sel)
+                {
+                    sp.Visibility = Visibility.Visible;
+                }
+            }
+        }
+        private void HTTP_Local_Click(object sender, RoutedEventArgs e)
+        {
+            App.local_y = (bool)HTTP_Local.IsChecked;
+        }
+
+        private void Get_Admin_Reports(object sender, RoutedEventArgs e)
+        {
+            Button a_Button = sender as Button;
+            ReColorButtons(a_Button);
+        }
+
+        private void Get_Admin_Institutions(object sender, RoutedEventArgs e)
+        {
+            Button a_Button = sender as Button;
+            ReColorButtons(a_Button);
+        }
+
+        private void Get_Admin_Challenges(object sender, RoutedEventArgs e)
+        {
+            Button a_Button = sender as Button;
+            ReColorButtons(a_Button);
+        }
+        private void User_Search(object sender, RoutedEventArgs e)
+        {
+            Get_User_List(S_User_Name.Text, S_User_Email.Text);
+        }
+
+        private async void Get_User_List(string s_name, string s_email)
+        {
+            list_user = await connection.Search_User(s_name, s_email);
+            TV_Inst a_found;
+            foreach (TV_User item in list_user)
+            {
+                item.createdAt = item.createdAt.Substring(0, 10);
+                a_found = list_inst.Find(i => i.id == item.institutionId);
+                if (a_found != null)
+                {
+                    item.institution = a_found.name;
+                }
+            }
+            ListView_User.ItemsSource = list_user;
+        }
+        private async void Get_Inst_List()
+        {
+            list_inst = await connection.Get_Institutions();
+            inst_Names = new List<string>() { "" };
+            foreach (TV_Inst item in list_inst)
+            {
+                item.createdAt = item.createdAt.Substring(0, 10);
+                inst_Names.Add(item.name);
+            }
+            ListView_Inst.ItemsSource = list_inst;
+            inst_Names = inst_Names.OrderBy(n => n).ToList();
+            CB_U_User_Inst.ItemsSource = inst_Names;
+        }
+
+        private void User_SortHeaderClick(object sender, RoutedEventArgs e)
+        {
+            string[] haedText = ["Név", "Email", "Státusz", "Pontok", "Szerepkör", "Regisztráció", "Zip", "City", "Intézmény"];
+            string[] propText = ["username", "email", "isActive", "points", "role", "createdAt", "zipCode", "city", "institution"];
+
+            string a_head = ((GridViewColumnHeader)e.OriginalSource).Column.Header.ToString();
+            for (int i = 0; i < haedText.Length; i++)
+            {
+                if (a_head == haedText[i])
+                {
+                    switch (a_head)
+                    {
+                        case "Intézmény":
+                            if (order_user_y[i])
+                            {
+                                ListView_User.ItemsSource = list_user.OrderBy(u => u.institution).ToList();
+                            }
+                            else
+                            {
+                                ListView_User.ItemsSource = list_user.OrderByDescending(u => u.institution).ToList();
+                            }
+                            break;
+                        case "City":
+                            if (order_user_y[i])
+                            {
+                                ListView_User.ItemsSource = list_user.OrderBy(u => u.city).ToList();
+                            }
+                            else
+                            {
+                                ListView_User.ItemsSource = list_user.OrderByDescending(u => u.city).ToList();
+                            }
+                            break;
+                        case "Zip":
+                            if (order_user_y[i])
+                            {
+                                ListView_User.ItemsSource = list_user.OrderBy(u => u.zipCode).ToList();
+                            }
+                            else
+                            {
+                                ListView_User.ItemsSource = list_user.OrderByDescending(u => u.zipCode).ToList();
+                            }
+                            break;
+                        case "Regisztráció":
+                            if (order_user_y[i])
+                            {
+                                ListView_User.ItemsSource = list_user.OrderBy(u => u.createdAt).ToList();
+                            }
+                            else
+                            {
+                                ListView_User.ItemsSource = list_user.OrderByDescending(u => u.createdAt).ToList();
+                            }
+                            break;
+                        case "Szerepkör":
+                            if (order_user_y[i])
+                            {
+                                ListView_User.ItemsSource = list_user.OrderBy(u => u.role).ToList();
+                            }
+                            else
+                            {
+                                ListView_User.ItemsSource = list_user.OrderByDescending(u => u.role).ToList();
+                            }
+                            break;
+                        case "Pontok":
+                            if (order_user_y[i])
+                            {
+                                ListView_User.ItemsSource = list_user.OrderBy(u => u.points).ToList();
+                            }
+                            else
+                            {
+                                ListView_User.ItemsSource = list_user.OrderByDescending(u => u.points).ToList();
+                            }
+                            break;
+                        case "Státusz":
+                            if (order_user_y[i])
+                            {
+                                ListView_User.ItemsSource = list_user.OrderBy(u => u.isActive).ToList();
+                            }
+                            else
+                            {
+                                ListView_User.ItemsSource = list_user.OrderByDescending(u => u.isActive).ToList();
+                            }
+                            break;
+                        case "Email":
+                            if (order_user_y[i])
+                            {
+                                ListView_User.ItemsSource = list_user.OrderBy(u => u.email).ToList();
+                            }
+                            else
+                            {
+                                ListView_User.ItemsSource = list_user.OrderByDescending(u => u.email).ToList();
+                            }
+                            break;
+                        case "Név":
+                            if (order_user_y[i])
+                            {
+                                ListView_User.ItemsSource = list_user.OrderBy(u => u.username).ToList();
+                            }
+                            else
+                            {
+                                ListView_User.ItemsSource = list_user.OrderByDescending(u => u.username).ToList();
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                    order_user_y[i] = !order_user_y[i];
+                }
+            }
+            return;
+        }
+        private void Inst_SortHeaderClick(object sender, RoutedEventArgs e)
+        {
+            string[] haedText = ["Intézmény Neve", "Email", "Leírás", "Reg. Dátum", "Elérhetőségek"];
+            string[] propText = ["name", "email", "description", "createdAt", "contactInfo"];
+
+            string a_head = ((GridViewColumnHeader)e.OriginalSource).Column.Header.ToString();
+            for (int i = 0; i < haedText.Length; i++)
+            {
+                if (a_head == haedText[i])
+                {
+                    switch (a_head)
+                    {
+                        case "Intézmény Neve":
+                            if (order_inst_y[i])
+                            {
+                                ListView_Inst.ItemsSource = list_inst.OrderBy(u => u.name).ToList();
+                            }
+                            else
+                            {
+                                ListView_Inst.ItemsSource = list_inst.OrderByDescending(u => u.name).ToList();
+                            }
+                            break;
+                        case "Email":
+                            if (order_inst_y[i])
+                            {
+                                ListView_Inst.ItemsSource = list_inst.OrderBy(u => u.email).ToList();
+                            }
+                            else
+                            {
+                                ListView_Inst.ItemsSource = list_inst.OrderByDescending(u => u.email).ToList();
+                            }
+                            break;
+                        case "Leírás":
+                            if (order_inst_y[i])
+                            {
+                                ListView_Inst.ItemsSource = list_inst.OrderBy(u => u.description).ToList();
+                            }
+                            else
+                            {
+                                ListView_Inst.ItemsSource = list_inst.OrderByDescending(u => u.description).ToList();
+                            }
+                            break;
+                        case "Reg. Dátum":
+                            if (order_inst_y[i])
+                            {
+                                ListView_Inst.ItemsSource = list_inst.OrderBy(u => u.createdAt).ToList();
+                            }
+                            else
+                            {
+                                ListView_Inst.ItemsSource = list_inst.OrderByDescending(u => u.createdAt).ToList();
+                            }
+                            break;
+                        case "Elérhetőségek":
+                            if (order_inst_y[i])
+                            {
+                                ListView_Inst.ItemsSource = list_inst.OrderBy(u => u.contactInfo).ToList();
+                            }
+                            else
+                            {
+                                ListView_Inst.ItemsSource = list_inst.OrderByDescending(u => u.contactInfo).ToList();
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                    order_inst_y[i] = !order_inst_y[i];
+                }
+            }
+        }
+        private void User_ListView_Click(object sender, RoutedEventArgs e)
+        {
+            var item = (sender as ListView).SelectedItem;
+            if (item != null)
+            {
+                sel_user = item as TV_User;
+                u_search_y = false;
+                u_search_y = false;
+                U_User_Name.Text = sel_user.username;
+                U_User_Email.Text = sel_user.email;
+                U_User_Zip.Text = sel_user.zipCode;
+                U_User_City.Text = sel_user.city;
+                U_User_Address.Text = sel_user.address;
+                if (sel_user.institutionId != null)
+                {
+                    CB_U_User_Inst.SelectedItem = sel_user.institution;
+                }
+                else
+                {
+                    CB_U_User_Inst.SelectedItem = "";
+                }
+                CB_U_User_Status.SelectedItem = sel_user.isActive;
+                CB_U_User_Role.SelectedItem = sel_user.role;
+            }
+        }
+        private void User_Name_Clear(object sender, RoutedEventArgs e)
+        {
+            if (u_search_y)
+            {
+                U_User_Name.Text = "";
+            }
+        }
+        private void Inst_ListView_Click(object sender, RoutedEventArgs e)
+        {
+            var item = (sender as ListView).SelectedItem;
+            if (item != null)
+            {
+                TV_Inst sel_item = item as TV_Inst;
+                MessageBox.Show(sel_item.name);
+            }
+        }
+
+
+        private void User_Email_Clear(object sender, RoutedEventArgs e)
+        {
+            if (u_search_y)
+            {
+                U_User_Email.Text = "";
+            }
+        }
+
+        private void User_Clear(object sender, RoutedEventArgs e)
+        {
+            U_User_Name.Text = "";
+            U_User_Email.Text = "";
+            U_User_Zip.Text = "";
+            U_User_City.Text = "";
+            U_User_Address.Text = "";
+            CB_U_User_Status.SelectedItem = "active";
+            CB_U_User_Role.SelectedItem = "user";
+            CB_U_User_Inst.SelectedItem = "";
+            sel_user = new TV_User();
+        }
+
+        private void User_Save(object sender, RoutedEventArgs e)
+        {
+            bool do_y = false;
+            do_y = do_y || U_User_Name.Text != sel_user.username || U_User_Email.Text != sel_user.email || U_User_Zip.Text != sel_user.zipCode
+                || U_User_Zip.Text != sel_user.zipCode || U_User_City.Text != sel_user.city || U_User_Address.Text != sel_user.address
+                || CB_U_User_Role.SelectedItem.ToString() != sel_user.role || CB_U_User_Status.SelectedItem.ToString() != sel_user.isActive
+                || CB_U_User_Inst.SelectedItem.ToString() != sel_user.institution;
+            if (do_y)
+            {
+                sel_user.username = U_User_Name.Text;
+                sel_user.email = U_User_Email.Text;
+                if (U_User_Zip.Text != "")
+                {
+                    sel_user.zipCode = U_User_Zip.Text;
+                }
+                else
+                {
+                    sel_user.zipCode = null;
+                }
+                sel_user.city = U_User_City.Text;
+                sel_user.address = U_User_Address.Text;
+                sel_user.role = CB_U_User_Role.SelectedItem.ToString();
+                sel_user.isActive = CB_U_User_Status.SelectedItem.ToString();
+                if (CB_U_User_Inst.SelectedItem.ToString() != "")
+                {
+                    TV_Inst a_found = list_inst.Find(i => i.name == CB_U_User_Inst.SelectedItem.ToString());
+                    if (a_found != null)
+                    {
+                        sel_user.institutionId = a_found.id;
+                    }
+                }
+                else
+                {
+                    sel_user.institutionId = null;
+                }
+                Update_User();
+            }
+        }
+        private async void Update_User()
+        {
+            bool upd_y = await connection.AdminUpdate_User(sel_user);
+            if (upd_y)
+            {
+                int a_index = list_user.FindIndex(u => u.id == sel_user.id);
+                if (a_index > -1)
+                {
+                    list_user[a_index] = sel_user;
+                    ListView_User.Items.Refresh();
+                }
+            }
+            else { MessageBox.Show("Hiba"); }
+        }
+
+
+        private void User_SaveNew(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void User_OnKeyDownHandler(object sender, KeyEventArgs e)
+        {
+            if (sender.Equals(S_User_Name) || sender.Equals(S_User_Email))
+            {
+                if (e.Key == Key.Return)
+                {
+                    Get_User_List(S_User_Name.Text, S_User_Email.Text);
+                }
+            }
+        }
+    }
+}

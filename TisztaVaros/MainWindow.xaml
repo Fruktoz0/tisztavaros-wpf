@@ -5,8 +5,65 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TisztaVaros"
         mc:Ignorable="d"
-        Title="TisztaVaros Főoldal" Height="450" Width="800">
+        Title="TisztaVaros Főoldal" Height="450" Width="800"
+        ResizeMode="NoResize" WindowStartupLocation="Manual">
+    <Window.Resources>
+        <Style TargetType="{x:Type TextBox}">
+            <Style.Resources>
+                <Style TargetType="{x:Type Border}">
+                    <Setter Property="CornerRadius" Value="7" />
+                </Style>
+            </Style.Resources>
+        </Style>
+        <Style TargetType="{x:Type Button}">
+            <Style.Resources>
+                <Style TargetType="{x:Type Border}">
+                    <Setter Property="CornerRadius" Value="7" />
+                </Style>
+            </Style.Resources>
+        </Style>
+    </Window.Resources>
     <Grid>
-        
+        <Grid Background="#FFFDF5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.5*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel 
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center" >
+                <Image Width="350">
+                    <Image.Source>
+                        <BitmapImage UriSource="https://smd.hu/Team/tisztavaros_logo_Middle.png" />
+                    </Image.Source>
+                </Image>
+            </StackPanel>
+                <Grid Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="0.9*"/>
+                        <RowDefinition Height="0.3*"/>
+                        <RowDefinition Height="0.9*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="0.7*"/>
+                    </Grid.RowDefinitions>
+                <Button Grid.Row="1" Click="Window_Login" 
+                        Content="LOGIN" Width="250" Margin="15,15,15,15"
+                        FontSize="17" FontWeight="Bold" Foreground="White"
+                        Background="#6FB1A5">
+                    <Button.BitmapEffect>
+                        <DropShadowBitmapEffect Color="Gray" Direction="-80" ShadowDepth="5" Softness=".5" />
+                    </Button.BitmapEffect>
+                </Button>
+                <Button Grid.Row="3" Click="Window_Registration" 
+                        Content="REGISZTRÁCIÓ" Width="250" Margin="15,15,15,15"
+                        FontSize="17" FontWeight="Bold" Foreground="White" 
+                        Background="#6FB1A5">
+                    <Button.BitmapEffect>
+                        <DropShadowBitmapEffect Color="Gray" Direction="-80" ShadowDepth="5" Softness=".5" />
+                    </Button.BitmapEffect>
+                </Button>
+            </Grid>
+        </Grid>
     </Grid>
 </Window>
