@@ -45,7 +45,7 @@ namespace TisztaVaros
         List<string> allStatus = new List<string>() { "active", "inactive", "archived" };
         TV_User sel_user;
         public static string new_user_psw = "";
-        bool u_search_y = true;
+        bool chk_udata_y = false;
 
         [DllImport("user32.dll")]
         static extern IntPtr GetSystemMenu(IntPtr hWnd, bool bRevert);
@@ -67,6 +67,8 @@ namespace TisztaVaros
             HTTP_Local.IsChecked = App.local_y;
             CB_U_User_Role.ItemsSource = allRoles;
             CB_U_User_Status.ItemsSource = allStatus;
+            SolidColorBrush b_szurke = U_User_Search.Background as SolidColorBrush;
+
         }
         private void Logo_Click(object sender, EventArgs e)
         {
@@ -171,7 +173,7 @@ namespace TisztaVaros
                     item.institution = a_found.name;
                 }
             }
-            ListView_User.ItemsSource = list_user;
+            ListView_User.ItemsSource = list_user.OrderBy(u => u.username).ToList();
         }
         private async void Get_Inst_List()
         {
@@ -372,8 +374,6 @@ namespace TisztaVaros
             if (item != null)
             {
                 sel_user = item as TV_User;
-                u_search_y = false;
-                u_search_y = false;
                 U_User_Name.Text = sel_user.username;
                 U_User_Email.Text = sel_user.email;
                 U_User_Zip.Text = sel_user.zipCode;
@@ -389,6 +389,7 @@ namespace TisztaVaros
                 }
                 CB_U_User_Status.SelectedItem = sel_user.isActive;
                 CB_U_User_Role.SelectedItem = sel_user.role;
+                chk_udata_y = true;
             }
         }
         private void User_Name_Clear(object sender, RoutedEventArgs e)
@@ -417,6 +418,7 @@ namespace TisztaVaros
         }
         private void User_ClearData()
         {
+            chk_udata_y = false;
             U_User_Name.Text = "";
             U_User_Email.Text = "";
             U_User_Zip.Text = "";
@@ -455,6 +457,7 @@ namespace TisztaVaros
                     string new_userId = await connection.Admin_AddNewUser(U_User_Email.Text, U_User_Name.Text, new_user_psw);
                     sel_user.id = new_userId;
                     Update_User();
+                    User_ClearData();
                     Get_User_List(S_User_Name.Text, S_User_Email.Text);
                 }
             }
@@ -478,61 +481,71 @@ namespace TisztaVaros
                 MessageBox.Show("Egészen más Hiba!!");
             }
         }
-        private async void User_Save(object sender, RoutedEventArgs e)
+        private void User_Save(object sender, RoutedEventArgs e)
         {
-            bool do_y = false;
-            do_y = do_y || U_User_Name.Text != sel_user.username || U_User_Email.Text != sel_user.email || U_User_Zip.Text != sel_user.zipCode
-                || U_User_Zip.Text != sel_user.zipCode || U_User_City.Text != sel_user.city || U_User_Address.Text != sel_user.address
-                || CB_U_User_Role.SelectedItem.ToString() != sel_user.role || CB_U_User_Status.SelectedItem.ToString() != sel_user.isActive
-                || CB_U_User_Inst.SelectedItem.ToString() != sel_user.institution;
+            bool do_y = Changed_UserData();
             if (do_y)
             {
-                sel_user.username = U_User_Name.Text;
-                sel_user.email = U_User_Email.Text;
-                if (U_User_Zip.Text != "")
-                {
-                    sel_user.zipCode = U_User_Zip.Text;
-                }
-                else
-                {
-                    sel_user.zipCode = null;
-                }
-                sel_user.city = U_User_City.Text;
-                sel_user.address = U_User_Address.Text;
-                sel_user.role = CB_U_User_Role.SelectedItem.ToString();
-                sel_user.isActive = CB_U_User_Status.SelectedItem.ToString();
-                if (CB_U_User_Inst.SelectedItem.ToString() != "")
-                {
-                    TV_Inst a_found = list_inst.Find(i => i.name == CB_U_User_Inst.SelectedItem.ToString());
-                    if (a_found != null)
-                    {
-                        sel_user.institutionId = a_found.id;
-                    }
-                }
-                else
-                {
-                    sel_user.institutionId = null;
-                }
-                bool upd_y = await connection.AdminUpdate_User(sel_user);
-                if (upd_y)
-                {
-                    int a_index = list_user.FindIndex(u => u.id == sel_user.id);
-                    if (a_index > -1)
-                    {
-                        //list_user[a_index] = sel_user;
-                        //ListView_User.Items.Refresh();
-                        Get_User_List(S_User_Name.Text, S_User_Email.Text);
-                        User_ClearData();
-                        MessageBox.Show("Elvileg Frissítve");
-                    }
-                    else
-                    {
-                        MessageBox.Show("Update Hiba!");
-                    }
-                }
-                else { MessageBox.Show("Hiba"); }
-                //Update_User();
+                User_Update();
             }
+        }
+        private async void User_Update()
+        {
+            sel_user.username = U_User_Name.Text;
+            sel_user.email = U_User_Email.Text;
+            if (U_User_Zip.Text != "")
+            {
+                sel_user.zipCode = U_User_Zip.Text;
+            }
+            else
+            {
+                sel_user.zipCode = null;
+            }
+            sel_user.city = U_User_City.Text;
+            sel_user.address = U_User_Address.Text;
+            sel_user.role = CB_U_User_Role.SelectedItem.ToString();
+            sel_user.isActive = CB_U_User_Status.SelectedItem.ToString();
+            if (CB_U_User_Inst.SelectedItem.ToString() != "")
+            {
+                TV_Inst a_found = list_inst.Find(i => i.name == CB_U_User_Inst.SelectedItem.ToString());
+                if (a_found != null)
+                {
+                    sel_user.institutionId = a_found.id;
+                }
+            }
+            else
+            {
+                sel_user.institutionId = null;
+            }
+            bool upd_y = await connection.AdminUpdate_User(sel_user);
+            if (upd_y)
+            {
+                int a_index = list_user.FindIndex(u => u.id == sel_user.id);
+                if (a_index > -1)
+                {
+                    Get_User_List(S_User_Name.Text, S_User_Email.Text);
+                    User_ClearData();
+                    MessageBox.Show("Elvileg Frissítve");
+                }
+                else
+                {
+                    MessageBox.Show("Update Hiba!");
+                }
+            }
+            else { MessageBox.Show("Hiba"); }
+
+        }
+        private bool Changed_UserData()
+        {
+            bool do_y = false;
+            if (chk_udata_y)
+            {
+                do_y = do_y || U_User_Name.Text != sel_user.username || U_User_Email.Text != sel_user.email || U_User_Zip.Text != sel_user.zipCode
+                    || U_User_Zip.Text != sel_user.zipCode || U_User_City.Text != sel_user.city || U_User_Address.Text != sel_user.address
+                    || CB_U_User_Role.SelectedItem.ToString() != sel_user.role || CB_U_User_Status.SelectedItem.ToString() != sel_user.isActive
+                    || CB_U_User_Inst.SelectedItem.ToString() != sel_user.institution;
+            }
+            return do_y;
         }
         private async void Update_User()
         {
@@ -594,6 +607,26 @@ namespace TisztaVaros
         private void Win_Mozog(object sender, EventArgs e)
         {
             this.Title = "Tiszta Város - Admin (Top: " + this.Top + " Left: " + this.Left + ")";
+        }
+        private void SelUser_DataChanged(object sender, TextChangedEventArgs e)
+        {
+            SelUser_CHK_Modified();
+        }
+        private void SelUser_CHK_Modified()
+        {
+            bool do_y = Changed_UserData();
+            if (do_y)
+            {
+                U_User_Save.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FF6EF525"));
+            }
+            else
+            {
+                U_User_Save.Background = U_User_Search.Background;
+            }
+        }   
+        private void SelUser_CBChanged(object sender, SelectionChangedEventArgs e)
+        {
+            SelUser_CHK_Modified();
         }
     }
 }

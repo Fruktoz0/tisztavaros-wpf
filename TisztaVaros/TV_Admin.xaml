@@ -134,13 +134,13 @@
                                 HorizontalContentAlignment="Center" Margin="-20,0,0,0" VerticalContentAlignment="Center" Padding="0,0,0,3"/>
                         <Button Grid.Row="2" Grid.Column="1" Click="User_Email_Clear"  Content="" Margin="230,5,5,5" FontSize="18" FontWeight="Bold"/>
 
-                        
+
                         <Label Grid.Row="1" Grid.Column="2" Content="User Name:" FontSize="18" FontWeight="Bold" Width="110"
                                HorizontalAlignment="Center" HorizontalContentAlignment="Right"/>
-                        <TextBox Grid.Row="1" Grid.Column="2" Name="U_User_Name" KeyDown="User_OnKeyDownHandler" FontSize="16" FontWeight="Bold" Height="30"
+                        <TextBox Grid.Row="1" Grid.Column="2" Name="U_User_Name" FontSize="16" FontWeight="Bold" Height="30" TextChanged="SelUser_DataChanged"
                                 HorizontalContentAlignment="Center" Margin="120,4,-265,4" VerticalContentAlignment="Center" Padding="0,0,0,3"/>
                         <Label Grid.Row="1" Grid.Column="2" Content="Email:" FontSize="18" FontWeight="Bold" Margin="390,0,-336,0" HorizontalContentAlignment="Right"/>
-                        <TextBox Grid.Row="1" Grid.Column="2" Name="U_User_Email" KeyDown="User_OnKeyDownHandler" FontSize="14" FontWeight="Bold" Height="30"
+                        <TextBox Grid.Row="1" Grid.Column="2" Name="U_User_Email" FontSize="14" FontWeight="Bold" Height="30" TextChanged="SelUser_DataChanged"
                                 HorizontalContentAlignment="Center" Margin="461,4,-625,4" VerticalContentAlignment="Center" Padding="0,0,0,3"/>
                         <Button Grid.Row="3" Grid.Column="0" Name="U_User_Search" Click="User_Search"  Content="Search" HorizontalAlignment="Left"
                                 Width="85" Margin="5,5,0,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,4"/>
@@ -148,29 +148,29 @@
 
                         <Label Grid.Row="2" Grid.Column="2" Content="Zip:" FontSize="18" FontWeight="Bold" Width="50"
                                HorizontalAlignment="Left" HorizontalContentAlignment="Right"/>
-                        <TextBox Grid.Row="2" Grid.Column="2" Name="U_User_Zip" FontSize="16" FontWeight="Bold" Height="30"
+                        <TextBox Grid.Row="2" Grid.Column="2" Name="U_User_Zip" FontSize="16" FontWeight="Bold" Height="30" TextChanged="SelUser_DataChanged"
                                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="55,4,-15,4" Padding="0,0,0,3"/>
                         <Label Grid.Row="2" Grid.Column="2" Content="City:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Right" Margin="140,0,-76,0"/>
-                        <TextBox Grid.Row="2" Grid.Column="2" Name="U_User_City" FontSize="16" FontWeight="Bold" Height="30"
+                        <TextBox Grid.Row="2" Grid.Column="2" Name="U_User_City" FontSize="16" FontWeight="Bold" Height="30" TextChanged="SelUser_DataChanged"
                                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="201,4,-245,4" Padding="0,0,0,3"/>
                         <Label Grid.Row="2" Grid.Column="2" Content="Address:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Right" Margin="370,0,-336,0"/>
-                        <TextBox Grid.Row="2" Grid.Column="2" Name="U_User_Address" FontSize="16" FontWeight="Bold" Height="30"
+                        <TextBox Grid.Row="2" Grid.Column="2" Name="U_User_Address" FontSize="16" FontWeight="Bold" Height="30" TextChanged="SelUser_DataChanged"
                                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="461,4,-625,4" Padding="0,0,0,3"/>
                         <Label Grid.Row="3" Grid.Column="2" Content="Státusz:" FontSize="18" FontWeight="Bold" Width="80"
                                HorizontalAlignment="Left" HorizontalContentAlignment="Right" Margin="4,0,0,0"/>
-                        <ComboBox Grid.Row="3" Grid.Column="2" Name="CB_U_User_Status" Height="30"
+                        <ComboBox Grid.Row="3" Grid.Column="2" Name="CB_U_User_Status" Height="30" SelectionChanged="SelUser_CBChanged"
                                   VerticalAlignment="Center" HorizontalContentAlignment="Center" Background="red" FontSize="14"
                                   FontWeight="Bold" BorderThickness="1,2,1,2" Margin="90,0,-50,0" Padding="0,4,0,0"/>
                         <Label Grid.Row="3" Grid.Column="2" Content="Szerepkör:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Right" Margin="180,0,-160,0"/>
-                        <ComboBox Grid.Row="3" Grid.Column="2" Name="CB_U_User_Role" Height="30"
+                        <ComboBox Grid.Row="3" Grid.Column="2" Name="CB_U_User_Role" Height="30" SelectionChanged="SelUser_CBChanged"
                                   VerticalAlignment="Center" HorizontalContentAlignment="Center" Background="LightYellow" FontSize="14"
                                   FontWeight="Bold" BorderThickness="1,2,1,2" Margin="286,0,-290,0" Padding="0,4,0,0"/>
                         <Label Grid.Row="3" Grid.Column="2" Content="Hatóság:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Right" Margin="415,0,-382,0"/>
-                        <ComboBox Grid.Row="3" Grid.Column="2" Name="CB_U_User_Inst" Height="30"
+                        <ComboBox Grid.Row="3" Grid.Column="2" Name="CB_U_User_Inst" Height="30" SelectionChanged="SelUser_CBChanged"
                                   VerticalAlignment="Center" HorizontalContentAlignment="Center" Background="LightYellow" FontSize="14"
                                   FontWeight="Bold" BorderThickness="1,2,1,2" Margin="507,0,-537,0" Padding="0,4,0,0"/>
 
-                        <Button Grid.Row="3" Grid.Column="2" Name="U_User_Save" Click="User_Save" Content="Save" Margin="672,5,-625,5" FontSize="18" FontWeight="Bold"  Background="#FF6EF525" Padding="0,0,0,4"/>
+                        <Button Grid.Row="3" Grid.Column="2" Name="U_User_Save" Click="User_Save" Content="Save" Margin="672,5,-625,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,4"/>
                         <Button Grid.Row="3" Grid.Column="1" Name="U_User_SaveNew" Click="User_SaveAsNew" Content="Save as New" Margin="87,5,25,5" FontSize="18" FontWeight="Bold" Background="#FFF9DD24" Padding="0,0,0,4"/>
                         <Button Grid.Row="1" Grid.Column="2" Name="U_User_Clear" Click="User_Clear" Content="" Margin="754,5,-651,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,4" Grid.RowSpan="2"/>
                     </Grid>
