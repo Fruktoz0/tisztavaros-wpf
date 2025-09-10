@@ -108,7 +108,11 @@
                 <RowDefinition Height="125"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <Grid Grid.Row="0" Background="AliceBlue">
+            <Grid Grid.Row="0" Background="#FFFDF5">
+                <StackPanel Name="Header_Ini" Background="#FFFDF5">
+                    <Label Content="Üdvözöllek az Admin felületen!" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,20,0,0"/>
+                    <Label Content="Itt kezelheted a felhasználókat, bejelentéseket, kategóriákat, intézményeket és kihívásokat." FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,5,0,0"/>
+                </StackPanel>
                 <StackPanel Name="Header_Users" Background="#FFFDF5">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -143,7 +147,7 @@
                         <TextBox Grid.Row="1" Grid.Column="2" Name="U_User_Email" FontSize="14" FontWeight="Bold" Height="30" TextChanged="SelUser_DataChanged"
                                 HorizontalContentAlignment="Center" Margin="461,4,-625,4" VerticalContentAlignment="Center" Padding="0,0,0,3"/>
                         <Button Grid.Row="3" Grid.Column="0" Name="U_User_Search" Click="User_Search"  Content="Search" HorizontalAlignment="Left"
-                                Width="85" Margin="5,5,0,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,4"/>
+                                Width="85" Margin="11,5,0,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,4"/>
 
 
                         <Label Grid.Row="2" Grid.Column="2" Content="Zip:" FontSize="18" FontWeight="Bold" Width="50"
@@ -171,7 +175,7 @@
                                   FontWeight="Bold" BorderThickness="1,2,1,2" Margin="507,0,-537,0" Padding="0,4,0,0"/>
 
                         <Button Grid.Row="3" Grid.Column="2" Name="U_User_Save" Click="User_Save" Content="Save" Margin="672,5,-625,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,4"/>
-                        <Button Grid.Row="3" Grid.Column="1" Name="U_User_SaveNew" Click="User_SaveAsNew" Content="Save as New" Margin="87,5,25,5" FontSize="18" FontWeight="Bold" Background="#FFF9DD24" Padding="0,0,0,4"/>
+                        <Button Grid.Row="3" Grid.Column="1" Name="U_User_SaveNew" Click="User_SaveAsNew" Content="Save as New" Margin="87,5,25,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,4"/>
                         <Button Grid.Row="1" Grid.Column="2" Name="U_User_Clear" Click="User_Clear" Content="" Margin="754,5,-651,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,4" Grid.RowSpan="2"/>
                         <StackPanel Grid.Row="3" Name="SP_Postit" Margin="745,5,-653,5" Grid.Column="2">
                             <Image MouseLeftButtonUp="Admin_Postit" Name="Img_Postit" Source="https://smd.hu/Team/post-it.png" Height="25" />
@@ -195,7 +199,7 @@
                     <ColumnDefinition Width="573*"/>
                     <ColumnDefinition Width="268*"/>
                 </Grid.ColumnDefinitions>
-                <StackPanel Name="Main_Ini" Background="#F0F0F0" Grid.ColumnSpan="3" >
+                <StackPanel Name="Main_Ini" Background="#F0F0F0" Grid.ColumnSpan="3" Visibility="Visible">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="100"/>
@@ -256,21 +260,37 @@
                 </StackPanel>
                 <StackPanel Name="Main_Cats" Background="#FFC0EAC0" Grid.ColumnSpan="3" Visibility="Hidden">
                 </StackPanel>
-                <StackPanel Name="Main_Institutions" Background="#F0F0F0" Grid.ColumnSpan="3" Visibility="Hidden">
-                    <StackPanel Name="Inst_List" Grid.Row="0" Grid.Column="0" Background="#FFFFFF" Margin="10,10,12,10">
-                        <ListView x:Name="ListView_Inst" GridViewColumnHeader.Click="Inst_SortHeaderClick" 
-                                  MouseDoubleClick="Inst_ListView_Click" Background="#FFFDF5">
+                <StackPanel Name="Main_Institutions" Background="#F0F0F0" Grid.ColumnSpan="3" Visibility="Visible">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="330"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel Name="Inst_List" Grid.Row="0" Grid.Column="0" Background="#FFFFFF" Margin="10,11,12,19" Height="300">
+                            <ListView x:Name="ListView_Inst" GridViewColumnHeader.Click="Inst_SortHeaderClick" 
+                                      MouseLeftButtonUp="Get_WorkerList" MouseDoubleClick="Inst_ListView_Click" Background="#FFFDF5">
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn Header="Intézmény Neve" DisplayMemberBinding="{Binding name}" Width="200"/>
+                                        <GridViewColumn Header="Email" DisplayMemberBinding="{Binding email}" Width="200"/>
+                                        <GridViewColumn Header="Leírás" DisplayMemberBinding="{Binding description}" Width="300"/>
+                                        <GridViewColumn Header="Reg. Dátum" DisplayMemberBinding="{Binding createdAt}" Width="80"/>
+                                        <GridViewColumn Header="Elérhetőségek" DisplayMemberBinding="{Binding contactInfo}" Width="340"/>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </StackPanel>
+                        <Button Name="B_Inst_Workers" Grid.Row="1" Content="Intézmény Munkatársai:" Click="Hold_WorkerList" Margin="10,-5,0,340"
+                                FontSize="18" FontWeight="Bold" Padding="0,1,0,4" HorizontalAlignment="Left" Width="235"/>
+                        <ListView x:Name="ListView_Workers" MouseDoubleClick="Workers_ListView_Click" Background="#FFFFFF" Margin="258,325,355,30" Grid.RowSpan="2">
                             <ListView.View>
                                 <GridView>
-                                    <GridViewColumn Header="Intézmény Neve" DisplayMemberBinding="{Binding name}" Width="200"/>
-                                    <GridViewColumn Header="Email" DisplayMemberBinding="{Binding email}" Width="200"/>
-                                    <GridViewColumn Header="Leírás" DisplayMemberBinding="{Binding description}" Width="300"/>
-                                    <GridViewColumn Header="Reg. Dátum" DisplayMemberBinding="{Binding createdAt}" Width="80"/>
-                                    <GridViewColumn Header="Elérhetőségek" DisplayMemberBinding="{Binding contactInfo}" Width="340"/>
+                                    <GridViewColumn Header="Munkatárs Neve" DisplayMemberBinding="{Binding username}" Width="200"/>
+                                    <GridViewColumn Header="Email" DisplayMemberBinding="{Binding email}" Width="300"/>
                                 </GridView>
                             </ListView.View>
                         </ListView>
-                    </StackPanel>
+                    </Grid>
                 </StackPanel>
                 <StackPanel Name="Main_Challenges" Background="#FFB9E2EF" Grid.ColumnSpan="3" Visibility="Hidden">
                 </StackPanel>

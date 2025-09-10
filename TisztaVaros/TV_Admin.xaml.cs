@@ -37,6 +37,7 @@ namespace TisztaVaros
         List<StackPanel> sp_h_all = new List<StackPanel>();
         List<StackPanel> sp_m_all = new List<StackPanel>();
         List<TV_User> list_user = new List<TV_User>();
+        List<TV_User> list_workers = new List<TV_User>();
         List<TV_Inst> list_inst = new List<TV_Inst>();
         bool[] order_user_y = new bool[10] { true, true, true, true, true, true, true, true, true, true };
         bool[] order_inst_y = new bool[5] { true, true, true, true, true };
@@ -46,6 +47,8 @@ namespace TisztaVaros
         TV_User sel_user;
         public static string new_user_psw = "";
         bool chk_udata_y = false;
+        string c_gray = "#FFDDDDDD";
+        bool hold_workers = false;
 
         [DllImport("user32.dll")]
         static extern IntPtr GetSystemMenu(IntPtr hWnd, bool bRevert);
@@ -60,14 +63,13 @@ namespace TisztaVaros
             connection = new ServerConnection();
             LocationChanged += new EventHandler(Win_Mozog);
             b_all = [B_Users, B_Cats, B_Institutions, B_Reports, B_Challenges];
-            sp_h_all = [Header_Users, Header_Cats, Header_Institutions, Header_Reports, Header_Challenges];
-            sp_m_all = [Main_Users, Main_Cats, Main_Institutions, Main_Reports, Main_Challenges];
+            sp_h_all = [Header_Ini, Header_Users, Header_Cats, Header_Institutions, Header_Reports, Header_Challenges];
+            sp_m_all = [Main_Ini, Main_Users, Main_Cats, Main_Institutions, Main_Reports, Main_Challenges];
             Stack_Main_Ini();
             Get_Inst_List();
             HTTP_Local.IsChecked = App.local_y;
             CB_U_User_Role.ItemsSource = allRoles;
             CB_U_User_Status.ItemsSource = allStatus;
-            SolidColorBrush b_szurke = U_User_Search.Background as SolidColorBrush;
         }
         private void Logo_Click(object sender, EventArgs e)
         {
@@ -187,7 +189,7 @@ namespace TisztaVaros
                 item.createdAt = item.createdAt.Substring(0, 10);
                 inst_Names.Add(item.name);
             }
-            ListView_Inst.ItemsSource = list_inst;
+            ListView_Inst.ItemsSource = list_inst.OrderBy(u => u.name).ToList();
             inst_Names = inst_Names.OrderBy(n => n).ToList();
             CB_U_User_Inst.ItemsSource = inst_Names;
         }
@@ -485,9 +487,9 @@ namespace TisztaVaros
                 MessageBox.Show("Egészen más Hiba!!");
             }
         }
-        private void User_Save(object sender, RoutedEventArgs e)
+        private async void User_Save(object sender, RoutedEventArgs e)
         {
-            bool do_y = Changed_UserData();
+            bool do_y = await Changed_UserData();
             if (do_y)
             {
                 User_Update();
@@ -539,7 +541,7 @@ namespace TisztaVaros
             else { MessageBox.Show("Hiba"); }
 
         }
-        private bool Changed_UserData()
+        private async Task<bool> Changed_UserData()
         {
             bool do_y = false;
             if (chk_udata_y)
@@ -548,6 +550,23 @@ namespace TisztaVaros
                     || U_User_Zip.Text != sel_user.zipCode || U_User_City.Text != sel_user.city || U_User_Address.Text != sel_user.address
                     || CB_U_User_Role.SelectedItem.ToString() != sel_user.role || CB_U_User_Status.SelectedItem.ToString() != sel_user.isActive
                     || CB_U_User_Inst.SelectedItem.ToString() != sel_user.institution;
+
+                if (U_User_Name.Text != sel_user.username && U_User_Email.Text != sel_user.email)
+                {
+                    string e_user = await connection.Check_ExistUser(U_User_Email.Text, U_User_Name.Text);
+                    if (e_user == "00")
+                    {
+                        U_User_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFF9DD24"));
+                    }
+                    else
+                    {
+                        U_User_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(c_gray));
+                    }
+                }
+                else
+                {
+                    U_User_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(c_gray));
+                }
             }
             return do_y;
         }
@@ -616,9 +635,9 @@ namespace TisztaVaros
         {
             SelUser_CHK_Modified();
         }
-        private void SelUser_CHK_Modified()
+        private async void SelUser_CHK_Modified()
         {
-            bool do_y = Changed_UserData();
+            bool do_y = await Changed_UserData();
             if (do_y)
             {
                 U_User_Save.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FF6EF525"));
@@ -635,7 +654,38 @@ namespace TisztaVaros
 
         private void Admin_Postit(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show(App.postit, "Admin Post-it:"); 
+            MessageBox.Show(App.postit, "Admin Post-it:");
+        }
+        private async void Hold_WorkerList(object sender, RoutedEventArgs e)
+        {
+            if (ListView_Inst.SelectedItem != null)
+            {
+                hold_workers = !hold_workers;
+                if (hold_workers)
+                {
+                    B_Inst_Workers.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bus_Yellow));
+                    TV_Inst sel_inst = ListView_Inst.SelectedItem as TV_Inst;
+                    B_Inst_Workers.Content = sel_inst.name;
+                }
+                else
+                {
+                    B_Inst_Workers.Content= "Intézmény Munkatársai:";
+                    B_Inst_Workers.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(c_gray));
+                    Get_WorkerList(sender, e);
+                }
+            }
+        }
+        private async void Get_WorkerList(object sender, RoutedEventArgs e)
+        {
+            if (!hold_workers) {
+                TV_Inst sel_inst = ListView_Inst.SelectedItem as TV_Inst;
+                list_workers = await connection.Get_Workers(sel_inst.id);
+                ListView_Workers.ItemsSource = list_workers.OrderBy(u => u.username).ToList();
+            }
+        }
+        private void Workers_ListView_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

@@ -88,7 +88,26 @@ namespace TisztaVaros
             }
             return "22";
         }
-
+        public async Task<List<TV_User>> Get_Workers(string inst_id)
+        {
+            List<TV_User> all_workers = new List<TV_User>();
+            string a_route = "/api/admin/user_inst/" + inst_id;
+            string url = Get_URL() + a_route;
+            try
+            {
+                HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
+                HttpResponseMessage response = await client.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+                string responseInString = await response.Content.ReadAsStringAsync();
+                all_workers = JsonConvert.DeserializeObject<List<TV_User>>(responseInString);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(a_route + "\n\n" + e.Message);
+            }
+            return all_workers;
+        }
         public async Task<List<TV_User>> Search_User(string a_name, string a_email)
         {
             HttpClient client = new HttpClient();
