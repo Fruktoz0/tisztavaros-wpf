@@ -189,7 +189,7 @@ namespace TisztaVaros
         {
             MainWindow.a_top = this.Top;
             MainWindow.a_left = this.Left;
-            this.Title = "Tiszta Város - Login (Top: " + this.Top + " Left: " + this.Left + ")";
+            //this.Title = "Tiszta Város - Login (Top: " + this.Top + " Left: " + this.Left + ")";
         }
     }
 }

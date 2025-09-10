@@ -10,6 +10,7 @@ namespace TisztaVaros
     public partial class App : Application
     {
         public static bool local_y = true;
+        public static string postit = "";
     }
 
 }

@@ -173,6 +173,9 @@
                         <Button Grid.Row="3" Grid.Column="2" Name="U_User_Save" Click="User_Save" Content="Save" Margin="672,5,-625,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,4"/>
                         <Button Grid.Row="3" Grid.Column="1" Name="U_User_SaveNew" Click="User_SaveAsNew" Content="Save as New" Margin="87,5,25,5" FontSize="18" FontWeight="Bold" Background="#FFF9DD24" Padding="0,0,0,4"/>
                         <Button Grid.Row="1" Grid.Column="2" Name="U_User_Clear" Click="User_Clear" Content="" Margin="754,5,-651,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,4" Grid.RowSpan="2"/>
+                        <StackPanel Grid.Row="3" Name="SP_Postit" Margin="745,5,-653,5" Grid.Column="2">
+                            <Image MouseLeftButtonUp="Admin_Postit" Name="Img_Postit" Source="https://smd.hu/Team/post-it.png" Height="25" />
+                        </StackPanel>
                     </Grid>
                 </StackPanel>
                 <StackPanel Name="Header_Reports" Background="LightCoral" Visibility="Hidden">
