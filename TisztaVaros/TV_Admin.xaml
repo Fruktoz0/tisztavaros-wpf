@@ -113,7 +113,7 @@
                     <Label Content="Üdvözöllek az Admin felületen!" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,20,0,0"/>
                     <Label Content="Itt kezelheted a felhasználókat, bejelentéseket, kategóriákat, intézményeket és kihívásokat." FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,5,0,0"/>
                 </StackPanel>
-                <StackPanel Name="Header_Institutions" Background="#FFFDF5" Visibility="Visible">
+                <StackPanel Name="Header_Institutions" Background="#FFFDF5" Visibility="Hidden">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="6"/>
@@ -162,7 +162,7 @@
                         <Button Grid.Row="1" Grid.Column="2" Name="U_Inst_Clear" Click="Inst_Clear" Content="" Margin="1124,5,12,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,4" Grid.RowSpan="2"/>
                     </Grid>
                 </StackPanel>
-                <StackPanel Name="Header_Users" Background="#FFFDF5" Visibility="HIdden">
+                <StackPanel Name="Header_Users" Background="#FFFDF5" Visibility="Visible">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="120"/>
@@ -178,12 +178,12 @@
                         </Grid.RowDefinitions>
                         <Label Grid.Row="1" Grid.Column="0" Content="User Name:" FontSize="18" FontWeight="Bold" Width="120"
                                HorizontalAlignment="Left" HorizontalContentAlignment="Right"/>
-                        <TextBox Grid.Row="1" Grid.Column="1" Name="S_User_Name" KeyDown="User_OnKeyDownHandler" FontSize="16" FontWeight="Bold" Width="220" Height="30"
+                        <TextBox Grid.Row="1" Grid.Column="1" Name="S_User_Name" KeyDown="User_OnKeyDownHandler" FontSize="16" FontWeight="Bold" Width="220" Height="30" MaxLength="12"
                                 HorizontalContentAlignment="Center" Margin="-20,0,0,0" VerticalContentAlignment="Center" Padding="0,0,0,3"/>
                         <Button Grid.Row="1" Grid.Column="1" Click="User_Name_Clear"  Content="" Margin="230,5,5,5" FontSize="18" FontWeight="Bold"/>
                         <Label Grid.Row="2" Grid.Column="0" Content="Email:" FontSize="18" FontWeight="Bold" Width="120"
                                HorizontalAlignment="Left" HorizontalContentAlignment="Right"/>
-                        <TextBox Grid.Row="2" Grid.Column="1" Name="S_User_Email" KeyDown="User_OnKeyDownHandler" FontSize="14" FontWeight="Bold" Width="220" Height="30"
+                        <TextBox Grid.Row="2" Grid.Column="1" Name="S_User_Email" KeyDown="User_OnKeyDownHandler" FontSize="14" FontWeight="Bold" Width="220" Height="30" MaxLength="20"
                                 HorizontalContentAlignment="Center" Margin="-20,0,0,0" VerticalContentAlignment="Center" Padding="0,0,0,3"/>
                         <Button Grid.Row="2" Grid.Column="1" Click="User_Email_Clear"  Content="" Margin="230,5,5,5" FontSize="18" FontWeight="Bold"/>
 
@@ -196,6 +196,8 @@
                                 HorizontalContentAlignment="Center" Margin="461,4,-625,4" VerticalContentAlignment="Center" Padding="0,0,0,3"/>
                         <Button Grid.Row="3" Grid.Column="0" Name="U_User_Search" Click="User_Search"  Content="Search" HorizontalAlignment="Left"
                                 Width="85" Margin="11,5,0,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,4"/>
+                        <Button Grid.Row="3" Grid.Column="0" Name="U_User_Delete" Click="User_Delete"  Content="Delete" HorizontalAlignment="Left"
+                                Width="85" Margin="110,5,-65,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,4" Grid.ColumnSpan="2"/>
 
                         <Label Grid.Row="2" Grid.Column="2" Content="Zip:" FontSize="18" FontWeight="Bold" Width="50"
                                HorizontalAlignment="Left" HorizontalContentAlignment="Right"/>

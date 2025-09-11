@@ -11,6 +11,7 @@ using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Interop;
 using System.Xml.Linq;
 
 namespace TisztaVaros
@@ -25,6 +26,26 @@ namespace TisztaVaros
         private string baseURL = "http://localhost:3002";
 
 
+        public async Task<string>Admin_DelUser(string a_email)
+        {
+            string a_route = "/api/auth/delete/" + a_email;
+            string url = Get_URL() + a_route; 
+            try
+            {
+                HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
+                HttpResponseMessage response = await client.DeleteAsync(url);
+                response.EnsureSuccessStatusCode();
+                string responseInString = await response.Content.ReadAsStringAsync();
+                Message del_msg = JsonConvert.DeserializeObject<Message>(responseInString);
+                return del_msg.message;    
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(a_route + "\n\n" + e.Message);
+            }
+            return "xx";
+        }
         public async Task<string> Admin_AddNewInst(TV_Inst a_inst)
         {
             string a_route = "/api/institutions/create";

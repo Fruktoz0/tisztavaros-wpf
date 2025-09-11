@@ -22,6 +22,8 @@ using System.Windows.Media.Media3D;
 using System.Windows.Shapes;
 using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.Eventing.Reader;
 
 namespace TisztaVaros
 {
@@ -404,58 +406,77 @@ namespace TisztaVaros
         }
         private async void User_SaveAsNew(object sender, RoutedEventArgs e)
         {
-            string e_user = await connection.Check_ExistUser(U_User_Email.Text, U_User_Name.Text);
-            if (e_user == "00")
+            U_User_Email.Text = U_User_Email.Text.Trim();
+            U_User_Name.Text = U_User_Name.Text.Trim();
+            bool ok_emal_y = Valid_Email(U_User_Email.Text);
+            if (U_User_Name.Text.Length >= 4 && U_User_Email.Text.Length >= 6 && ok_emal_y)
             {
-                InputBox psw_input = new InputBox();
-                new_vmi_psw = "x";
-                psw_input.Closed += Bezarka;
-
-                var hwnd = new WindowInteropHelper(this).Handle;
-                IntPtr hMenu = GetSystemMenu(hwnd, false);
-                EnableMenuItem(hMenu, SC_CLOSE, MF_GRAYED);
-
-                this.IsEnabled = false;
-                psw_input.Top = this.Top + this.Height / 2 - psw_input.Height / 2;
-                psw_input.Left = this.Left + this.Width / 2 - psw_input.Width / 2;
-                psw_input.Show();
-                while (new_vmi_psw == "x")
+                string e_user = await connection.Check_ExistUser(U_User_Email.Text, U_User_Name.Text);
+                if (e_user == "00")
                 {
-                    await Task.Delay(500);
-                }
-                if (new_vmi_psw != "xx" && new_vmi_psw != "x")
-                {
-                    App.postit += "PSW for '" + U_User_Email.Text + "': '" + new_vmi_psw + "'\n";
-                    string new_userId = await connection.Admin_AddNewUser(U_User_Email.Text, U_User_Name.Text, new_vmi_psw);
-                    if (new_userId == "22")
+                    InputBox psw_input = new InputBox();
+                    new_vmi_psw = "x";
+                    psw_input.Closed += Bezarka;
+
+                    var hwnd = new WindowInteropHelper(this).Handle;
+                    IntPtr hMenu = GetSystemMenu(hwnd, false);
+                    EnableMenuItem(hMenu, SC_CLOSE, MF_GRAYED);
+
+                    this.IsEnabled = false;
+                    psw_input.Top = this.Top + this.Height / 2 - psw_input.Height / 2;
+                    psw_input.Left = this.Left + this.Width / 2 - psw_input.Width / 2;
+                    psw_input.Show();
+                    while (new_vmi_psw == "x")
                     {
-                        MessageBox.Show("Hiba az új felhasználó felvételénél!");
+                        await Task.Delay(500);
+                    }
+                    if (new_vmi_psw != "xx" && new_vmi_psw != "x")
+                    {
+                        App.postit += "PSW for '" + U_User_Email.Text + "': '" + new_vmi_psw + "'\n";
+                        string new_userId = await connection.Admin_AddNewUser(U_User_Email.Text, U_User_Name.Text, new_vmi_psw);
+                        if (new_userId == "22")
+                        {
+                            MessageBox.Show("Hiba az új felhasználó felvételénél!");
+                            return;
+                        }
+                        if (sel_user != null)
+                        {
+                            sel_user.id = new_userId;
+                            User_Update();
+                            User_ClearData();
+                        }
+                        Get_User_List(S_User_Name.Text, S_User_Email.Text);
+                    }
+                }
+                else
+                {
+                    if (e_user == "01")
+                    {
+                        MessageBox.Show("Email már létezik!");
                         return;
                     }
-                    sel_user.id = new_userId;
-                    User_Update();
-                    User_ClearData();
-                    Get_User_List(S_User_Name.Text, S_User_Email.Text);
+                    if (e_user == "11")
+                    {
+                        MessageBox.Show("Név és Email már létezik!");
+                        return;
+                    }
+                    if (e_user == "10")
+                    {
+                        MessageBox.Show("Név már létezik!");
+                        return;
+                    }
+                    MessageBox.Show("Egészen más Hiba!!");
                 }
             }
-            else
+            else if (U_User_Name.Text.Length < 4)
             {
-                if (e_user == "01")
-                {
-                    MessageBox.Show("Email már létezik!");
-                    return;
-                }
-                if (e_user == "11")
-                {
-                    MessageBox.Show("Név és Email már létezik!");
-                    return;
-                }
-                if (e_user == "10")
-                {
-                    MessageBox.Show("Név már létezik!");
-                    return;
-                }
-                MessageBox.Show("Egészen más Hiba!!");
+                MessageBox.Show("A név túl rövid!");
+                return;
+            }
+            else if (U_User_Email.Text.Length < 6 || !ok_emal_y)
+            {
+                MessageBox.Show("Az email cím nem megfelelő!");
+                return;
             }
         }
         private async void User_Save(object sender, RoutedEventArgs e)
@@ -896,6 +917,42 @@ namespace TisztaVaros
                 }
             }
             return do_y;
+        }
+
+        private async void User_Delete(object sender, RoutedEventArgs e)
+        {
+            string del_name = U_User_Name.Text;
+            string del_msg = await connection.Admin_DelUser(U_User_Email.Text.ToString());
+            if (del_msg== "Nem vagyok Teszt üzemmódban.")
+            {
+                MessageBox.Show("A törlés most nem engedélyezett, csak teszt üzemmódban!");
+                return;
+            }   
+            if (del_msg != "xx")
+            {
+                TV_User a_del = list_user.Find(u => u.email == U_User_Email.Text);
+                if (a_del != null)
+                {
+                    Get_User_List(S_User_Name.Text, S_User_Email.Text);
+                }
+                User_ClearData();
+                MessageBox.Show("User: '" + del_name + "'\n\n" + del_msg);
+                return;
+            }
+            MessageBox.Show("A törlés nem sikerült!");
+        }
+
+        public bool Valid_Email(string email)
+        {
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(email);
+                return addr.Address == email && email.Last() != '.';
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }
