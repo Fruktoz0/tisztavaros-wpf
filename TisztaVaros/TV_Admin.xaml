@@ -126,35 +126,43 @@
                                HorizontalAlignment="Left" HorizontalContentAlignment="Right"/>
                         <TextBox Grid.Row="1" Name="U_Inst_Name" FontSize="16" FontWeight="Bold" Height="30" TextChanged="SelInst_DataChanged"
                                 HorizontalContentAlignment="Center" Margin="165,4,740,4" VerticalContentAlignment="Center" Padding="0,0,0,3"/>
+                        
                         <Label Grid.Row="2" Content="Email:" FontSize="18" FontWeight="Bold" Width="70"
                                  HorizontalAlignment="Left" HorizontalContentAlignment="Right"/>
                         <TextBox Grid.Row="2" Name="U_Inst_Email" FontSize="16" FontWeight="Bold" Height="30" TextChanged="SelInst_DataChanged"
                                 HorizontalContentAlignment="Center" Margin="80,4,740,4" VerticalContentAlignment="Center" Padding="0,0,0,3"/>
+                        
                         <Label Grid.Row="3" Content="Leírás:" FontSize="18" FontWeight="Bold" Width="70"
-                                 HorizontalAlignment="Left" HorizontalContentAlignment="Right"/>
+                                 HorizontalAlignment="Left" HorizontalContentAlignment="Right" Margin="101,0,0,0"/>
                         <TextBox Grid.Row="3" Name="U_Inst_Desc" FontSize="16" FontWeight="Bold" Height="30" TextChanged="SelInst_DataChanged"
-                                HorizontalContentAlignment="Center" Margin="80,4,298,4" VerticalContentAlignment="Center" Padding="0,0,0,3"/>
+                                HorizontalContentAlignment="Center" Margin="192,4,298,4" VerticalContentAlignment="Center" Padding="0,0,0,3"/>
 
 
-                        <Label Grid.Row="1" Content="Zip:" FontSize="18" FontWeight="Bold" Width="46" HorizontalAlignment="Left" HorizontalContentAlignment="Right" Margin="435,0,0,0"/>
+                        <Label Grid.Row="1" Content="Zip:" FontSize="18" FontWeight="Bold" Width="46" HorizontalAlignment="Left" HorizontalContentAlignment="Right" Margin="430,0,0,0"/>
                         <TextBox Grid.Row="1" Name="U_Inst_Zip" FontSize="16" FontWeight="Bold" Height="30" TextChanged="SelInst_DataChanged" 
-                                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="488,4,595,4" Padding="0,0,0,3"/>
-                        <Label Grid.Row="1" Content="City:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Right" Margin="567,0,537,0"/>
+                                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="482,4,600,4" Padding="0,0,0,3"/>
+                        
+                        <Label Grid.Row="1" Content="City:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Right" Margin="560,0,540,0"/>
                         <TextBox Grid.Row="1" Name="U_Inst_City" FontSize="16" FontWeight="Bold" Height="30" TextChanged="SelInst_DataChanged" 
                                  HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="620,4,298,4" Padding="0,0,0,3"/>
+                        
                         <Label Grid.Row="2" Content="Address:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Right" Margin="435,0,632,0"/>
                         <TextBox Grid.Row="2" Name="U_Inst_Address" FontSize="16" FontWeight="Bold" Height="30" TextChanged="SelInst_DataChanged" 
-                                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="530,4,38,4" Padding="0,0,0,3"/>
+                                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="530,4,130,4" Padding="0,0,0,3"/>
+                        
                         <Label Grid.Row="1" Content="Tel:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Right" Margin="874,0,240,0"/>
                         <TextBox Grid.Row="1" Name="U_Inst_Tel" FontSize="16" FontWeight="Bold" Height="30" TextChanged="SelInst_DataChanged" 
                                  HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="920,4,38,4" Padding="0,0,0,3"/>
 
-                        <Button Grid.Row="3" Name="U_Inst_SaveNew" Click="User_SaveAsNew" Content="Save as New" Margin="875,5,130,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
+                        <Button Grid.Row="3" Name="U_Inst_ReLoad" Click="Inst_ReLoad" Content="Reload" Margin="11,5,1060,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
+                        <Button Grid.Row="3" Name="U_Inst_SaveNew" Click="Inst_SaveAsNew" Content="Save as New" Margin="875,5,130,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
+                        <Button Grid.Row="2" Grid.Column="2" Name="U_Inst_Logo" Click="Inst_Logo" Content="Logo" Margin="1042,5,38,5" FontFamily="ParkAveDEE" FontSize="22" 
+                                Background="#6FB1A5" Foreground="White" FontWeight="Bold" Padding="0,-3,0,0"/>
                         <Button Grid.Row="3" Grid.Column="2" Name="U_Inst_Save" Click="Inst_Save" Content="Save" Margin="1042,5,38,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
                         <Button Grid.Row="1" Grid.Column="2" Name="U_Inst_Clear" Click="Inst_Clear" Content="" Margin="1124,5,12,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,4" Grid.RowSpan="2"/>
                     </Grid>
                 </StackPanel>
-                <StackPanel Name="Header_Users" Background="#FFFDF5" Visibility="Hidden">
+                <StackPanel Name="Header_Users" Background="#FFFDF5" Visibility="HIdden">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="120"/>
@@ -295,7 +303,7 @@
                 </StackPanel>
                 <StackPanel Name="Main_Reports" Background="#FFECA8A8" Grid.ColumnSpan="3" Visibility="Hidden">
                 </StackPanel>
-                <StackPanel Name="Main_Cats" Background="#FFC0EAC0" Grid.ColumnSpan="3" Visibility="Hidden">
+                <StackPanel Name="Main_Cats" Background="#FFFFF156" Grid.ColumnSpan="3" Visibility="Hidden">
                 </StackPanel>
                 <StackPanel Name="Main_Institutions" Background="#F0F0F0" Grid.ColumnSpan="3" Visibility="Visible">
                     <Grid>

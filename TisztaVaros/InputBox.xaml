@@ -34,7 +34,7 @@
         </Grid.RowDefinitions>
         <Label Grid.Row="0" Grid.Column="0" Content="Password:" FontSize="18" FontWeight="Bold" Width="120"
                HorizontalAlignment="Left" HorizontalContentAlignment="Right" VerticalContentAlignment="Center"/>
-        <TextBox Grid.Row="0" Grid.Column="0" Name="User_Password" FontSize="16" FontWeight="Bold" MaxLength="12"
+        <TextBox Grid.Row="0" Grid.Column="0" Name="Vmi_Password" FontSize="16" FontWeight="Bold" MaxLength="12"
                  HorizontalContentAlignment="Center"  VerticalContentAlignment="Center" Padding="0,0,0,3" Margin="125,10,14,10"/>
         <Button Grid.Row="1" Name="GetPswOK" Click="Get_PSW_OK" Content="OK" Margin="125,5,168,5" FontSize="17" Foreground="White" Background="#6FB1A5">
             <Button.BitmapEffect>

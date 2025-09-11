@@ -1,7 +1,9 @@
 ﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.Linq;
 using System.Printing;
 using System.Reflection;
@@ -46,7 +48,7 @@ namespace TisztaVaros
         List<string> allStatus = new List<string>() { "active", "inactive", "archived" };
         TV_User sel_user;
         TV_Inst sel_inst;
-        public static string new_user_psw = "";
+        public static string new_vmi_psw = "";
         bool chk_udata_y = false, chk_idata_y = false;
         string c_gray = "#FFDDDDDD";
         bool hold_workers = false;
@@ -406,7 +408,7 @@ namespace TisztaVaros
             if (e_user == "00")
             {
                 InputBox psw_input = new InputBox();
-                new_user_psw = "x";
+                new_vmi_psw = "x";
                 psw_input.Closed += Bezarka;
 
                 var hwnd = new WindowInteropHelper(this).Handle;
@@ -417,16 +419,21 @@ namespace TisztaVaros
                 psw_input.Top = this.Top + this.Height / 2 - psw_input.Height / 2;
                 psw_input.Left = this.Left + this.Width / 2 - psw_input.Width / 2;
                 psw_input.Show();
-                while (new_user_psw == "x")
+                while (new_vmi_psw == "x")
                 {
                     await Task.Delay(500);
                 }
-                if (new_user_psw != "xx" && new_user_psw != "x")
+                if (new_vmi_psw != "xx" && new_vmi_psw != "x")
                 {
-                    App.postit += "PSW for '" + U_User_Email.Text + "': '" + new_user_psw + "'\n";
-                    string new_userId = await connection.Admin_AddNewUser(U_User_Email.Text, U_User_Name.Text, new_user_psw);
+                    App.postit += "PSW for '" + U_User_Email.Text + "': '" + new_vmi_psw + "'\n";
+                    string new_userId = await connection.Admin_AddNewUser(U_User_Email.Text, U_User_Name.Text, new_vmi_psw);
+                    if (new_userId == "22")
+                    {
+                        MessageBox.Show("Hiba az új felhasználó felvételénél!");
+                        return;
+                    }
                     sel_user.id = new_userId;
-                    Update_User();
+                    User_Update();
                     User_ClearData();
                     Get_User_List(S_User_Name.Text, S_User_Email.Text);
                 }
@@ -503,7 +510,6 @@ namespace TisztaVaros
                 }
             }
             else { MessageBox.Show("Hiba"); }
-
         }
         private async Task<bool> Changed_UserData()
         {
@@ -534,7 +540,7 @@ namespace TisztaVaros
             }
             return do_y;
         }
-        private async void Update_User()
+        private async void Update_SelUser()
         {
             sel_user.username = U_User_Name.Text;
             sel_user.email = U_User_Email.Text;
@@ -570,6 +576,7 @@ namespace TisztaVaros
                 {
                     list_user[a_index] = sel_user;
                     ListView_User.Items.Refresh();
+                    MessageBox.Show("Elvileg Frissítve");
                 }
             }
             else { MessageBox.Show("Hiba"); }
@@ -615,7 +622,6 @@ namespace TisztaVaros
         {
             SelUser_CHK_Modified();
         }
-
         private void Admin_Postit(object sender, RoutedEventArgs e)
         {
             MessageBox.Show(App.postit, "Admin Post-it:");
@@ -644,7 +650,8 @@ namespace TisztaVaros
             if (!hold_workers)
             {
                 TV_Inst sel_instw = ListView_Inst.SelectedItem as TV_Inst;
-                if (sel_instw != null) {
+                if (sel_instw != null)
+                {
                     list_workers = await connection.Get_Workers(sel_instw.id);
                     ListView_Workers.ItemsSource = list_workers.OrderBy(u => u.username).ToList();
                 }
@@ -672,7 +679,10 @@ namespace TisztaVaros
                     U_Inst_Zip.Text = addr.Split(' ')[1].Trim();
                     U_Inst_City.Text = addr.Split(',')[0].Split(' ')[2].Trim();
                     U_Inst_Address.Text = addr.Split('|')[0].Split(',')[1].Trim();
-                    U_Inst_Tel.Text = addr.Split('|')[1].Trim();
+                    if (addr.Contains(" | "))
+                    {
+                        U_Inst_Tel.Text = addr.Split('|')[1].Trim();
+                    }
                 }
                 chk_idata_y = true;
             }
@@ -730,6 +740,10 @@ namespace TisztaVaros
 
         private void Inst_Clear(object sender, RoutedEventArgs e)
         {
+            Inst_ClearData();
+        }
+        private void Inst_ClearData()
+        {
             //Új Intézmény felvételéhez minden mező törlése 
             chk_idata_y = false;
             U_Inst_Name.Text = "";
@@ -743,11 +757,105 @@ namespace TisztaVaros
             U_Inst_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(c_gray));
         }
 
-        private void Inst_Save(object sender, RoutedEventArgs e)
+        private async void Inst_Save(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Mentés");
+            bool do_y = await Changed_InstData();
+            if (do_y)
+            {
+                Update_SelInst();
+            }
+        }
+        private async void Update_SelInst()
+        {
+            Put_SelInst();
+            bool upd_y = await connection.AdminUpdate_Inst(sel_inst);
+            if (upd_y)
+            {
+                int a_index = list_inst.FindIndex(u => u.id == sel_inst.id);
+                if (a_index > -1)
+                {
+                    list_inst[a_index] = sel_inst;
+                    ListView_Inst.Items.Refresh();
+                    MessageBox.Show("Elvileg Frissítve");
+                }
+                else
+                {
+                    MessageBox.Show("Update Hiba!");
+                }
+            }
+            else { MessageBox.Show("Hiba"); }
         }
 
+        private async void Inst_ReLoad(object sender, RoutedEventArgs e)
+        {
+            Get_Inst_List();
+            //ListView_Inst.Background = new SolidColorBrush(Colors.Lime); //#FFFFF156
+            ListView_Inst.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bus_Yellow));
+            await Task.Delay(300);
+            ListView_Inst.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFF"));
+        }
+        private void Put_SelInst()
+        {
+            if (sel_inst != null)
+            {
+                sel_inst.name = U_Inst_Name.Text;
+                sel_inst.email = U_Inst_Email.Text;
+                sel_inst.description = U_Inst_Desc.Text;
+                string full_addr = "Cím: " + U_Inst_Zip.Text + " " + U_Inst_City.Text + ", " + U_Inst_Address.Text;
+                if (U_Inst_Tel.Text != "")
+                {
+                    full_addr += " | " + U_Inst_Tel.Text;
+                }
+                sel_inst.contactInfo = full_addr;
+            }
+        }
+        private async void Inst_SaveAsNew(object sender, RoutedEventArgs e)
+        {
+            if (chk_idata_y)
+            {
+                string e_inst = await connection.Check_ExistInst(U_Inst_Email.Text, U_Inst_Name.Text);
+                if (e_inst == "00")
+                {
+                    Put_SelInst();
+                    string new_instId = await connection.Admin_AddNewInst(sel_inst);
+                    if (new_instId == "22")
+                    {
+                        MessageBox.Show("Hiba az új Intézmény felvételénél!");
+                        return;
+                    }
+                    Inst_ClearData();
+                    Get_Inst_List();
+                }
+                else
+                {
+                    if (e_inst == "01")
+                    {
+                        MessageBox.Show("Email már létezik!");
+                        return;
+                    }
+                    if (e_inst == "11")
+                    {
+                        MessageBox.Show("Név és Email már létezik!");
+                        return;
+                    }
+                    if (e_inst == "10")
+                    {
+                        MessageBox.Show("Név már létezik!");
+                        return;
+                    }
+                    MessageBox.Show("Egészen más Hiba!!");
+                }
+
+            }
+            //MessageBox.Show("Nincs kiválasztva Intézmény!");
+        }
+        private void Inst_Logo(object sender, RoutedEventArgs e)
+        {
+            if (chk_idata_y)
+            {
+
+            }
+        }
         private async Task<bool> Changed_InstData()
         {
             //Változott e valami Hatósági adatokban??
@@ -787,7 +895,7 @@ namespace TisztaVaros
                     U_Inst_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(c_gray));
                 }
             }
-                return do_y;
+            return do_y;
         }
     }
 }
