@@ -45,8 +45,9 @@ namespace TisztaVaros
         List<string> allRoles = new List<string>() { "user", "institution", "inspector", "admin" };
         List<string> allStatus = new List<string>() { "active", "inactive", "archived" };
         TV_User sel_user;
+        TV_Inst sel_inst;
         public static string new_user_psw = "";
-        bool chk_udata_y = false;
+        bool chk_udata_y = false, chk_idata_y = false;
         string c_gray = "#FFDDDDDD";
         bool hold_workers = false;
 
@@ -373,51 +374,15 @@ namespace TisztaVaros
                 }
             }
         }
-        private void User_ListView_Click(object sender, RoutedEventArgs e)
-        {
-            var item = (sender as ListView).SelectedItem;
-            if (item != null)
-            {
-                sel_user = item as TV_User;
-                U_User_Name.Text = sel_user.username;
-                U_User_Email.Text = sel_user.email;
-                U_User_Zip.Text = sel_user.zipCode;
-                U_User_City.Text = sel_user.city;
-                U_User_Address.Text = sel_user.address;
-                if (sel_user.institutionId != null)
-                {
-                    CB_U_User_Inst.SelectedItem = sel_user.institution;
-                }
-                else
-                {
-                    CB_U_User_Inst.SelectedItem = "";
-                }
-                CB_U_User_Status.SelectedItem = sel_user.isActive;
-                CB_U_User_Role.SelectedItem = sel_user.role;
-                chk_udata_y = true;
-                U_User_Save.Background = U_User_Search.Background;
-            }
-        }
+
         private void User_Name_Clear(object sender, RoutedEventArgs e)
         {
             S_User_Name.Text = "";
         }
-        private void Inst_ListView_Click(object sender, RoutedEventArgs e)
-        {
-            var item = (sender as ListView).SelectedItem;
-            if (item != null)
-            {
-                TV_Inst sel_item = item as TV_Inst;
-                MessageBox.Show(sel_item.name);
-            }
-        }
-
-
         private void User_Email_Clear(object sender, RoutedEventArgs e)
         {
             S_User_Email.Text = "";
         }
-
         private void User_Clear(object sender, RoutedEventArgs e)
         {
             User_ClearData();
@@ -435,7 +400,6 @@ namespace TisztaVaros
             CB_U_User_Inst.SelectedItem = "";
             sel_user = new TV_User();
         }
-
         private async void User_SaveAsNew(object sender, RoutedEventArgs e)
         {
             string e_user = await connection.Check_ExistUser(U_User_Email.Text, U_User_Name.Text);
@@ -669,7 +633,7 @@ namespace TisztaVaros
                 }
                 else
                 {
-                    B_Inst_Workers.Content= "Intézmény Munkatársai:";
+                    B_Inst_Workers.Content = "Intézmény Munkatársai:";
                     B_Inst_Workers.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(c_gray));
                     Get_WorkerList(sender, e);
                 }
@@ -677,15 +641,129 @@ namespace TisztaVaros
         }
         private async void Get_WorkerList(object sender, RoutedEventArgs e)
         {
-            if (!hold_workers) {
-                TV_Inst sel_inst = ListView_Inst.SelectedItem as TV_Inst;
-                list_workers = await connection.Get_Workers(sel_inst.id);
+            if (!hold_workers)
+            {
+                TV_Inst sel_inst2 = ListView_Inst.SelectedItem as TV_Inst;
+                list_workers = await connection.Get_Workers(sel_inst2.id);
                 ListView_Workers.ItemsSource = list_workers.OrderBy(u => u.username).ToList();
+            }
+        }
+        private void Inst_ListView_Click(object sender, RoutedEventArgs e)
+        {
+            var item = (sender as ListView).SelectedItem;
+            if (item != null)
+            {
+                chk_idata_y = false;
+                sel_inst = item as TV_Inst;
+                U_Inst_Name.Text = sel_inst.name;
+                U_Inst_Email.Text = sel_inst.email;
+                U_Inst_Desc.Text = sel_inst.description;
+                string addr = sel_inst.contactInfo;
+                if (addr == null)
+                {
+                    U_Inst_Zip.Text = "";
+                    U_Inst_City.Text = "";
+                    U_Inst_Address.Text = "";
+                }
+                else
+                {
+                    U_Inst_Zip.Text = addr.Split(' ')[1].Trim();
+                    U_Inst_City.Text = addr.Split(',')[0].Split(' ')[2].Trim();
+                    U_Inst_Address.Text = addr.Split('|')[0].Split(',')[1].Trim();
+                    U_Inst_Tel.Text = addr.Split('|')[1].Trim();
+                }
+                chk_idata_y = true;
             }
         }
         private void Workers_ListView_Click(object sender, RoutedEventArgs e)
         {
+            var item = (sender as ListView).SelectedItem;
+            if (item != null)
+            {
 
+            }
+        }
+        private void User_ListView_Click(object sender, RoutedEventArgs e)
+        {
+            var item = (sender as ListView).SelectedItem;
+            if (item != null)
+            {
+                chk_udata_y = false;
+                sel_user = item as TV_User;
+                U_User_Name.Text = sel_user.username;
+                U_User_Email.Text = sel_user.email;
+                U_User_Zip.Text = sel_user.zipCode;
+                U_User_City.Text = sel_user.city;
+                U_User_Address.Text = sel_user.address;
+                if (sel_user.institutionId != null)
+                {
+                    CB_U_User_Inst.SelectedItem = sel_user.institution;
+                }
+                else
+                {
+                    CB_U_User_Inst.SelectedItem = "";
+                }
+                CB_U_User_Status.SelectedItem = sel_user.isActive;
+                CB_U_User_Role.SelectedItem = sel_user.role;
+                chk_udata_y = true;
+                U_User_Save.Background = U_User_Search.Background;
+            }
+        }
+        private void SelInst_DataChanged(object sender, TextChangedEventArgs e)
+        {
+            SelInst_CHK_Modified();
+        }
+        private async void SelInst_CHK_Modified()
+        {
+            bool do_y = await Changed_InstData();
+            if (do_y)
+            {
+                U_Inst_Save.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FF6EF525"));
+            }
+            else
+            {
+                U_Inst_Save.Background = U_User_Search.Background;
+            }
+        }
+        private async Task<bool> Changed_InstData()
+        {
+            bool do_y = false;
+            if (chk_idata_y)
+            {
+                string full_addr = "Cím: " + U_Inst_Zip.Text + " " + U_Inst_City.Text + ", " + U_Inst_Address.Text;
+                if (U_Inst_Tel.Text != "")
+                {
+                    full_addr += " | " + U_Inst_Tel.Text;
+                }
+                do_y = do_y || U_Inst_Name.Text != sel_inst.name || U_Inst_Email.Text != sel_inst.email
+                    || U_Inst_Desc.Text != sel_inst.description || full_addr != sel_inst.contactInfo;
+                bool chk_y = true;
+                if (sel_inst != null)
+                {
+                    chk_y = true;
+                }
+                else
+                {
+                    chk_y = U_Inst_Name.Text != sel_inst.name && U_Inst_Email.Text != sel_inst.email;
+                }
+                if (chk_y)
+                {
+                    string e_inst = await connection.Check_ExistInst(U_Inst_Email.Text, U_Inst_Name.Text);
+                    if (e_inst == "00")
+                    {
+                        U_Inst_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFF9DD24"));
+                    }
+                    else
+                    {
+                        U_Inst_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(c_gray));
+                    }
+                }
+                else
+                {
+                    U_Inst_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(c_gray));
+                }
+            }
+            return do_y;
         }
     }
 }

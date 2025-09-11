@@ -57,6 +57,37 @@ namespace TisztaVaros
             }
             return "22";
         }
+        public async Task<string> Check_ExistInst(string a_email, string a_name)
+        {
+            string a_route = "/api/admin/inst_chk";
+            string url = Get_URL() + a_route;
+            string responseText = "";
+            var jsonData = new
+            {
+                email = a_email == "" ? "*" : a_email,
+                name = a_name == "" ? "*" : a_name
+            };
+            try
+            {
+                HttpClient client = new HttpClient();
+                HttpResponseMessage response = new HttpResponseMessage();
+                string stringifiedJson = JsonConvert.SerializeObject(jsonData);
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
+                StringContent sendThis = new StringContent(stringifiedJson, Encoding.UTF8, "Application/JSON");
+                response = await client.PostAsync(url, sendThis);
+                responseText = await response.Content.ReadAsStringAsync();
+                //MessageBox.Show(responseText);
+                response.EnsureSuccessStatusCode();
+                Message found = JsonConvert.DeserializeObject<Message>(responseText);
+                //MessageBox.Show(found.message);
+                return found.message;
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(a_route + "\n\n" + e.Message);
+            }
+            return "22";
+        }
         public async Task<string> Check_ExistUser(string a_email, string a_name)
         {
             string a_route = "/api/admin/user_chk";
