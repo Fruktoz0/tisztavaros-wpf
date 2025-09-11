@@ -730,6 +730,7 @@ namespace TisztaVaros
 
         private void Inst_Clear(object sender, RoutedEventArgs e)
         {
+            //Új Intézmény felvételéhez minden mező törlése 
             chk_idata_y = false;
             U_Inst_Name.Text = "";
             U_Inst_Email.Text = "";
