@@ -727,6 +727,26 @@ namespace TisztaVaros
                 U_Inst_Save.Background = U_User_Search.Background;
             }
         }
+
+        private void Inst_Clear(object sender, RoutedEventArgs e)
+        {
+            chk_idata_y = false;
+            U_Inst_Name.Text = "";
+            U_Inst_Email.Text = "";
+            U_Inst_Zip.Text = "";
+            U_Inst_City.Text = "";
+            U_Inst_Address.Text = "";
+            U_Inst_Tel.Text = "";
+            U_Inst_Desc.Text = "";
+            U_Inst_Save.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(c_gray));
+            U_Inst_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(c_gray));
+        }
+
+        private void Inst_Save(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Mentés");
+        }
+
         private async Task<bool> Changed_InstData()
         {
             //Változott e valami Hatósági adatokban??
@@ -766,7 +786,7 @@ namespace TisztaVaros
                     U_Inst_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(c_gray));
                 }
             }
-            return do_y;
+                return do_y;
         }
     }
 }
