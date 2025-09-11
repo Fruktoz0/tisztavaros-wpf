@@ -643,9 +643,11 @@ namespace TisztaVaros
         {
             if (!hold_workers)
             {
-                TV_Inst sel_inst2 = ListView_Inst.SelectedItem as TV_Inst;
-                list_workers = await connection.Get_Workers(sel_inst2.id);
-                ListView_Workers.ItemsSource = list_workers.OrderBy(u => u.username).ToList();
+                TV_Inst sel_instw = ListView_Inst.SelectedItem as TV_Inst;
+                if (sel_instw != null) {
+                    list_workers = await connection.Get_Workers(sel_instw.id);
+                    ListView_Workers.ItemsSource = list_workers.OrderBy(u => u.username).ToList();
+                }
             }
         }
         private void Inst_ListView_Click(object sender, RoutedEventArgs e)
