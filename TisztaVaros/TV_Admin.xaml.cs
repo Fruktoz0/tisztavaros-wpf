@@ -727,6 +727,7 @@ namespace TisztaVaros
         }
         private async Task<bool> Changed_InstData()
         {
+            //Változott e valami Hatósági adatokban??
             bool do_y = false;
             if (chk_idata_y)
             {
