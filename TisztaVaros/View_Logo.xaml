@@ -1,0 +1,42 @@
+﻿<Window x:Class="TisztaVaros.View_Logo"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TisztaVaros"
+        mc:Ignorable="d"
+        Title="Logo" Height="200" Width="1000" Background="Cornsilk">
+    <Window.Resources>
+        <Style TargetType="{x:Type TextBox}">
+            <Style.Resources>
+                <Style TargetType="{x:Type Border}">
+                    <Setter Property="CornerRadius" Value="4" />
+                </Style>
+            </Style.Resources>
+        </Style>
+        <Style TargetType="{x:Type Button}">
+            <Style.Resources>
+                <Style TargetType="{x:Type Border}">
+                    <Setter Property="CornerRadius" Value="3" />
+                </Style>
+            </Style.Resources>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="4*" />
+        </Grid.ColumnDefinitions>
+        <Image Name="Logo_IMG" Grid.Column="0" Source="https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Insignia_Hungary_Police.svg/150px-Insignia_Hungary_Police.svg.png" Stretch="Uniform" Margin="10"/>
+        <Label Name="Inst_Name" Grid.Column="1" Content="Rendőrség" FontSize="28" FontWeight="Bold" VerticalAlignment="Top" HorizontalAlignment="Center"
+               Margin="0,0,0,0"/>
+        <Label Grid.Column="1" Content="URL:" FontSize="24" FontWeight="Bold" VerticalAlignment="Top" HorizontalAlignment="Left"
+               Margin="0,65,0,0"/>
+        <TextBox Grid.Column="1" Name="Inst_Logo_URL" FontSize="16" FontWeight="Bold" HorizontalContentAlignment="Center"
+                 VerticalContentAlignment="Center" TextWrapping="Wrap" AcceptsReturn="True" HorizontalScrollBarVisibility="Disabled" 
+                 VerticalScrollBarVisibility="Auto" Margin="70,60,20,50" TextChanged="LogoURL_DataChanged" Padding="0,0,0,3"/>
+        <Button Grid.Column="1" Click="InstLogo_Save" Content="Save" Margin="230,120,445,5" FontSize="18" FontWeight="Bold"/>
+        <Button Grid.Column="1" Click="InstLogo_Cancel" Content="Cancel" Margin="421,120,254,5" FontSize="18" FontWeight="Bold"/>
+    </Grid>
+</Window>

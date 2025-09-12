@@ -15,6 +15,7 @@ namespace TisztaVaros
         public string email { get; set; }
         public string description { get; set; }
         public string contactInfo { get; set; }
+        public string logo { get; set; }
         public string logoUrl { get; set; }
         public string createdAt { get; set; }
     }

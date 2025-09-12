@@ -50,17 +50,17 @@ namespace TisztaVaros
         {
             string a_route = "/api/institutions/create";
             string url = Get_URL() + a_route;
-            string responseText = "";
             try
             {
                 HttpClient client = new HttpClient();
                 HttpResponseMessage response = new HttpResponseMessage();
                 string stringifiedJson = JsonConvert.SerializeObject(a_inst);
+                ;
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
                 StringContent sendThis = new StringContent(stringifiedJson, Encoding.UTF8, "Application/JSON");
                 response = await client.PostAsync(url, sendThis);
                 response.EnsureSuccessStatusCode();
-                responseText = await response.Content.ReadAsStringAsync();
+                string responseText = await response.Content.ReadAsStringAsync();
                 TV_Inst new_inst = JsonConvert.DeserializeObject<TV_Inst>(responseText);
                 return new_inst.id;
             }
@@ -74,7 +74,6 @@ namespace TisztaVaros
         {
             string a_route = "/api/auth/admin/register";
             string url = Get_URL() + a_route;
-            string responseText = "";
             var jsonData = new
             {
                 username = a_name,
@@ -91,7 +90,7 @@ namespace TisztaVaros
                 StringContent sendThis = new StringContent(stringifiedJson, Encoding.UTF8, "Application/JSON");
                 response = await client.PostAsync(url, sendThis);
                 response.EnsureSuccessStatusCode();
-                responseText = await response.Content.ReadAsStringAsync();
+                string responseText = await response.Content.ReadAsStringAsync();
                 string correctedText = responseText.Replace("userId", "id");
                 TV_User new_user = JsonConvert.DeserializeObject<TV_User>(correctedText);
                 return new_user.id;
@@ -106,7 +105,6 @@ namespace TisztaVaros
         {
             string a_route = "/api/admin/inst_chk";
             string url = Get_URL() + a_route;
-            string responseText = "";
             var jsonData = new
             {
                 email = a_email == "" ? "*" : a_email,
@@ -120,11 +118,9 @@ namespace TisztaVaros
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
                 StringContent sendThis = new StringContent(stringifiedJson, Encoding.UTF8, "Application/JSON");
                 response = await client.PostAsync(url, sendThis);
-                responseText = await response.Content.ReadAsStringAsync();
-                //MessageBox.Show(responseText);
+                string responseText = await response.Content.ReadAsStringAsync();
                 response.EnsureSuccessStatusCode();
                 Message found = JsonConvert.DeserializeObject<Message>(responseText);
-                //MessageBox.Show(found.message);
                 return found.message;
             }
             catch (Exception e)
@@ -137,7 +133,6 @@ namespace TisztaVaros
         {
             string a_route = "/api/admin/user_chk";
             string url = Get_URL() + a_route;
-            string responseText = "";
             var jsonData = new
             {
                 email = a_email == "" ? "*" : a_email,
@@ -151,11 +146,9 @@ namespace TisztaVaros
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
                 StringContent sendThis = new StringContent(stringifiedJson, Encoding.UTF8, "Application/JSON");
                 response = await client.PostAsync(url, sendThis);
-                responseText = await response.Content.ReadAsStringAsync();
-                //MessageBox.Show(responseText);
+                string responseText = await response.Content.ReadAsStringAsync();
                 response.EnsureSuccessStatusCode();
                 Message found = JsonConvert.DeserializeObject<Message>(responseText);
-                //MessageBox.Show(found.message);
                 return found.message;
             }
             catch (Exception e)
@@ -175,8 +168,8 @@ namespace TisztaVaros
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
                 HttpResponseMessage response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
-                string responseInString = await response.Content.ReadAsStringAsync();
-                all_workers = JsonConvert.DeserializeObject<List<TV_User>>(responseInString);
+                string responseText = await response.Content.ReadAsStringAsync();
+                all_workers = JsonConvert.DeserializeObject<List<TV_User>>(responseText);
             }
             catch (Exception e)
             {
@@ -186,11 +179,7 @@ namespace TisztaVaros
         }
         public async Task<List<TV_User>> Search_User(string a_name, string a_email)
         {
-            HttpClient client = new HttpClient();
-            HttpResponseMessage response = new HttpResponseMessage();
-            Message getMessage = new Message();
             List<TV_User> list_user = new List<TV_User>();
-            string responseText = "";
             string url = Get_URL() + "/api/admin/user_en";
             try
             {
@@ -199,11 +188,12 @@ namespace TisztaVaros
                     name = a_name,
                     email = a_email
                 };
+                HttpClient client = new HttpClient();
                 string stringifiedJson = JsonConvert.SerializeObject(jsonData);
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
                 StringContent sendThis = new StringContent(stringifiedJson, Encoding.UTF8, "Application/JSON");
-                response = await client.PostAsync(url, sendThis);
-                responseText = await response.Content.ReadAsStringAsync();
+                HttpResponseMessage response = await client.PostAsync(url, sendThis);
+                string responseText = await response.Content.ReadAsStringAsync();
                 //MessageBox.Show(responseText);
                 response.EnsureSuccessStatusCode();
                 list_user = JsonConvert.DeserializeObject<List<TV_User>>(responseText);
@@ -217,10 +207,6 @@ namespace TisztaVaros
         public async Task<bool> AdminUpdate_Inst(TV_Inst a_inst)
         {
             HttpClient client = new HttpClient();
-            HttpResponseMessage response = new HttpResponseMessage();
-            Message getMessage = new Message();
-            string responseText = "";
-            //string a_route = "/api/admin/inst_all";
             string a_route = "/api/institutions/update/" + a_inst.id;
             string url = Get_URL() + a_route;
             try
@@ -228,9 +214,8 @@ namespace TisztaVaros
                 string stringifiedJson = JsonConvert.SerializeObject(a_inst);
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
                 StringContent sendThis = new StringContent(stringifiedJson, Encoding.UTF8, "Application/JSON");
-                response = await client.PutAsync(url, sendThis);
-                responseText = await response.Content.ReadAsStringAsync();
-                //MessageBox.Show(responseText);
+                HttpResponseMessage response = await client.PutAsync(url, sendThis);
+                string responseText = await response.Content.ReadAsStringAsync();
                 response.EnsureSuccessStatusCode();
                 return true;
             }
@@ -244,10 +229,6 @@ namespace TisztaVaros
         public async Task<bool> AdminUpdate_User(TV_User a_user)
         {
             HttpClient client = new HttpClient();
-            HttpResponseMessage response = new HttpResponseMessage();
-            Message getMessage = new Message();
-            List<TV_User> list_user = new List<TV_User>();
-            string responseText = "";
             string a_route = "/api/admin/user_all";
             string url = Get_URL() + a_route;
             try
@@ -255,9 +236,8 @@ namespace TisztaVaros
                 string stringifiedJson = JsonConvert.SerializeObject(a_user);
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
                 StringContent sendThis = new StringContent(stringifiedJson, Encoding.UTF8, "Application/JSON");
-                response = await client.PutAsync(url, sendThis);
-                responseText = await response.Content.ReadAsStringAsync();
-                //MessageBox.Show(responseText);
+                HttpResponseMessage response = await client.PutAsync(url, sendThis);
+                string responseText = await response.Content.ReadAsStringAsync();
                 response.EnsureSuccessStatusCode();
                 return true;
             }
@@ -275,11 +255,10 @@ namespace TisztaVaros
             try
             {
                 HttpClient client = new HttpClient();
-                //client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
                 HttpResponseMessage response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
-                string responseInString = await response.Content.ReadAsStringAsync();
-                all_inst = JsonConvert.DeserializeObject<List<TV_Inst>>(responseInString);
+                string responseText = await response.Content.ReadAsStringAsync();
+                all_inst = JsonConvert.DeserializeObject<List<TV_Inst>>(responseText);
             }
             catch (Exception e)
             {
@@ -297,9 +276,8 @@ namespace TisztaVaros
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
                 HttpResponseMessage response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
-                string responseInString = await response.Content.ReadAsStringAsync();
-                //MessageBox.Show(responseInString);
-                TVS_Found_db a_json = JsonConvert.DeserializeObject<TVS_Found_db>(responseInString);
+                string responseText = await response.Content.ReadAsStringAsync();
+                TVS_Found_db a_json = JsonConvert.DeserializeObject<TVS_Found_db>(responseText);
                 a_out = a_json.found_db;
             }
             catch (Exception e)
@@ -313,9 +291,7 @@ namespace TisztaVaros
             HttpClient client = new HttpClient();
             TV_User loggedUser = new();
             Message loginMessage = new Message();
-            HttpResponseMessage response = new HttpResponseMessage();
-            string responseText = "";
-            loggedUser.role = "user";
+            string responseText="";
             reg_ok = false;
             string url = Get_URL() + "/api/auth/login";
             try
@@ -327,29 +303,25 @@ namespace TisztaVaros
                 };
                 string stringifiedJson = JsonConvert.SerializeObject(jsonData);
                 StringContent sendThis = new StringContent(stringifiedJson, Encoding.UTF8, "Application/JSON");
-                response = await client.PostAsync(url, sendThis);
+                HttpResponseMessage response = await client.PostAsync(url, sendThis);                
                 responseText = await response.Content.ReadAsStringAsync();
                 response.EnsureSuccessStatusCode();
                 TV_Token getToken = JsonConvert.DeserializeObject<TV_Token>(responseText);
                 a_token = getToken.token;
                 loggedUser = JsonConvert.DeserializeObject<TV_User>(Decode64(a_token.Split('.')[1]));
-                //MessageBox.Show(loggedUser.role);
                 login_ok = true;
             }
             catch (Exception e)
             {
                 loginMessage = JsonConvert.DeserializeObject<Message>(responseText);
-                //MessageBox.Show(((int)response.StatusCode).ToString());
                 if (loginMessage == null)
                 {
-                    //MessageBox.Show(e.Message);
                     loggedUser.message = e.Message;
                 }
                 else
                 {
                     loggedUser.message = loginMessage.message + "\n\n" + e.Message;
                 }
-                //MessageBox.Show(loggedUser.message, "User Login:");
             }
             return loggedUser;
         }

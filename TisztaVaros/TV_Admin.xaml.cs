@@ -52,8 +52,11 @@ namespace TisztaVaros
         TV_Inst sel_inst;
         public static string new_vmi_psw = "";
         bool chk_udata_y = false, chk_idata_y = false;
-        string c_gray = "#FFDDDDDD";
+        string c_gray = "#FFDDDDDD", c_jzold = "#6FB1A5";
+
         bool hold_workers = false;
+        public static string inst_logo_url = "";
+        View_Logo logoURLWindow;
 
         [DllImport("user32.dll")]
         static extern IntPtr GetSystemMenu(IntPtr hWnd, bool bRevert);
@@ -62,6 +65,7 @@ namespace TisztaVaros
         const uint MF_GRAYED = 0x00000001;
         const uint MF_ENABLED = 0x00000000;
         const uint SC_CLOSE = 0xF060;
+
         public TV_Admin()
         {
             InitializeComponent();
@@ -193,6 +197,7 @@ namespace TisztaVaros
             {
                 item.createdAt = item.createdAt.Substring(0, 10);
                 inst_Names.Add(item.name);
+                if (item.logoUrl != "" && item.logoUrl != null) { item.logo = "Logo"; }
             }
             ListView_Inst.ItemsSource = list_inst.OrderBy(u => u.name).ToList();
             inst_Names = inst_Names.OrderBy(n => n).ToList();
@@ -443,8 +448,8 @@ namespace TisztaVaros
                         {
                             sel_user.id = new_userId;
                             User_Update();
-                            User_ClearData();
                         }
+                        User_ClearData();
                         Get_User_List(S_User_Name.Text, S_User_Email.Text);
                     }
                 }
@@ -561,47 +566,6 @@ namespace TisztaVaros
             }
             return do_y;
         }
-        private async void Update_SelUser()
-        {
-            sel_user.username = U_User_Name.Text;
-            sel_user.email = U_User_Email.Text;
-            if (U_User_Zip.Text != "")
-            {
-                sel_user.zipCode = U_User_Zip.Text;
-            }
-            else
-            {
-                sel_user.zipCode = null;
-            }
-            sel_user.city = U_User_City.Text;
-            sel_user.address = U_User_Address.Text;
-            sel_user.role = CB_U_User_Role.SelectedItem.ToString();
-            sel_user.isActive = CB_U_User_Status.SelectedItem.ToString();
-            if (CB_U_User_Inst.SelectedItem.ToString() != "")
-            {
-                TV_Inst a_found = list_inst.Find(i => i.name == CB_U_User_Inst.SelectedItem.ToString());
-                if (a_found != null)
-                {
-                    sel_user.institutionId = a_found.id;
-                }
-            }
-            else
-            {
-                sel_user.institutionId = null;
-            }
-            bool upd_y = await connection.AdminUpdate_User(sel_user);
-            if (upd_y)
-            {
-                int a_index = list_user.FindIndex(u => u.id == sel_user.id);
-                if (a_index > -1)
-                {
-                    list_user[a_index] = sel_user;
-                    ListView_User.Items.Refresh();
-                    MessageBox.Show("Elvileg Frissítve");
-                }
-            }
-            else { MessageBox.Show("Hiba"); }
-        }
         private void User_OnKeyDownHandler(object sender, KeyEventArgs e)
         {
             if (sender.Equals(S_User_Name) || sender.Equals(S_User_Email))
@@ -611,13 +575,6 @@ namespace TisztaVaros
                     Get_User_List(S_User_Name.Text, S_User_Email.Text);
                 }
             }
-        }
-        private async void Bezarka(object sender, EventArgs e)
-        {
-            var hwnd = new WindowInteropHelper(this).Handle;
-            IntPtr hMenu = GetSystemMenu(hwnd, false);
-            EnableMenuItem(hMenu, SC_CLOSE, MF_ENABLED);
-            this.IsEnabled = true;
         }
         private void Win_Mozog(object sender, EventArgs e)
         {
@@ -705,6 +662,8 @@ namespace TisztaVaros
                         U_Inst_Tel.Text = addr.Split('|')[1].Trim();
                     }
                 }
+                inst_logo_url = sel_inst.logoUrl;
+                Logo_Actual();
                 chk_idata_y = true;
             }
         }
@@ -744,7 +703,15 @@ namespace TisztaVaros
         }
         private void SelInst_DataChanged(object sender, TextChangedEventArgs e)
         {
+            TextBox tb = sender as TextBox;
             SelInst_CHK_Modified();
+            if (tb.Text != "")
+            {
+                tb.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FF4EFFD2"));
+                //tb.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#6FB1A5"));
+                return;
+            }
+            tb.Background = new SolidColorBrush(Colors.White);
         }
         private async void SelInst_CHK_Modified()
         {
@@ -776,6 +743,10 @@ namespace TisztaVaros
             U_Inst_Desc.Text = "";
             U_Inst_Save.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(c_gray));
             U_Inst_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(c_gray));
+            inst_logo_url = "";
+            U_Inst_Logo.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(c_jzold));
+            U_Inst_Logo.Foreground = new SolidColorBrush(Colors.White);
+            sel_inst = new TV_Inst();
         }
 
         private async void Inst_Save(object sender, RoutedEventArgs e)
@@ -797,6 +768,7 @@ namespace TisztaVaros
                 {
                     list_inst[a_index] = sel_inst;
                     ListView_Inst.Items.Refresh();
+                    Inst_ClearData();
                     MessageBox.Show("Elvileg Frissítve");
                 }
                 else
@@ -810,72 +782,76 @@ namespace TisztaVaros
         private async void Inst_ReLoad(object sender, RoutedEventArgs e)
         {
             Get_Inst_List();
-            //ListView_Inst.Background = new SolidColorBrush(Colors.Lime); //#FFFFF156
             ListView_Inst.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bus_Yellow));
             await Task.Delay(300);
             ListView_Inst.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFF"));
         }
         private void Put_SelInst()
         {
-            if (sel_inst != null)
+            sel_inst.name = U_Inst_Name.Text;
+            sel_inst.email = U_Inst_Email.Text;
+            sel_inst.description = U_Inst_Desc.Text;
+            string full_addr = "Cím: " + U_Inst_Zip.Text + " " + U_Inst_City.Text + ", " + U_Inst_Address.Text;
+            if (U_Inst_Tel.Text != "")
             {
-                sel_inst.name = U_Inst_Name.Text;
-                sel_inst.email = U_Inst_Email.Text;
-                sel_inst.description = U_Inst_Desc.Text;
-                string full_addr = "Cím: " + U_Inst_Zip.Text + " " + U_Inst_City.Text + ", " + U_Inst_Address.Text;
-                if (U_Inst_Tel.Text != "")
-                {
-                    full_addr += " | " + U_Inst_Tel.Text;
-                }
-                sel_inst.contactInfo = full_addr;
+                full_addr += " | " + U_Inst_Tel.Text;
             }
+            sel_inst.contactInfo = full_addr;
+            sel_inst.logoUrl = inst_logo_url;
         }
         private async void Inst_SaveAsNew(object sender, RoutedEventArgs e)
         {
-            if (chk_idata_y)
+            string e_inst = await connection.Check_ExistInst(U_Inst_Email.Text, U_Inst_Name.Text);
+            if (e_inst == "00")
             {
-                string e_inst = await connection.Check_ExistInst(U_Inst_Email.Text, U_Inst_Name.Text);
-                if (e_inst == "00")
+                sel_inst = new();
+                Put_SelInst();
+                string new_instId = await connection.Admin_AddNewInst(sel_inst);
+                if (new_instId == "22")
                 {
-                    Put_SelInst();
-                    string new_instId = await connection.Admin_AddNewInst(sel_inst);
-                    if (new_instId == "22")
-                    {
-                        MessageBox.Show("Hiba az új Intézmény felvételénél!");
-                        return;
-                    }
-                    Inst_ClearData();
-                    Get_Inst_List();
+                    MessageBox.Show("Hiba az új Intézmény felvételénél!");
+                    return;
                 }
-                else
+                Inst_ClearData();
+                Get_Inst_List();
+            }
+            else
+            {
+                if (e_inst == "01")
                 {
-                    if (e_inst == "01")
-                    {
-                        MessageBox.Show("Email már létezik!");
-                        return;
-                    }
-                    if (e_inst == "11")
-                    {
-                        MessageBox.Show("Név és Email már létezik!");
-                        return;
-                    }
-                    if (e_inst == "10")
-                    {
-                        MessageBox.Show("Név már létezik!");
-                        return;
-                    }
-                    MessageBox.Show("Egészen más Hiba!!");
+                    MessageBox.Show("Email már létezik!");
+                    return;
                 }
-
+                if (e_inst == "11")
+                {
+                    MessageBox.Show("Név és Email már létezik!");
+                    return;
+                }
+                if (e_inst == "10")
+                {
+                    MessageBox.Show("Név már létezik!");
+                    return;
+                }
+                MessageBox.Show("Egészen más Hiba!!");
             }
             //MessageBox.Show("Nincs kiválasztva Intézmény!");
         }
-        private void Inst_Logo(object sender, RoutedEventArgs e)
+        private async void Inst_Logo(object sender, RoutedEventArgs e)
         {
-            if (chk_idata_y)
-            {
+            logoURLWindow = new View_Logo();
+            logoURLWindow.Logo_IMG.Source = null;
+            logoURLWindow.Inst_Name.Content = U_Inst_Name.Text;
+            logoURLWindow.Inst_Logo_URL.Text = inst_logo_url;
+            logoURLWindow.Closed += Bezarka;
 
-            }
+            var hwnd = new WindowInteropHelper(this).Handle;
+            IntPtr hMenu = GetSystemMenu(hwnd, false);
+            EnableMenuItem(hMenu, SC_CLOSE, MF_GRAYED);
+
+            this.IsEnabled = false;
+            logoURLWindow.Top = this.Top + this.Height / 2 - logoURLWindow.Height / 2;
+            logoURLWindow.Left = this.Left + this.Width / 2 - logoURLWindow.Width / 2;
+            logoURLWindow.Show();
         }
         private async Task<bool> Changed_InstData()
         {
@@ -889,7 +865,7 @@ namespace TisztaVaros
                     full_addr += " | " + U_Inst_Tel.Text;
                 }
                 do_y = do_y || U_Inst_Name.Text != sel_inst.name || U_Inst_Email.Text != sel_inst.email
-                    || U_Inst_Desc.Text != sel_inst.description || full_addr != sel_inst.contactInfo;
+                    || U_Inst_Desc.Text != sel_inst.description || full_addr != sel_inst.contactInfo || inst_logo_url != sel_inst.logoUrl;
                 bool chk_y = true;
                 if (sel_inst != null)
                 {
@@ -923,11 +899,11 @@ namespace TisztaVaros
         {
             string del_name = U_User_Name.Text;
             string del_msg = await connection.Admin_DelUser(U_User_Email.Text.ToString());
-            if (del_msg== "Nem vagyok Teszt üzemmódban.")
+            if (del_msg == "Nem vagyok Teszt üzemmódban.")
             {
                 MessageBox.Show("A törlés most nem engedélyezett, csak teszt üzemmódban!");
                 return;
-            }   
+            }
             if (del_msg != "xx")
             {
                 TV_User a_del = list_user.Find(u => u.email == U_User_Email.Text);
@@ -952,6 +928,38 @@ namespace TisztaVaros
             catch
             {
                 return false;
+            }
+        }
+        private async void Bezarka(object sender, EventArgs e)
+        {
+            var hwnd = new WindowInteropHelper(this).Handle;
+            IntPtr hMenu = GetSystemMenu(hwnd, false);
+            EnableMenuItem(hMenu, SC_CLOSE, MF_ENABLED);
+            this.IsEnabled = true;
+            if (sender is View_Logo)
+            {
+                Logo_Actual();
+                SelInst_CHK_Modified();
+            }
+        }
+        private void Logo_Actual()
+        {
+            if (inst_logo_url != null && inst_logo_url != "")
+            {
+                U_Inst_Logo.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bus_Akt));
+                U_Inst_Logo.Foreground = new SolidColorBrush(Colors.White);
+                Inst_LogoImg.Source = new BitmapImage(new Uri(inst_logo_url));
+                if (Inst_LogoImg.Width == 0)
+                {
+                    inst_logo_url = "";
+                    Inst_LogoImg.Source = new BitmapImage(new Uri("https://smd.hu/Team/Empty_Logo.gif"));
+                }
+            }
+            else
+            {
+                Inst_LogoImg.Source = new BitmapImage(new Uri("https://smd.hu/Team/Empty_Logo.gif"));
+                U_Inst_Logo.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(c_jzold));
+                U_Inst_Logo.Foreground = new SolidColorBrush(Colors.White);
             }
         }
     }
