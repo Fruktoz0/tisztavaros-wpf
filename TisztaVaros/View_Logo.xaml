@@ -28,8 +28,8 @@
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="4*" />
         </Grid.ColumnDefinitions>
-        <Image Name="Logo_IMG" Grid.Column="0" Source="https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Insignia_Hungary_Police.svg/150px-Insignia_Hungary_Police.svg.png" Stretch="Uniform" Margin="10"/>
-        <Label Name="Inst_Name" Grid.Column="1" Content="Rendőrség" FontSize="28" FontWeight="Bold" VerticalAlignment="Top" HorizontalAlignment="Center"
+        <Image Name="Logo_IMG" Grid.Column="0" Source="https://smd.hu/Team/Empty_Logo.gif" Stretch="Uniform" Margin="10"/>
+        <Label Name="Inst_Name" Grid.Column="1" Content="Hatóság neve" FontSize="28" FontWeight="Bold" VerticalAlignment="Top" HorizontalAlignment="Center"
                Margin="0,0,0,0"/>
         <Label Grid.Column="1" Content="URL:" FontSize="24" FontWeight="Bold" VerticalAlignment="Top" HorizontalAlignment="Left"
                Margin="0,65,0,0"/>
