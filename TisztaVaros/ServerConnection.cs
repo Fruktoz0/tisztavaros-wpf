@@ -26,6 +26,34 @@ namespace TisztaVaros
         private string baseURL = "http://localhost:3002";
 
 
+        public async Task<int> Server_Get_InstValami_db(string a_route, string inst_id)
+        {
+            int a_out = -1;
+            //string a_route = "/api/news/news_Inst_db";
+            string url = Get_URL() + a_route;
+            var jsonData = new
+            {
+                institutionId = inst_id,
+            };
+            try
+            {
+                HttpClient client = new HttpClient();
+                HttpResponseMessage response = new HttpResponseMessage();
+                string stringifiedJson = JsonConvert.SerializeObject(jsonData);
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
+                StringContent sendThis = new StringContent(stringifiedJson, Encoding.UTF8, "Application/JSON");
+                response = await client.PostAsync(url, sendThis);
+                response.EnsureSuccessStatusCode();
+                string responseText = await response.Content.ReadAsStringAsync();
+                TVS_Found_db a_json = JsonConvert.DeserializeObject<TVS_Found_db>(responseText);
+                a_out = a_json.found_db;
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(a_route + "\n\n" + e.Message);
+            }
+            return a_out;
+        }
         public async Task<string>Admin_DelUser(string a_email)
         {
             string a_route = "/api/auth/delete/" + a_email;

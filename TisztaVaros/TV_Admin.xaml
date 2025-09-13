@@ -163,7 +163,7 @@
                                 Background="#6FB1A5" Foreground="White" FontWeight="Bold" Padding="0,-3,0,0"/>
                         <Button Grid.Row="3" Grid.Column="2" Name="U_Inst_Save" Click="Inst_Save" Content="Save" Margin="1142,5,38,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
                         <Button Grid.Row="1" Grid.Column="2" Name="U_Inst_Clear" Click="Inst_Clear" Content="" Margin="1224,5,12,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,4" Grid.RowSpan="2"/>
-                        <Button Grid.Row="3" Name="U_Inst_Delete" Click="Inst_Save" Content="Delete" Margin="907,5,267,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
+                        <Button Grid.Row="3" Name="U_Inst_Delete" Click="Inst_Delete" Content="Delete" Margin="907,5,267,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
                     </Grid>
                 </StackPanel>
                 <StackPanel Name="Header_Users" Background="#FFFDF5" Visibility="Hidden">
@@ -315,7 +315,8 @@
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="330"/>
-                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="161*"/>
+                            <RowDefinition Height="205*"/>
                         </Grid.RowDefinitions>
                         <StackPanel Name="Inst_List" Grid.Row="0" Grid.Column="0" Background="#FFFFFF" Margin="10,11,12,19" Height="300">
                             <ListView x:Name="ListView_Inst" GridViewColumnHeader.Click="Inst_SortHeaderClick" 
@@ -327,21 +328,45 @@
                                         <GridViewColumn Header="Leírás" DisplayMemberBinding="{Binding description}" Width="300"/>
                                         <GridViewColumn Header="Reg. Dátum" DisplayMemberBinding="{Binding createdAt}" Width="80"/>
                                         <GridViewColumn Header="Logo?" DisplayMemberBinding="{Binding logo}" Width="40"/>
-                                        <GridViewColumn Header="Elérhetőségek" DisplayMemberBinding="{Binding contactInfo}" Width="440"/>
+                                        <GridViewColumn Header="Elérhetőségek" DisplayMemberBinding="{Binding contactInfo}" Width="397"/>
                                     </GridView>
                                 </ListView.View>
                             </ListView>
                         </StackPanel>
                         <Button Name="B_Inst_Workers" Grid.Row="1" Content="Intézmény Munkatársai:" Click="Hold_WorkerList" Margin="10,-5,0,340"
                                 FontSize="18" FontWeight="Bold" Padding="0,1,0,4" HorizontalAlignment="Left" Width="235"/>
-                        <ListView x:Name="ListView_Workers" MouseDoubleClick="Workers_ListView_Click" Background="#FFFFFF" Margin="258,325,355,30" Grid.RowSpan="2">
+                        <ListView x:Name="ListView_Workers" MouseDoubleClick="Workers_ListView_Click" Background="#FFFFFF" Margin="258,325,515,30" Grid.RowSpan="2">
                             <ListView.View>
                                 <GridView>
-                                    <GridViewColumn Header="Munkatárs Neve" DisplayMemberBinding="{Binding username}" Width="200"/>
-                                    <GridViewColumn Header="Email" DisplayMemberBinding="{Binding email}" Width="300"/>
+                                    <GridViewColumn Header="Munkatárs Neve" DisplayMemberBinding="{Binding username}" Width="180"/>
+                                    <GridViewColumn Header="Email" DisplayMemberBinding="{Binding email}" Width="286"/>
                                 </GridView>
                             </ListView.View>
                         </ListView>
+                        <ListView x:Name="Del_Workers" Background="#FFFFFF" Margin="750,325,12,230" Grid.RowSpan="3" Width="485">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="Munkatárs Neve" DisplayMemberBinding="{Binding username}" Width="180"/>
+                                    <GridViewColumn Header="Email" DisplayMemberBinding="{Binding email}" Width="295"/>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                        <Button Name="B_Inst_Detach" Grid.Row="1" Content="Munkatárs leválasztása:" Click="Detach_Worker" Margin="890,143,0,192"
+                               FontSize="18" FontWeight="Bold" Padding="0,1,0,4" HorizontalAlignment="Left" Width="345"/>
+                        <Button Name="B_Inst_Stat" Grid.Row="1" Content="Statisztika:" Click="Inst_Sel_Stat" Margin="750,143,0,192"
+                               FontSize="18" FontWeight="Bold" Padding="0,1,0,4" HorizontalAlignment="Left" Width="120"/>
+                        <Label Grid.Row="1" Content="Munkatársak száma:" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" Margin="890,185,0,139"/>
+                        <TextBox Grid.Row="1" Name="Inst_WorkersNum" FontSize="16" FontWeight="Bold" Height="30" IsReadOnly="True"
+                                HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="1080,180,94,140" Padding="0,0,0,3"/>
+                        <Label Grid.Row="1" Content="Bejelentések száma:" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" Margin="890,229,0,95"/>
+                        <TextBox Grid.Row="1" Name="Inst_ReportNum" FontSize="16" FontWeight="Bold" Height="30" IsReadOnly="True"
+                                HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="1080,230,94,103" Padding="0,0,0,3"/>
+                        <Label Grid.Row="1" Content="Hírlevelek száma:" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" Margin="890,272,0,52"/>
+                        <TextBox Grid.Row="1" x:Name="Inst_NewsNum" FontSize="16" FontWeight="Bold" Height="30" IsReadOnly="True"
+                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="1080,275,94,61" Padding="0,0,0,3"/>
+                        <StackPanel Grid.Row="1" Grid.Column="0" Panel.ZIndex="4" Margin="760,95,402,2" Height="80" >
+                            <Image x:Name="Inst_LogoImg2" Source="https://smd.hu/Team/Empty_Logo.gif" MaxWidth="80" Height="80"/>
+                        </StackPanel>
                     </Grid>
                 </StackPanel>
                 <StackPanel Name="Main_Challenges" Background="#FFB9E2EF" Grid.ColumnSpan="3" Visibility="Hidden">

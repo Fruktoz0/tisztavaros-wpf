@@ -49,10 +49,10 @@ namespace TisztaVaros
         List<string> allRoles = new List<string>() { "user", "institution", "inspector", "admin" };
         List<string> allStatus = new List<string>() { "active", "inactive", "archived" };
         TV_User sel_user;
-        TV_Inst sel_inst;
+        TV_Inst sel_inst, sel_instw;
         public static string new_vmi_psw = "";
         bool chk_udata_y = false, chk_idata_y = false;
-        string c_gray = "#FFDDDDDD", c_jzold = "#6FB1A5";
+        string bc_gray = "#FFDDDDDD", c_jzold = "#6FB1A5", bc_Green = "#FF6EF525";
 
         bool hold_workers = false;
         public static string inst_logo_url = "";
@@ -556,12 +556,12 @@ namespace TisztaVaros
                     }
                     else
                     {
-                        U_User_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(c_gray));
+                        U_User_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_gray));
                     }
                 }
                 else
                 {
-                    U_User_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(c_gray));
+                    U_User_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_gray));
                 }
             }
             return do_y;
@@ -611,35 +611,39 @@ namespace TisztaVaros
                 hold_workers = !hold_workers;
                 if (hold_workers)
                 {
-                    B_Inst_Workers.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bus_Yellow));
+                    B_Inst_Workers.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(colorSelectButton));
+                    B_Inst_Workers.Foreground = new SolidColorBrush(Colors.White);
                     TV_Inst sel_inst = ListView_Inst.SelectedItem as TV_Inst;
-                    B_Inst_Workers.Content = sel_inst.name;
+                    B_Inst_Workers.Content = sel_inst.name; 
                 }
                 else
                 {
                     B_Inst_Workers.Content = "Intézmény Munkatársai:";
-                    B_Inst_Workers.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(c_gray));
+                    B_Inst_Workers.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_gray));
+                    B_Inst_Workers.Foreground = new SolidColorBrush(Colors.Black);
                     Get_WorkerList(sender, e);
                 }
             }
         }
         private async void Get_WorkerList(object sender, RoutedEventArgs e)
         {
+            sel_instw = ListView_Inst.SelectedItem as TV_Inst;
             if (!hold_workers)
             {
-                TV_Inst sel_instw = ListView_Inst.SelectedItem as TV_Inst;
                 if (sel_instw != null)
                 {
                     list_workers = await connection.Get_Workers(sel_instw.id);
                     ListView_Workers.ItemsSource = list_workers.OrderBy(u => u.username).ToList();
                 }
             }
+            Inst_Sel_Stat_Auto();
         }
         private void Inst_ListView_Click(object sender, RoutedEventArgs e)
         {
             var item = (sender as ListView).SelectedItem;
             if (item != null)
             {
+                U_Inst_Delete.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_gray));
                 chk_idata_y = false;
                 sel_inst = item as TV_Inst;
                 U_Inst_Name.Text = sel_inst.name;
@@ -665,6 +669,7 @@ namespace TisztaVaros
                 inst_logo_url = sel_inst.logoUrl;
                 Logo_Actual();
                 chk_idata_y = true;
+                Inst_Sel_Stat_Auto();
             }
         }
         private void Workers_ListView_Click(object sender, RoutedEventArgs e)
@@ -741,12 +746,13 @@ namespace TisztaVaros
             U_Inst_Address.Text = "";
             U_Inst_Tel.Text = "";
             U_Inst_Desc.Text = "";
-            U_Inst_Save.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(c_gray));
-            U_Inst_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(c_gray));
+            U_Inst_Save.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_gray));
+            U_Inst_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_gray));
             inst_logo_url = "";
-            U_Inst_Logo.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(c_jzold));
+            U_Inst_Logo.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_gray));
             U_Inst_Logo.Foreground = new SolidColorBrush(Colors.White);
             sel_inst = new TV_Inst();
+            U_Inst_Delete.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_gray));
         }
 
         private async void Inst_Save(object sender, RoutedEventArgs e)
@@ -884,12 +890,12 @@ namespace TisztaVaros
                     }
                     else
                     {
-                        U_Inst_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(c_gray));
+                        U_Inst_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_gray));
                     }
                 }
                 else
                 {
-                    U_Inst_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(c_gray));
+                    U_Inst_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_gray));
                 }
             }
             return do_y;
@@ -930,6 +936,113 @@ namespace TisztaVaros
                 return false;
             }
         }
+
+        private async void Inst_Delete(object sender, RoutedEventArgs e)
+        {
+            if (sel_inst.id != null)
+            {
+                List<TV_User> mod_workers = await connection.Get_Workers(sel_inst.id);
+                Del_Workers.ItemsSource = mod_workers;
+                if (mod_workers.Count > 0)
+                {
+                    U_Inst_Delete.Background = new SolidColorBrush(Colors.Red);
+                    MessageBox.Show("Az Intézménynek vannak Munkatársai, előbb a hozzárendeléseket törölni kell!");
+                }
+                /*
+                    string del_msg = await connection.Admin_DelInst(sel_inst.id);
+                    if (del_msg == "Nem vagyok Teszt üzemmódban.")
+                    {
+                        MessageBox.Show("A törlés most nem engedélyezett, csak teszt üzemmódban!");
+                        return;
+                    }
+                    if (del_msg != "xx")
+                    {
+                        TV_Inst a_del = list_inst.Find(u => u.id == sel_inst.id);
+                        if (a_del != null)
+                        {
+                            Get_Inst_List();
+                        }
+                        Inst_ClearData();
+                        MessageBox.Show("Intézmény: '" + sel_inst.name + "'\n\n" + del_msg);
+                        return;
+                    }
+                    MessageBox.Show("A törlés nem sikerült!");
+                    return;
+                }*/
+                MessageBox.Show("Intézmény Elvileg létezik, törölhető!");
+                return;
+            }
+        }
+
+        private void Detach_Worker(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void Inst_Sel_Stat(object sender, RoutedEventArgs e)
+        {
+            Inst_Sel_Stat_Auto();
+        }
+        private async void Inst_Sel_Stat_Auto()
+        {
+            string a_id = "";
+            string a_logo_Url = "";
+            if (sel_inst != null)
+            {
+                a_id = sel_inst.id;
+                a_logo_Url = sel_inst.logoUrl;
+            }
+            else
+            {
+                a_id = sel_instw.id;
+                a_logo_Url = sel_instw.logoUrl;
+            }
+
+            if (a_id != null)
+            {
+                List<TV_User> mod_workers = await connection.Get_Workers(a_id);
+                Del_Workers.ItemsSource = mod_workers;
+                int workers_db = mod_workers.Count;
+                if (workers_db > 0)
+                {
+                    B_Inst_Detach.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bus_Yellow));
+                }
+                else
+                {
+                    B_Inst_Detach.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_gray));
+                }
+                SetColor_Label(workers_db, Inst_WorkersNum);
+                int rep_db = await connection.Server_Get_InstValami_db("/api/reports/report_Inst_db", a_id);
+                SetColor_Label(rep_db, Inst_ReportNum);
+                int news_db = await connection.Server_Get_InstValami_db("/api/news/news_Inst_db", a_id);
+                SetColor_Label(news_db, Inst_NewsNum);
+                if (a_logo_Url != null)
+                {
+                    Inst_LogoImg2.Source = new BitmapImage(new Uri(a_logo_Url));
+                }
+                else
+                {
+                    Inst_LogoImg2.Source = new BitmapImage(new Uri("http://smd.hu/Team/Empty_Logoo.gif"));
+                }
+            }
+        }
+        private void SetColor_Label(int xmi_db, TextBox out_label)
+        {
+            out_label.Text = xmi_db.ToString();
+            if (xmi_db == -1)
+            {
+                out_label.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_gray));
+            }
+            else if (xmi_db == 0)
+            {
+                out_label.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_Green));
+            }
+            else
+            {
+                out_label.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bus_Yellow));
+            }
+        }
+
         private async void Bezarka(object sender, EventArgs e)
         {
             var hwnd = new WindowInteropHelper(this).Handle;
