@@ -26,6 +26,27 @@ namespace TisztaVaros
         private string baseURL = "http://localhost:3002";
 
 
+        public async Task<List<TV_Cats>> Server_Get_Categories()
+        {
+            List<TV_Cats> all_cats = new List<TV_Cats>();
+            string a_route = "/api/categories/list";
+            string url = Get_URL() + a_route;
+            try
+            {
+                HttpClient client = new HttpClient();
+                HttpResponseMessage response = new HttpResponseMessage();
+                //client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
+                response = await client.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+                string responseText = await response.Content.ReadAsStringAsync();
+                all_cats = JsonConvert.DeserializeObject<List<TV_Cats>>(responseText);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(a_route + "\n\n" + e.Message);
+            }
+            return all_cats;
+        }
         public async Task<int> Server_Get_InstValami_db(string a_route, string inst_id)
         {
             int a_out = -1;

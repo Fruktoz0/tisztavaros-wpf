@@ -29,6 +29,11 @@ namespace TisztaVaros
         public string role { get; set; }
         public string isActive { get; set; }
         public string createdAt { get; set; }
+        public string createdAtHH
+        {
+            get { return createdAt.Substring(0, 16).Replace('T', ' '); }
+            set { }
+        }
         public string updatedAt { get; set; }
         public string institutionId { get; set; }
         public string institution { get; set; }
