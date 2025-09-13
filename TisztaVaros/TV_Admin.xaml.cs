@@ -987,15 +987,15 @@ namespace TisztaVaros
         {
             string a_id = "";
             string a_logo_Url = "";
-            if (sel_inst != null)
-            {
-                a_id = sel_inst.id;
-                a_logo_Url = sel_inst.logoUrl;
-            }
-            else
+            if (sel_instw != null)
             {
                 a_id = sel_instw.id;
                 a_logo_Url = sel_instw.logoUrl;
+            }
+            else
+            {
+                a_id = sel_inst.id;
+                a_logo_Url = sel_inst.logoUrl;
             }
 
             if (a_id != null)
@@ -1022,7 +1022,7 @@ namespace TisztaVaros
                 }
                 else
                 {
-                    Inst_LogoImg2.Source = new BitmapImage(new Uri("http://smd.hu/Team/Empty_Logoo.gif"));
+                    Inst_LogoImg2.Source = new BitmapImage(new Uri("http://smd.hu/Team/Empty_Logo.gif"));
                 }
             }
         }
@@ -1074,6 +1074,10 @@ namespace TisztaVaros
                 U_Inst_Logo.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(c_jzold));
                 U_Inst_Logo.Foreground = new SolidColorBrush(Colors.White);
             }
+        }
+        private void InstList_OnKeyDownHandler(object sender, EventArgs e)
+        {
+            MessageBox.Show("Key Down");
         }
     }
 }
