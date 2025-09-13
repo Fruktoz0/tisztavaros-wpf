@@ -51,8 +51,8 @@ namespace TisztaVaros
         TV_User sel_user;
         TV_Inst sel_inst, sel_instw;
         public static string new_vmi_psw = "";
-        bool chk_udata_y = false, chk_idata_y = false;
-        string bc_gray = "#FFDDDDDD", c_jzold = "#6FB1A5", bc_Green = "#FF6EF525";
+        bool chk_udata_y = false, chk_idata_y = false, start_now_y = true;
+        string bc_gray = "#FFDDDDDD", c_jzold = "#6FB1A5", bc_Green = "#FF6EF525", tb_NotEmpty= "#FF4EFFD2";
 
         bool hold_workers = false;
         public static string inst_logo_url = "";
@@ -65,6 +65,7 @@ namespace TisztaVaros
         const uint MF_GRAYED = 0x00000001;
         const uint MF_ENABLED = 0x00000000;
         const uint SC_CLOSE = 0xF060;
+        BitmapImage empty_logo= new BitmapImage(new Uri("https://smd.hu/Team/Empty_Logo.gif"));
 
         public TV_Admin()
         {
@@ -158,6 +159,13 @@ namespace TisztaVaros
         {
             Button a_Button = sender as Button;
             ReColorButtons(a_Button);
+            if (start_now_y)
+            {
+                Inst_ReLoad(sender, e);
+                start_now_y = false;
+                //ListView_Inst.Focus();
+                //ListView_Inst.SelectedItem = ListView_Inst.Items[0];
+            }
         }
 
         private void Get_Admin_Challenges(object sender, RoutedEventArgs e)
@@ -431,7 +439,7 @@ namespace TisztaVaros
                     psw_input.Top = this.Top + this.Height / 2 - psw_input.Height / 2;
                     psw_input.Left = this.Left + this.Width / 2 - psw_input.Width / 2;
                     psw_input.Show();
-                    while (new_vmi_psw == "x")
+                    while (new_vmi_psw == "x" && !start_now_y)
                     {
                         await Task.Delay(500);
                     }
@@ -580,10 +588,6 @@ namespace TisztaVaros
         {
             this.Title = "Tiszta Város - Admin (Top: " + this.Top + " Left: " + this.Left + ")";
         }
-        private void SelUser_DataChanged(object sender, TextChangedEventArgs e)
-        {
-            SelUser_CHK_Modified();
-        }
         private async void SelUser_CHK_Modified()
         {
             bool do_y = await Changed_UserData();
@@ -598,6 +602,13 @@ namespace TisztaVaros
         }
         private void SelUser_CBChanged(object sender, SelectionChangedEventArgs e)
         {
+            ComboBox a_cb = sender as ComboBox;
+            if (a_cb.SelectedItem != "")
+            {
+                //MessageBox.Show("Izé");
+                //a_cb.Static.Border= (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_NotEmpty));
+                a_cb.BorderBrush = (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_NotEmpty));
+            }
             SelUser_CHK_Modified();
         }
         private void Admin_Postit(object sender, RoutedEventArgs e)
@@ -614,7 +625,7 @@ namespace TisztaVaros
                     B_Inst_Workers.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(colorSelectButton));
                     B_Inst_Workers.Foreground = new SolidColorBrush(Colors.White);
                     TV_Inst sel_inst = ListView_Inst.SelectedItem as TV_Inst;
-                    B_Inst_Workers.Content = sel_inst.name; 
+                    B_Inst_Workers.Content = sel_inst.name;
                 }
                 else
                 {
@@ -706,18 +717,30 @@ namespace TisztaVaros
                 U_User_Save.Background = U_User_Search.Background;
             }
         }
+        private void SelUser_DataChanged(object sender, TextChangedEventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            SelUser_CHK_Modified();
+            if (tb.Text != "")
+            {
+                tb.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_NotEmpty));
+                return;
+            }
+            tb.Background = new SolidColorBrush(Colors.White);
+        }
         private void SelInst_DataChanged(object sender, TextChangedEventArgs e)
         {
             TextBox tb = sender as TextBox;
             SelInst_CHK_Modified();
             if (tb.Text != "")
             {
-                tb.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FF4EFFD2"));
+                tb.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_NotEmpty));
                 //tb.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#6FB1A5"));
                 return;
             }
             tb.Background = new SolidColorBrush(Colors.White);
         }
+
         private async void SelInst_CHK_Modified()
         {
             bool do_y = await Changed_InstData();
@@ -753,6 +776,7 @@ namespace TisztaVaros
             U_Inst_Logo.Foreground = new SolidColorBrush(Colors.White);
             sel_inst = new TV_Inst();
             U_Inst_Delete.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_gray));
+            Inst_LogoImg.Source = null;
         }
 
         private async void Inst_Save(object sender, RoutedEventArgs e)
@@ -788,9 +812,20 @@ namespace TisztaVaros
         private async void Inst_ReLoad(object sender, RoutedEventArgs e)
         {
             Get_Inst_List();
-            ListView_Inst.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bus_Yellow));
-            await Task.Delay(300);
-            ListView_Inst.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFF"));
+            if (!start_now_y)
+            {
+                ListView_Inst.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bus_Yellow));
+                await Task.Delay(100);
+                ListView_Inst.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFF"));
+            }
+            if (start_now_y)
+            {
+                await Task.Delay(100);
+            }
+            ListView_Inst.Focus();
+            ListView_Inst.SelectedItem = ListView_Inst.Items[0];
+            ListView_Inst.UpdateLayout();
+            Get_WorkerList(sender, e);
         }
         private void Put_SelInst()
         {
@@ -992,7 +1027,7 @@ namespace TisztaVaros
                 a_id = sel_instw.id;
                 a_logo_Url = sel_instw.logoUrl;
             }
-            else
+            else if (sel_inst != null)
             {
                 a_id = sel_inst.id;
                 a_logo_Url = sel_inst.logoUrl;
@@ -1016,7 +1051,7 @@ namespace TisztaVaros
                 SetColor_Label(rep_db, Inst_ReportNum);
                 int news_db = await connection.Server_Get_InstValami_db("/api/news/news_Inst_db", a_id);
                 SetColor_Label(news_db, Inst_NewsNum);
-                if (a_logo_Url != null)
+                if (a_logo_Url != null && a_logo_Url != "")
                 {
                     Inst_LogoImg2.Source = new BitmapImage(new Uri(a_logo_Url));
                 }
@@ -1059,19 +1094,19 @@ namespace TisztaVaros
         {
             if (inst_logo_url != null && inst_logo_url != "")
             {
-                U_Inst_Logo.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bus_Akt));
+                U_Inst_Logo.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(c_jzold));
                 U_Inst_Logo.Foreground = new SolidColorBrush(Colors.White);
                 Inst_LogoImg.Source = new BitmapImage(new Uri(inst_logo_url));
                 if (Inst_LogoImg.Width == 0)
                 {
                     inst_logo_url = "";
-                    Inst_LogoImg.Source = new BitmapImage(new Uri("https://smd.hu/Team/Empty_Logo.gif"));
+                    Inst_LogoImg.Source = empty_logo; // new BitmapImage(new Uri("https://smd.hu/Team/Empty_Logo.gif"));
                 }
             }
             else
             {
-                Inst_LogoImg.Source = new BitmapImage(new Uri("https://smd.hu/Team/Empty_Logo.gif"));
-                U_Inst_Logo.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(c_jzold));
+                Inst_LogoImg.Source = empty_logo; // new BitmapImage(new Uri("https://smd.hu/Team/Empty_Logo.gif"));
+                U_Inst_Logo.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_gray));
                 U_Inst_Logo.Foreground = new SolidColorBrush(Colors.White);
             }
         }
