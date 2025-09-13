@@ -1075,9 +1075,5 @@ namespace TisztaVaros
                 U_Inst_Logo.Foreground = new SolidColorBrush(Colors.White);
             }
         }
-        private void InstList_OnKeyDownHandler(object sender, EventArgs e)
-        {
-            MessageBox.Show("Key Down");
-        }
     }
 }
