@@ -402,7 +402,7 @@
                         </StackPanel>
                     </Grid>
                 </StackPanel>
-                <StackPanel Name="Main_Institutions" Background="#F0F0F0" Grid.ColumnSpan="3" Visibility="Hidden">
+                <StackPanel Name="Main_Institutions" Background="#F0F0F0" Grid.ColumnSpan="3" Visibility="Visible">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="330"/>
@@ -426,6 +426,9 @@
                         </StackPanel>
                         <Button Name="B_Inst_Workers" Grid.Row="1" Content="Intézmény Munkatársai:" Click="Hold_WorkerList" Margin="10,-5,0,340"
                                 FontSize="18" FontWeight="Bold" Padding="0,1,0,4" HorizontalAlignment="Left" Width="235"/>
+                        <StackPanel Grid.Row="1" Grid.Column="0" Panel.ZIndex="4" Margin="55,35,1075,231">
+                            <Image x:Name="Inst_LogoImg_Edit" Source="https://smd.hu/Team/Empty_Logo.gif" MaxWidth="120" Height="100"/>
+                        </StackPanel>
                         <ListView x:Name="ListView_Workers" MouseDoubleClick="Workers_ListView_Click" Background="#FFFFFF" Margin="258,325,515,192" Grid.RowSpan="2">
                             <ListView.View>
                                 <GridView>
@@ -455,17 +458,17 @@
                         <Label Grid.Row="1" Content="Hírlevelek száma:" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" Margin="890,272,0,52"/>
                         <TextBox Grid.Row="1" x:Name="Inst_NewsNum" FontSize="16" FontWeight="Bold" Height="30" IsReadOnly="True"
                             HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="1080,275,94,61" Padding="0,0,0,3"/>
-                        <StackPanel Grid.Row="1" Grid.Column="0" Panel.ZIndex="4" Margin="750,140,380,-12" Height="120">
-                            <Image x:Name="Inst_LogoImg2" Source="https://smd.hu/Team/Empty_Logo.gif" MaxWidth="120" Height="95"/>
+                        <StackPanel Grid.Row="1" Grid.Column="0" Panel.ZIndex="4" Margin="750,197,380,69">
+                            <Image x:Name="Inst_LogoImg_Del" Source="https://smd.hu/Team/Empty_Logo.gif" MaxWidth="120" Height="100"/>
                         </StackPanel>
                         <Label Grid.Row="1" Content="Munkatársak száma:" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" Margin="258,185,0,139"/>
-                        <TextBox Grid.Row="1" x:Name="Inst_WorkersNum_Sel" FontSize="16" FontWeight="Bold" Height="30" IsReadOnly="True"
+                        <TextBox Grid.Row="1" x:Name="Inst_WorkersNum_Edit" FontSize="16" FontWeight="Bold" Height="30" IsReadOnly="True"
                             HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="457,188,717,148" Padding="0,0,0,3"/>
                         <Label Grid.Row="1" Content="Bejelentések száma:" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" Margin="258,229,0,95"/>
-                        <TextBox Grid.Row="1" x:Name="Inst_ReportNum_Sel" FontSize="16" FontWeight="Bold" Height="30" IsReadOnly="True"
+                        <TextBox Grid.Row="1" x:Name="Inst_ReportNum_Edit" FontSize="16" FontWeight="Bold" Height="30" IsReadOnly="True"
                             HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="457,232,717,104" Padding="0,0,0,3"/>
                         <Label Grid.Row="1" Content="Hírlevelek száma:" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" Margin="258,272,0,52"/>
-                        <TextBox Grid.Row="1" x:Name="Inst_NewsNum_Sel" FontSize="16" FontWeight="Bold" Height="30" IsReadOnly="True"
+                        <TextBox Grid.Row="1" x:Name="Inst_NewsNum_Edit" FontSize="16" FontWeight="Bold" Height="30" IsReadOnly="True"
                             HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="457,275,717,61" Padding="0,0,0,3"/>
                     </Grid>
                 </StackPanel>

@@ -155,7 +155,7 @@ namespace TisztaVaros
             Button a_Button = sender as Button;
             ReColorButtons(a_Button);
             list_reports = await connection.Server_Get_AllReports();
-            ListView_Report.ItemsSource = list_reports;  
+            ListView_Report.ItemsSource = list_reports;
 
         }
         private async void Get_Admin_Categories(object sender, RoutedEventArgs e)
@@ -678,7 +678,6 @@ namespace TisztaVaros
                 cb_defBorder = toggleButtonTemplate.FindName("templateRoot", toggleButton) as Border;
             }
         }
-
         private void Change_ComboBoxBorderColor(object sender, string newColor)
         {
             var comboBox = sender as ComboBox;
@@ -714,32 +713,40 @@ namespace TisztaVaros
         {
             if (ListView_Inst.SelectedItem != null)
             {
-                hold_workers = !hold_workers;
-                if (hold_workers)
-                {
-                    B_Inst_Workers.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(colorSelectButton));
-                    B_Inst_Workers.Foreground = new SolidColorBrush(Colors.White);
-                    TV_Inst sel_inst = ListView_Inst.SelectedItem as TV_Inst;
-                    B_Inst_Workers.Content = sel_inst.name;
-                }
-                else
-                {
-                    B_Inst_Workers.Content = "Intézmény Munkatársai:";
-                    B_Inst_Workers.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_gray));
-                    B_Inst_Workers.Foreground = new SolidColorBrush(Colors.Black);
-                    Get_WorkerList(sender, e);
-                }
+                Freeze_Workerlist();
+                Get_WorkerList_Auto();
+            }
+        }
+        private void Freeze_Workerlist()
+        {
+            hold_workers = !hold_workers;
+            if (hold_workers)
+            {
+                B_Inst_Workers.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(colorSelectButton));
+                B_Inst_Workers.Foreground = new SolidColorBrush(Colors.White);
+                TV_Inst sel_inst = ListView_Inst.SelectedItem as TV_Inst;
+                B_Inst_Workers.Content = sel_inst.name;
+            }
+            else
+            {
+                B_Inst_Workers.Content = "Intézmény Munkatársai:";
+                B_Inst_Workers.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_gray));
+                B_Inst_Workers.Foreground = new SolidColorBrush(Colors.Black);
             }
         }
         private async void Get_WorkerList(object sender, RoutedEventArgs e)
+        {
+            Get_WorkerList_Auto();
+        }
+        private async void Get_WorkerList_Auto()
         {
             sel_instw = ListView_Inst.SelectedItem as TV_Inst;
             if (!hold_workers)
             {
                 if (sel_instw != null)
                 {
-                    list_workers = await connection.Get_Workers(sel_instw.id);
-                    ListView_Workers.ItemsSource = list_workers.OrderBy(u => u.username).ToList();
+                    list_workers = await connection.Get_Workers(sel_instw.id, "Get_WorkerList_Auto");
+                    Del_Workers.ItemsSource = list_workers.OrderBy(u => u.username).ToList();
                 }
             }
             Inst_Sel_Stat_Auto();
@@ -783,7 +790,34 @@ namespace TisztaVaros
                 inst_logo_url = sel_inst.logoUrl;
                 Logo_Actual();
                 chk_idata_y = true;
-                Inst_Sel_Stat_Auto();
+                //Inst_Sel_Stat_Auto();
+                Inst_Sel_Stat_Edit();
+            }
+        }
+        private async void Inst_Sel_Stat_Edit()
+        {
+            string e_id = sel_inst.id;
+            string e_logo_Url = sel_inst.logoUrl;
+            if (hold_workers)
+            {
+                Freeze_Workerlist();
+            }
+            List<TV_User> edit_workers = await connection.Get_Workers(e_id, "Inst_Sel_Stat_Edit");
+            ListView_Workers.ItemsSource = edit_workers;
+            int eworkers_db = edit_workers.Count;
+            SetColor_Label(eworkers_db, Inst_WorkersNum_Edit);
+            int erep_db = await connection.Server_Get_InstValami_db("/api/reports/report_Inst_db", e_id);
+            SetColor_Label(erep_db, Inst_ReportNum_Edit);
+            int enews_db = await connection.Server_Get_InstValami_db("/api/news/news_Inst_db", e_id);
+            SetColor_Label(enews_db, Inst_NewsNum_Edit);
+            Freeze_Workerlist();
+            if (e_logo_Url != null && e_logo_Url != "")
+            {
+                Inst_LogoImg_Edit.Source = new BitmapImage(new Uri(e_logo_Url));
+            }
+            else
+            {
+                Inst_LogoImg_Edit.Source = new BitmapImage(new Uri("http://smd.hu/Team/Empty_Logo.gif"));
             }
         }
         private void Workers_ListView_Click(object sender, RoutedEventArgs e)
@@ -954,7 +988,7 @@ namespace TisztaVaros
             ListView_Inst.Focus();
             ListView_Inst.SelectedItem = ListView_Inst.Items[0];
             ListView_Inst.UpdateLayout();
-            Get_WorkerList(sender, e);
+            Get_WorkerList_Auto();
         }
         private void Put_SelInst()
         {
@@ -1110,7 +1144,7 @@ namespace TisztaVaros
         {
             if (sel_inst.id != null)
             {
-                List<TV_User> mod_workers = await connection.Get_Workers(sel_inst.id);
+                List<TV_User> mod_workers = await connection.Get_Workers(sel_inst.id, "Inst_Delete");
                 Del_Workers.ItemsSource = mod_workers;
                 if (mod_workers.Count > 0)
                 {
@@ -1159,17 +1193,12 @@ namespace TisztaVaros
                 a_id = sel_instw.id;
                 a_logo_Url = sel_instw.logoUrl;
             }
-            else if (sel_inst != null)
-            {
-                a_id = sel_inst.id;
-                a_logo_Url = sel_inst.logoUrl;
-            }
 
             if (a_id != null)
             {
-                List<TV_User> mod_workers = await connection.Get_Workers(a_id);
-                Del_Workers.ItemsSource = mod_workers;
-                int workers_db = mod_workers.Count;
+                List<TV_User> sel_workers = await connection.Get_Workers(a_id, "Inst_Sel_Stat_Auto");
+                Del_Workers.ItemsSource = sel_workers;
+                int workers_db = sel_workers.Count;
                 if (workers_db > 0)
                 {
                     B_Inst_Detach.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bus_Yellow));
@@ -1185,11 +1214,11 @@ namespace TisztaVaros
                 SetColor_Label(news_db, Inst_NewsNum);
                 if (a_logo_Url != null && a_logo_Url != "")
                 {
-                    Inst_LogoImg2.Source = new BitmapImage(new Uri(a_logo_Url));
+                    Inst_LogoImg_Del.Source = new BitmapImage(new Uri(a_logo_Url));
                 }
                 else
                 {
-                    Inst_LogoImg2.Source = new BitmapImage(new Uri("http://smd.hu/Team/Empty_Logo.gif"));
+                    Inst_LogoImg_Del.Source = new BitmapImage(new Uri("http://smd.hu/Team/Empty_Logo.gif"));
                 }
             }
         }

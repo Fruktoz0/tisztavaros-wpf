@@ -40,7 +40,7 @@ namespace TisztaVaros
                 response.EnsureSuccessStatusCode();
                 string responseText = await response.Content.ReadAsStringAsync();
                 //MessageBox.Show(responseText);
-                File.WriteAllText(@"R:\All_reports.txt", responseText);
+                //File.WriteAllText(@"R:\All_reports.txt", responseText);
                 all_reports = JsonConvert.DeserializeObject<List<TV_Report>>(responseText);
             }
             catch (Exception e)
@@ -229,7 +229,7 @@ namespace TisztaVaros
             }
             return "22";
         }
-        public async Task<List<TV_User>> Get_Workers(string inst_id)
+        public async Task<List<TV_User>> Get_Workers(string inst_id, string honnan)
         {
             List<TV_User> all_workers = new List<TV_User>();
             string a_route = "/api/admin/user_inst/" + inst_id;
