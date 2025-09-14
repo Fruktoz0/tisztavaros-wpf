@@ -3,6 +3,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.Linq;
 using System.Printing;
@@ -12,6 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -22,8 +25,6 @@ using System.Windows.Media.Media3D;
 using System.Windows.Shapes;
 using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.Eventing.Reader;
 
 namespace TisztaVaros
 {
@@ -56,6 +57,7 @@ namespace TisztaVaros
         public static string new_vmi_psw = "";
         bool chk_udata_y = false, chk_idata_y = false, chk_cdata_y = false, start_inst_y = true, start_cats_y = true;
         string bc_gray = "#FFDDDDDD", c_jzold = "#6FB1A5", bc_Green = "#FF6EF525", tb_NotEmpty = "#FF4EFFD2";
+        Border cb_defBorder;
 
         bool hold_workers = false;
         public static string inst_logo_url = "";
@@ -83,6 +85,8 @@ namespace TisztaVaros
             Get_Cats_List();
             HTTP_Local.IsChecked = App.local_y;
             CB_U_User_Role.ItemsSource = allRoles;
+            int a = CB_U_User_Role.SelectedIndex;
+            MessageBox.Show(a.ToString());
             CB_U_User_Status.ItemsSource = allStatus;
         }
         private void Logo_Click(object sender, EventArgs e)
@@ -420,9 +424,14 @@ namespace TisztaVaros
             U_User_Zip.Text = "";
             U_User_City.Text = "";
             U_User_Address.Text = "";
-            CB_U_User_Status.SelectedItem = "active";
-            CB_U_User_Role.SelectedItem = "user";
-            CB_U_User_Inst.SelectedItem = "";
+
+            CB_U_User_Status.SelectedIndex = -1;
+            Change_ComboBoxBorderColor(CB_U_User_Status, "");
+            CB_U_User_Role.SelectedIndex = -1;
+            Change_ComboBoxBorderColor(CB_U_User_Role, "");
+            CB_U_User_Inst.SelectedIndex = -1;
+            Change_ComboBoxBorderColor(CB_U_User_Inst, "");
+
             sel_user = new TV_User();
         }
         private async void User_SaveAsNew(object sender, RoutedEventArgs e)
@@ -635,25 +644,63 @@ namespace TisztaVaros
                     U_Cat_Save.Background = U_User_Search.Background;
                 }
             }
+            else
+            {
+                bool do_y = U_Cat_Name.Text != "" || CB_U_Cat_Inst.SelectedItem.ToString() != "";
+                if (do_y)
+                {
+                    TV_Cats exist_cat = list_cats.Find(u => u.categoryName == U_Cat_Name.Text);
+                    if (exist_cat != null)
+                    {
+                        MessageBox.Show("Ilyen kategória már létezik!");
+                        return;
+                    }
+                }
+            }
         }
         private void SelCatInst_CBChanged(object sender, SelectionChangedEventArgs e)
         {
             ComboBox a_cb = sender as ComboBox;
-            if (a_cb.SelectedItem != "")
-            {
-                a_cb.BorderBrush = (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_NotEmpty));
-            }
+            if (a_cb.SelectedItem != "") { Change_ComboBoxBorderColor(a_cb, tb_NotEmpty); }
+            else { Change_ComboBoxBorderColor(a_cb, ""); }
             SelCat_CHK_Modified();
+        }
+        private void Get_DefCB_Color()
+        {
+            if (cb_defBorder == null)
+            {
+                var comboBoxTemplate = CB_U_Default.Template;
+                var toggleButton = comboBoxTemplate.FindName("toggleButton", CB_U_Default) as ToggleButton;
+                var toggleButtonTemplate = toggleButton.Template;
+                cb_defBorder = toggleButtonTemplate.FindName("templateRoot", toggleButton) as Border;
+            }
+        }
+
+        private void Change_ComboBoxBorderColor(object sender, string newColor)
+        {
+            var comboBox = sender as ComboBox;
+            if (cb_defBorder == null)
+            {
+                Get_DefCB_Color();
+            }
+            var comboBoxTemplate = comboBox.Template;
+            var toggleButton = comboBoxTemplate.FindName("toggleButton", comboBox) as ToggleButton;
+            var toggleButtonTemplate = toggleButton.Template;
+            var border = toggleButtonTemplate.FindName("templateRoot", toggleButton) as Border;
+            if (newColor == "")
+            {
+                border.Background = CB_U_Default.Background;
+            }
+            else
+            {
+                border.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(newColor));
+            }
         }
         private void SelUser_CBChanged(object sender, SelectionChangedEventArgs e)
         {
             ComboBox a_cb = sender as ComboBox;
-            if (a_cb.SelectedItem != "")
-            {
-                //MessageBox.Show("Izé");
-                //a_cb.Static.Border= (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_NotEmpty));
-                a_cb.BorderBrush = (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_NotEmpty));
-            }
+            if (a_cb.SelectedItem != "") { Change_ComboBoxBorderColor(a_cb, tb_NotEmpty); }
+            else { Change_ComboBoxBorderColor(a_cb, ""); }
             SelUser_CHK_Modified();
         }
         private void Admin_Postit(object sender, RoutedEventArgs e)
@@ -752,6 +799,11 @@ namespace TisztaVaros
                 U_User_Zip.Text = sel_user.zipCode;
                 U_User_City.Text = sel_user.city;
                 U_User_Address.Text = sel_user.address;
+                
+                CB_U_User_Status.SelectedItem = "";
+                //Change_ComboBoxBorderColor(CB_U_User_Status, "");
+                CB_U_User_Role.SelectedItem = "";
+                
                 if (sel_user.institutionId != null)
                 {
                     CB_U_User_Inst.SelectedItem = sel_user.institution;
@@ -765,6 +817,17 @@ namespace TisztaVaros
                 chk_udata_y = true;
                 U_User_Save.Background = U_User_Search.Background;
             }
+        }
+        private void SelCat_DataChanged(object sender, TextChangedEventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            SelCat_CHK_Modified();
+            if (tb.Text != "")
+            {
+                tb.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_NotEmpty));
+                return;
+            }
+            tb.Background = new SolidColorBrush(Colors.White);
         }
         private void SelUser_DataChanged(object sender, TextChangedEventArgs e)
         {
