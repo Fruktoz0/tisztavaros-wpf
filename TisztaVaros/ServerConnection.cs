@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
 using System.Xml.Linq;
+using System.IO;
 
 namespace TisztaVaros
 {
@@ -26,6 +27,29 @@ namespace TisztaVaros
         private string baseURL = "http://localhost:3002";
 
 
+        public async Task<List<TV_Report>> Server_Get_AllReports()
+        {
+            List<TV_Report> all_reports = new List<TV_Report>();
+            string a_route = "/api/reports/getAllReports";
+            string url = Get_URL() + a_route;
+            try
+            {
+                HttpClient client = new HttpClient();
+                HttpResponseMessage response = new HttpResponseMessage();
+                response = await client.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+                string responseText = await response.Content.ReadAsStringAsync();
+                //MessageBox.Show(responseText);
+                File.WriteAllText(@"R:\All_reports.txt", responseText);
+                all_reports = JsonConvert.DeserializeObject<List<TV_Report>>(responseText);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(a_route + "\n\n" + e.Message);
+            }
+            return all_reports;
+        }
+
         public async Task<List<TV_Cats>> Server_Get_Categories()
         {
             List<TV_Cats> all_cats = new List<TV_Cats>();
@@ -35,7 +59,6 @@ namespace TisztaVaros
             {
                 HttpClient client = new HttpClient();
                 HttpResponseMessage response = new HttpResponseMessage();
-                //client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
                 response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
                 string responseText = await response.Content.ReadAsStringAsync();

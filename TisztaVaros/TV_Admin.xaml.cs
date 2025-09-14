@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Printing;
 using System.Reflection;
@@ -45,6 +46,7 @@ namespace TisztaVaros
         List<TV_User> list_workers = new List<TV_User>();
         List<TV_Inst> list_inst = new List<TV_Inst>();
         List<TV_Cats> list_cats = new List<TV_Cats>();
+        List<TV_Report> list_reports = new List<TV_Report>();
         bool[] order_user_y = new bool[10] { true, true, true, true, true, true, true, true, true, true };
         bool[] order_inst_y = new bool[5] { true, true, true, true, true };
         bool[] order_cats_y = new bool[5] { true, true, true, true, true };
@@ -148,10 +150,13 @@ namespace TisztaVaros
             App.local_y = (bool)HTTP_Local.IsChecked;
         }
 
-        private void Get_Admin_Reports(object sender, RoutedEventArgs e)
+        private async void Get_Admin_Reports(object sender, RoutedEventArgs e)
         {
             Button a_Button = sender as Button;
             ReColorButtons(a_Button);
+            list_reports = await connection.Server_Get_AllReports();
+            ListView_Report.ItemsSource = list_reports;  
+
         }
         private async void Get_Admin_Categories(object sender, RoutedEventArgs e)
         {
@@ -739,6 +744,10 @@ namespace TisztaVaros
             }
             Inst_Sel_Stat_Auto();
         }
+        private void Report_ListView_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
         private void Cat_ListView_Click(object sender, RoutedEventArgs e)
         {
 
@@ -797,11 +806,11 @@ namespace TisztaVaros
                 U_User_Zip.Text = sel_user.zipCode;
                 U_User_City.Text = sel_user.city;
                 U_User_Address.Text = sel_user.address;
-                
+
                 CB_U_User_Status.SelectedItem = "";
                 //Change_ComboBoxBorderColor(CB_U_User_Status, "");
                 CB_U_User_Role.SelectedItem = "";
-                
+
                 if (sel_user.institutionId != null)
                 {
                     CB_U_User_Inst.SelectedItem = sel_user.institution;
@@ -886,7 +895,7 @@ namespace TisztaVaros
             U_Inst_Logo.Foreground = new SolidColorBrush(Colors.White);
             sel_inst = new TV_Inst();
             U_Inst_Delete.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_gray));
-            Inst_LogoImg.Source = null;
+            Inst_LogoImg.Source = empty_logo;
         }
 
         private async void Inst_Save(object sender, RoutedEventArgs e)
@@ -1233,6 +1242,10 @@ namespace TisztaVaros
                 U_Inst_Logo.Foreground = new SolidColorBrush(Colors.White);
             }
         }
+        private void Report_SortHeaderClick(object sender, RoutedEventArgs e)
+        {
+
+        }
         private void Cat_SortHeaderClick(object sender, RoutedEventArgs e)
         {
             string[] headText = ["Kategória Neve", "Hozzárendelt Intézmény", "Létrehozás Dátuma"];
@@ -1303,6 +1316,26 @@ namespace TisztaVaros
                 }
             }
             catch { }
+        }
+        public class ImageConverter : IValueConverter
+        {
+            public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            {
+                dynamic dataObject = value;
+                if (dataObject != null)
+                {
+                    string path = dataObject.GetGuestImage();
+                    if (System.IO.File.Exists(path))
+                        return new Uri(dataObject.GetGuestImage(), UriKind.RelativeOrAbsolute);
+                }
+
+                return new Uri("https://smd.hu/Team/placeholderimage.png", UriKind.RelativeOrAbsolute);
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

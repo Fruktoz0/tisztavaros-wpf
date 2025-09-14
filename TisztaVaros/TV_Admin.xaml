@@ -118,7 +118,7 @@
                     <Label Content="Üdvözöllek az Admin felületen!" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,20,0,0"/>
                     <Label Content="Itt kezelheted a felhasználókat, bejelentéseket, kategóriákat, intézményeket és kihívásokat." FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,5,0,0"/>
                 </StackPanel>
-                <StackPanel Name="Header_Institutions" Background="#FFFDF5" Visibility="Hidden">
+                <StackPanel Name="Header_Institutions" Background="#FFFDF5" Visibility="Visible">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="6"/>
@@ -171,7 +171,7 @@
                         <Button Grid.Row="3" Name="U_Inst_Delete" Click="Inst_Delete" Content="Delete" Margin="902,4,262,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
                     </Grid>
                 </StackPanel>
-                <StackPanel Name="Header_Users" Background="#FFFDF5" Visibility="Visible">
+                <StackPanel Name="Header_Users" Background="#FFFDF5" Visibility="Hidden">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="120"/>
@@ -188,12 +188,12 @@
                         <Label Grid.Row="1" Grid.Column="0" Content="User Name:" FontSize="18" FontWeight="Bold" Width="120"
                                HorizontalAlignment="Left" HorizontalContentAlignment="Right"/>
                         <TextBox Grid.Row="1" Grid.Column="1" Name="S_User_Name" KeyDown="User_OnKeyDownHandler" FontSize="16" FontWeight="Bold" Width="220" Height="30" MaxLength="12"
-                                HorizontalContentAlignment="Center" Margin="-20,0,0,0" VerticalContentAlignment="Center" Padding="0,0,0,3"  TextChanged="SelInst_DataChanged"/>
+                                HorizontalContentAlignment="Center" Margin="-20,0,0,0" VerticalContentAlignment="Center" Padding="0,0,0,3"/>
                         <Button Grid.Row="1" Grid.Column="1" Click="User_Name_Clear"  Content="" Margin="230,5,5,5" FontSize="18" FontWeight="Bold"/>
                         <Label Grid.Row="2" Grid.Column="0" Content="Email:" FontSize="18" FontWeight="Bold" Width="120"
                                HorizontalAlignment="Left" HorizontalContentAlignment="Right"/>
                         <TextBox Grid.Row="2" Grid.Column="1" Name="S_User_Email" KeyDown="User_OnKeyDownHandler" FontSize="14" FontWeight="Bold" Width="220" Height="30" MaxLength="20"
-                                HorizontalContentAlignment="Center" Margin="-20,0,0,0" VerticalContentAlignment="Center" Padding="0,0,0,3" TextChanged="SelInst_DataChanged"/>
+                                HorizontalContentAlignment="Center" Margin="-20,0,0,0" VerticalContentAlignment="Center" Padding="0,0,0,3"/>
                         <Button Grid.Row="2" Grid.Column="1" Click="User_Email_Clear"  Content="" Margin="230,5,5,5" FontSize="18" FontWeight="Bold"/>
 
                         <Label Grid.Row="1" Grid.Column="2" Content="User Name:" FontSize="18" FontWeight="Bold" Width="110"
@@ -240,7 +240,9 @@
                         </StackPanel>
                     </Grid>
                 </StackPanel>
-                <StackPanel Name="Header_Reports" Background="LightCoral" Visibility="Hidden">
+                <StackPanel Name="Header_Reports" Background="#FFFDF5"  Visibility="Hidden">
+                    <Label Content="Bejelentések:" FontSize="24" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,20,0,0"/>
+                    <Label Content="Itt kezelheted a bejelentéseket." FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,5,0,0"/>
                 </StackPanel>
                 <StackPanel Name="Header_Cats" Background="#FFFDF5" Visibility="Hidden">
                     <Grid>
@@ -317,7 +319,7 @@
                         </Grid>
                     </Grid>
                 </StackPanel>
-                <StackPanel Name="Main_Users" Background="#F0F0F0" Grid.ColumnSpan="3" Visibility="Visible">
+                <StackPanel Name="Main_Users" Background="#F0F0F0" Grid.ColumnSpan="3" Visibility="Hidden">
                     <StackPanel Name="User_List" Grid.Row="0" Grid.Column="0" Background="#FFFFFF" Margin="10">
                         <ListView x:Name="ListView_User" GridViewColumnHeader.Click="User_SortHeaderClick" MouseDoubleClick="User_ListView_Click" Background="#FFFDF5">
                             <ListView.View>
@@ -337,7 +339,47 @@
                         </ListView>
                     </StackPanel>
                 </StackPanel>
-                <StackPanel Name="Main_Reports" Background="#FFECA8A8" Grid.ColumnSpan="3" Visibility="Hidden">
+                <StackPanel Name="Main_Reports" Background="#F0F0F0" Grid.ColumnSpan="3" Visibility="Visible">
+                    <Grid>
+                        <StackPanel Name="Report_List" Grid.Row="0" Grid.Column="0" Background="#FFFFFF" Margin="10">
+                            <ListView x:Name="ListView_Report" GridViewColumnHeader.Click="Report_SortHeaderClick" MouseDoubleClick="Report_ListView_Click" Background="#FFF"
+                                  ScrollViewer.VerticalScrollBarVisibility="Visible" Height="660" FontSize="14">
+                                <ListView.ItemContainerStyle>
+                                    <Style>
+                                        <Setter Property="Control.Background" Value="White" />
+                                        <Setter Property="Control.BorderThickness" Value="0.3" />
+                                        <Setter Property="Control.BorderBrush" Value="Black" />
+                                        <Setter Property="Control.HorizontalContentAlignment" Value="Center"/>
+                                    </Style>
+                                </ListView.ItemContainerStyle>
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn Header="Kép" Width="80">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Image HorizontalAlignment="Center" VerticalAlignment="Center" Width="50" Height="50"
+                                                           Source="{Binding firstPictURL}" Stretch="Fill" Margin="5,5,5,5"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Bejelentő" DisplayMemberBinding="{Binding username}" Width="120"/>
+                                        <GridViewColumn Header="Cím" DisplayMemberBinding="{Binding title}" Width="180"/>
+                                        <GridViewColumn Header="Leírás" Width="200">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding description}" TextWrapping="Wrap"></TextBlock>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Kategória" DisplayMemberBinding="{Binding kategoria}" Width="220"/>
+                                        <GridViewColumn Header="Város" DisplayMemberBinding="{Binding city}" Width="120"/>
+                                        <GridViewColumn Header="Dátum" DisplayMemberBinding="{Binding createdAtHH}" Width="120"/>
+                                        <GridViewColumn Header="Intézmény" DisplayMemberBinding="{Binding intezmeny}" Width="160"/>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </StackPanel>
+                    </Grid>
                 </StackPanel>
                 <StackPanel Name="Main_Cats" Background="#F0F0F0" Grid.ColumnSpan="3" Visibility="Hidden">
                     <Grid>
@@ -345,8 +387,8 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
                         <StackPanel Name="Cat_List" Grid.Row="0" Grid.Column="0" Background="#FFFFFF" Margin="10,11,12,19">
-                            <ListView x:Name="ListView_Cats" GridViewColumnHeader.Click="Cat_SortHeaderClick" MouseDoubleClick="Cat_ListView_Click"
-                                      Background="#FFFDF5" ScrollViewer.VerticalScrollBarVisibility="Visible" RenderTransformOrigin="0.497,0.533">
+                            <ListView Name="ListView_Cats" GridViewColumnHeader.Click="Cat_SortHeaderClick" MouseDoubleClick="Cat_ListView_Click"
+                                      Background="#FFFDF5" ScrollViewer.VerticalScrollBarVisibility="Visible">
                                 <ListView.View>
                                     <GridView>
                                         <GridViewColumn Header="Kategória Neve" DisplayMemberBinding="{Binding categoryName}" Width="220"/>
