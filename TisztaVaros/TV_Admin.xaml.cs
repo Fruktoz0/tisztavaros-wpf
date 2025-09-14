@@ -85,8 +85,6 @@ namespace TisztaVaros
             Get_Cats_List();
             HTTP_Local.IsChecked = App.local_y;
             CB_U_User_Role.ItemsSource = allRoles;
-            int a = CB_U_User_Role.SelectedIndex;
-            MessageBox.Show(a.ToString());
             CB_U_User_Status.ItemsSource = allStatus;
         }
         private void Logo_Click(object sender, EventArgs e)
