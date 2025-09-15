@@ -31,7 +31,7 @@ namespace TisztaVaros
         public string createdAt { get; set; }
         public string createdAtHH
         {
-            get { return createdAt.Substring(0, 16).Replace('T', ' '); }
+            get { return createdAt.Substring(0, 16).Replace('T', ' ').Replace('-','.'); }
             set { }
         }
         public string updatedAt { get; set; }

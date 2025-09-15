@@ -35,8 +35,6 @@ namespace TisztaVaros
                     return "https://smd.hu/Team/placeholderimage.png";
                 }
                 return "https://tisztavaros.hu" + reportImages[0].imageUrl; 
-            
-            
             }
         }
         public TVR_User user { get; set; }

@@ -24,8 +24,6 @@ namespace TisztaVaros
         public static string a_token;
         public static int get_db;
         public static TV_User l_user;
-        private string baseURL = "http://localhost:3002";
-
 
         public async Task<List<TV_Report>> Server_Get_AllReports()
         {
@@ -40,7 +38,7 @@ namespace TisztaVaros
                 response.EnsureSuccessStatusCode();
                 string responseText = await response.Content.ReadAsStringAsync();
                 //MessageBox.Show(responseText);
-                //File.WriteAllText(@"R:\All_reports.txt", responseText);
+                File.WriteAllText(@"R:\All_reports.txt", responseText);
                 all_reports = JsonConvert.DeserializeObject<List<TV_Report>>(responseText);
             }
             catch (Exception e)
@@ -70,10 +68,93 @@ namespace TisztaVaros
             }
             return all_cats;
         }
+        public async Task<string> Server_AddNewCategory(string name, string def_instId)
+        {
+            string a_route = "/api/categories/create";
+            string url = Get_URL() + a_route;
+             var jsonData = new
+            {
+                categoryName = name,
+                defaultInstitutionId=def_instId
+            };
+            try
+            {
+                HttpClient client = new HttpClient();
+                HttpResponseMessage response = new HttpResponseMessage();
+                string stringifiedJson = JsonConvert.SerializeObject(jsonData);
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
+                StringContent sendThis = new StringContent(stringifiedJson, Encoding.UTF8, "Application/JSON");
+                response = await client.PostAsync(url, sendThis);
+                response.EnsureSuccessStatusCode();
+                string responseText = await response.Content.ReadAsStringAsync();
+                TV_Cats new_category = JsonConvert.DeserializeObject<TV_Cats>(responseText);
+                return new_category.id;
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(a_route + "\n\n" + e.Message);
+            }
+            return "22";
+        }
+        public async Task<string> Server_ModifyCategory(string name, string def_instId)
+        {
+            string a_route = "/api/categories/modify";
+            string url = Get_URL() + a_route;
+            var jsonData = new
+            {
+                categoryName = name,
+                defaultInstitutionId = def_instId
+            };
+            try
+            {
+                HttpClient client = new HttpClient();
+                HttpResponseMessage response = new HttpResponseMessage();
+                string stringifiedJson = JsonConvert.SerializeObject(jsonData);
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
+                StringContent sendThis = new StringContent(stringifiedJson, Encoding.UTF8, "Application/JSON");
+                response = await client.PostAsync(url, sendThis);
+                response.EnsureSuccessStatusCode();
+                string responseText = await response.Content.ReadAsStringAsync();
+                TV_Cats mod_category = JsonConvert.DeserializeObject<TV_Cats>(responseText);
+                return mod_category.id;
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(a_route + "\n\n" + e.Message);
+            }
+            return "22";
+        }
+        public async Task<int> Server_Get_ReportCat_db(string cat_id)
+        {
+            int a_out = -1;
+            string a_route = "/api/reports/report_Cat_db";
+            string url = Get_URL() + a_route;
+            var jsonData = new
+            {
+                categoryId = cat_id,
+            };
+            try
+            {
+                HttpClient client = new HttpClient();
+                HttpResponseMessage response = new HttpResponseMessage();
+                string stringifiedJson = JsonConvert.SerializeObject(jsonData);
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
+                StringContent sendThis = new StringContent(stringifiedJson, Encoding.UTF8, "Application/JSON");
+                response = await client.PostAsync(url, sendThis);
+                response.EnsureSuccessStatusCode();
+                string responseText = await response.Content.ReadAsStringAsync();
+                TVS_Found_db a_json = JsonConvert.DeserializeObject<TVS_Found_db>(responseText);
+                a_out = a_json.found_db;
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(a_route + "\n\n" + e.Message);
+            }
+            return a_out;
+        }
         public async Task<int> Server_Get_InstValami_db(string a_route, string inst_id)
         {
             int a_out = -1;
-            //string a_route = "/api/news/news_Inst_db";
             string url = Get_URL() + a_route;
             var jsonData = new
             {
@@ -111,6 +192,26 @@ namespace TisztaVaros
                 string responseInString = await response.Content.ReadAsStringAsync();
                 Message del_msg = JsonConvert.DeserializeObject<Message>(responseInString);
                 return del_msg.message;    
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(a_route + "\n\n" + e.Message);
+            }
+            return "xx";
+        }
+        public async Task<string> Admin_DelCategory(string cat_id)
+        {
+            string a_route = "/api/categories/delete/" + cat_id;
+            string url = Get_URL() + a_route;
+            try
+            {
+                HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
+                HttpResponseMessage response = await client.DeleteAsync(url);
+                response.EnsureSuccessStatusCode();
+                string responseInString = await response.Content.ReadAsStringAsync();
+                Message del_msg = JsonConvert.DeserializeObject<Message>(responseInString);
+                return del_msg.message;
             }
             catch (Exception e)
             {

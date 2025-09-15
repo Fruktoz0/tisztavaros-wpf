@@ -72,7 +72,7 @@ namespace TisztaVaros
             rWindow.Show();
             this.Hide();
         }
-        private async void Bezarka(object sender, EventArgs e)
+        private void Bezarka(object sender, EventArgs e)
         {
             var hwnd = new WindowInteropHelper(this).Handle;
             IntPtr hMenu = GetSystemMenu(hwnd, false);

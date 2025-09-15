@@ -13,6 +13,7 @@ namespace TisztaVaros
         public string defaultinstitutionId { get; set; }
         public string description { get; set; }
         public string createdAt { get; set; }
+        public string rep_db { get; set; }
         public TV_Inst institution { get; set; }
         public string linked_inst
         {

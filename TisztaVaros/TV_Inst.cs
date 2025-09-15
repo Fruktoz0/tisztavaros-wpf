@@ -8,7 +8,7 @@ namespace TisztaVaros
 {
     class TV_Inst
     {
-        public TV_Inst() { }
+        //public TV_Inst() { }
 
         public string id { get; set; }
         public string name { get; set; }

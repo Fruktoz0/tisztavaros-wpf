@@ -60,8 +60,8 @@ namespace TisztaVaros
                 a_emil = "admin@admin.hu";
                 if (App.local_y)
                 {
-                    //a_psw = "admin123";
                     a_psw = "admin";
+                    a_psw = "admin123";
                 }
                 else { a_psw = "admin"; }
             }
