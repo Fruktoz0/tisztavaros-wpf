@@ -139,15 +139,21 @@
                         <TextBox Grid.Row="2" Name="H_Inst_Email" FontSize="16" FontWeight="Bold" Height="30" TextChanged="SelInst_DataChanged"
                                 HorizontalContentAlignment="Center" Margin="180,4,730,4" VerticalContentAlignment="Center" Padding="0,0,0,3"/>
 
-                        <Label Grid.Row="3" Content="Leírás:" FontSize="18" FontWeight="Bold" Width="70"
-                                 HorizontalAlignment="Left" HorizontalContentAlignment="Right" Margin="100,0,0,0"/>
+                        <Label Grid.Row="3" Content="Leírás:" FontSize="18" FontWeight="Bold" Width="108"
+                                 HorizontalAlignment="Left" HorizontalContentAlignment="Right" Margin="490,0,0,0"/>
                         <TextBox Grid.Row="3" Name="H_Inst_Desc" FontSize="16" FontWeight="Bold" Height="30" TextChanged="SelInst_DataChanged"
-                                HorizontalContentAlignment="Center" Margin="180,4,360,4" VerticalContentAlignment="Center" Padding="0,0,0,3"/>
+                                HorizontalContentAlignment="Center" Margin="605,4,12,4" VerticalContentAlignment="Center" Padding="0,0,0,3"/>
 
+                        <!--
+                        <Label Grid.Row="3" Content="Leírás:" FontSize="18" FontWeight="Bold" Width="108"
+                                 HorizontalAlignment="Left" HorizontalContentAlignment="Right" Margin="415,0,0,0"/>
+                        <TextBox Grid.Row="3" Name="H_Inst_Desc" FontSize="16" FontWeight="Bold" Height="30" TextChanged="SelInst_DataChanged"
+                                HorizontalContentAlignment="Center" Margin="530,4,12,4" VerticalContentAlignment="Center" Padding="0,0,0,3"/>
+                        -->
 
                         <Label Grid.Row="1" Content="Zip:" FontSize="18" FontWeight="Bold" Width="46" HorizontalAlignment="Left" HorizontalContentAlignment="Right" Margin="530,0,0,0"/>
                         <TextBox Grid.Row="1" Name="H_Inst_Zip" FontSize="16" FontWeight="Bold" Height="30" TextChanged="SelInst_DataChanged" 
-                                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="580,4,595,4" Padding="0,0,0,3"/>
+                                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="582,4,595,4" Padding="0,0,0,3"/>
 
                         <Label Grid.Row="1" Content="City:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Right" Margin="560,0,530,0"/>
                         <TextBox Grid.Row="1" Name="H_Inst_City" FontSize="16" FontWeight="Bold" Height="30" TextChanged="SelInst_DataChanged" 
@@ -155,22 +161,22 @@
 
                         <Label Grid.Row="2" Content="Address:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Right" Margin="435,0,632,0"/>
                         <TextBox Grid.Row="2" Name="H_Inst_Address" FontSize="16" FontWeight="Bold" Height="30" TextChanged="SelInst_DataChanged" 
-                                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="625,4,120,4" Padding="0,0,0,3"/>
+                                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="625,4,39,4" Padding="0,0,0,3"/>
 
                         <Label Grid.Row="1" Content="Tel:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Right" Margin="970,0,235,0"/>
                         <TextBox Grid.Row="1" Name="H_Inst_Tel" FontSize="16" FontWeight="Bold" Height="30" TextChanged="SelInst_DataChanged" 
-                                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="1020,4,39,4" Padding="0,0,0,3"/>
+                                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="1020,4,39,5" Padding="0,0,0,3"/>
 
-                        <Button Grid.Row="3" Name="H_Inst_ReLoad" Click="Inst_ReLoad" Content="Reload" Margin="10,4,1153,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
-                        <Button Grid.Row="3" Name="H_Inst_SaveNew" Click="Inst_SaveAsNew" Content="Save as New" Margin="1000,4,120,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
-                        <Button Grid.Row="2" Grid.Column="2" Name="H_Inst_Logo" Click="Inst_Logo" Content="Logo" Margin="1142,4,39,4" FontFamily="ParkAveDEE" FontSize="22" 
-                                Foreground="White" FontWeight="Bold" Padding="0,-3,0,0"/>
-                        <Button Grid.Row="3" Grid.Column="2" Name="H_Inst_Save" Click="Inst_Save" Content="Save" Margin="1142,4,39,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
+                        <Button Grid.Row="3" Name="H_Inst_ReLoad" Click="Inst_ReLoad" Content="Reload" Margin="10,4,1153,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
+                        <Button Grid.Row="3" Name="H_Inst_SaveNew" Click="Inst_SaveAsNew" Content="Save as New" Margin="209,4,904,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
+                        <Button Grid.Row="3" Grid.Column="2" Name="H_Inst_Save" Click="Inst_Save" Content="Save" Margin="359,4,810,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
                         <Button Grid.Row="1" Grid.Column="2" Name="H_Inst_Clear" Click="Inst_Clear" Content="" Margin="1220,4,12,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,4" Grid.RowSpan="2"/>
-                        <Button Grid.Row="3" Name="H_Inst_Delete" Click="Inst_Delete" Content="Delete" Margin="902,4,262,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
+                        <Button Grid.Row="3" Name="H_Inst_Delete" Click="Inst_Delete" Content="Delete" Margin="110,4,1054,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
+                        <Button Grid.Row="3" Name="H_Inst_Logo" Click="Inst_Logo" Content="Logo" Margin="453,4,731,4" FontFamily="ParkAveDEE" FontSize="22" 
+                                Foreground="White" FontWeight="Bold" Padding="0,-3,0,0"/>
                     </Grid>
                 </StackPanel>
-                <StackPanel Name="Header_Users" Background="#FFFDF5" Visibility="Hidden">
+                <StackPanel Name="Header_Users" Background="#FFFDF5" Visibility="Visible">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="120"/>
@@ -202,10 +208,6 @@
                         <Label Grid.Row="1" Grid.Column="2" Content="Email:" FontSize="18" FontWeight="Bold" Margin="390,0,-336,0" HorizontalContentAlignment="Right"/>
                         <TextBox Grid.Row="1" Grid.Column="2" Name="H_User_Email" FontSize="14" FontWeight="Bold" Height="30" TextChanged="SelUser_DataChanged"
                                 HorizontalContentAlignment="Center" Margin="461,4,-720,4" VerticalContentAlignment="Center" Padding="0,0,0,3"/>
-                        <Button Grid.Row="3" Grid.Column="0" Name="H_User_Search" Click="User_Search"  Content="Search" HorizontalAlignment="Left"
-                                Width="85" Margin="11,4,0,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,4"/>
-                        <Button Grid.Row="3" Grid.Column="0" Name="H_User_Delete" Click="User_Delete"  Content="Delete" HorizontalAlignment="Left"
-                                Width="85" Margin="110,4,-65,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,4" Grid.ColumnSpan="2"/>
 
                         <Label Grid.Row="2" Grid.Column="2" Content="Zip:" FontSize="18" FontWeight="Bold" Width="50"
                                HorizontalAlignment="Left" HorizontalContentAlignment="Right"/>
@@ -217,23 +219,28 @@
                         <Label Grid.Row="2" Grid.Column="2" Content="Address:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Right" Margin="370,0,-336,0"/>
                         <TextBox Grid.Row="2" Grid.Column="2" Name="H_User_Address" FontSize="16" FontWeight="Bold" Height="30" TextChanged="SelUser_DataChanged"
                                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="461,4,-720,4" Padding="0,0,0,3"/>
-                        <Label Grid.Row="3" Grid.Column="2" Content="Státusz:" FontSize="18" FontWeight="Bold" Width="80"
-                               HorizontalAlignment="Left" HorizontalContentAlignment="Right" Margin="4,0,0,0"/>
+
+                        <Label Grid.Row="3" Grid.Column="2" Content="Státusz:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Right" Margin="95,0,-48,0"/>
                         <ComboBox Grid.Row="3" Grid.Column="2" Name="CB_H_User_Status" Height="30" SelectionChanged="SelUser_CBChanged"
                                   VerticalAlignment="Center" HorizontalContentAlignment="Center" Background="red" FontSize="14"
-                                  FontWeight="Bold" BorderThickness="1,1,1,1" Margin="95,0,-69,0" Padding="0,4,0,0"/>
-                        <Label Grid.Row="3" Grid.Column="2" Content="Szerepkör:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Right" Margin="202,0,-182,0"/>
+                                  FontWeight="Bold" BorderThickness="1,1,1,1" Margin="176,0,-150,0" Padding="0,4,0,0"/>
+                        <Label Grid.Row="3" Grid.Column="2" Content="Szerepkör:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Right" Margin="283,0,-263,0"/>
                         <ComboBox Grid.Row="3" Grid.Column="2" Name="CB_H_User_Role" Height="30" SelectionChanged="SelUser_CBChanged"
                                   VerticalAlignment="Center" HorizontalContentAlignment="Center" Background="LightYellow" FontSize="14"
-                                  FontWeight="Bold" BorderThickness="1,1,1,1" Margin="307,0,-324,0" Padding="0,4,0,0"/>
-                        <Label Grid.Row="3" Grid.Column="2" Content="Hatóság:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Right" Margin="455,0,-422,0"/>
+                                  FontWeight="Bold" BorderThickness="1,1,1,1" Margin="388,0,-405,0" Padding="0,4,0,0"/>
+                        <Label Grid.Row="3" Grid.Column="2" Content="Hatóság:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Right" Margin="536,0,-503,0"/>
                         <ComboBox Grid.Row="3" Grid.Column="2" Name="CB_H_User_Inst" Height="30" SelectionChanged="SelUser_CBChanged" 
                                   VerticalAlignment="Center" HorizontalContentAlignment="Center" Background="LightYellow" FontSize="14"
-                                  FontWeight="Bold" BorderThickness="1,1,1,1" Margin="549,0,-630,0" Padding="0,4,0,0"/>
+                                  FontWeight="Bold" BorderThickness="1,1,1,1" Margin="636,0,-717,0" Padding="0,4,0,0"/>
 
-                        <Button Grid.Row="3" Grid.Column="2" Name="H_User_Save" Click="User_Save" Content="Save" Margin="770,4,-720,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,4"/>
-                        <Button Grid.Row="3" Grid.Column="1" Name="H_User_SaveNew" Click="User_SaveAsNew" Content="Save as New" Margin="89,4,25,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,4"/>
-                        <Button Grid.Row="1" Grid.Column="2" Name="H_User_Clear" Click="User_Clear" Content="" Margin="850,4,-747,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,4" Grid.RowSpan="2"/>
+                        <Button Grid.Row="3" Grid.Column="0" Name="H_User_Search" Click="User_Search"  Content="Search" HorizontalAlignment="Left"
+                                Width="86" Margin="10,4,0,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
+                        <Button Grid.Row="3" Grid.Column="0" Name="H_User_Delete" Click="User_Delete"  Content="Delete" HorizontalAlignment="Left"
+                                Width="85" Margin="110,4,-65,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,3" Grid.ColumnSpan="2"/>
+                        <Button Grid.Row="3" Grid.Column="1" Name="H_User_SaveNew" Click="User_SaveAsNew" Content="Save as New" Margin="89,4,25,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
+                        <Button Grid.Row="3" Grid.Column="1" Name="H_User_Save" Click="User_Save" Content="Save" Margin="239,4,51,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,3" Grid.ColumnSpan="2"/>
+
+                        <Button Grid.Row="1" Grid.Column="2" Name="H_User_Clear" Click="User_Clear" Content="" Margin="850,4,-747,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,3" Grid.RowSpan="2"/>
                         <StackPanel Grid.Row="3" Name="SP_Postit" Margin="839,5,-753,5" Grid.Column="2">
                             <Image MouseLeftButtonUp="Admin_Postit" Name="Img_Postit" Source="https://smd.hu/Team/post-it.png" Height="25" />
                         </StackPanel>
@@ -243,7 +250,7 @@
                     <Label Content="Bejelentések:" FontSize="24" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,20,0,0"/>
                     <Label Content="Itt kezelheted a bejelentéseket." FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,5,0,0"/>
                 </StackPanel>
-                <StackPanel Name="Header_Categories" Background="#FFFDF5" Visibility="Visible">
+                <StackPanel Name="Header_Categories" Background="#FFFDF5" Visibility="Hidden">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="6"/>
@@ -259,21 +266,26 @@
                         <ComboBox Grid.Row="2" Name="CB_H_Category_Inst" Height="30" SelectionChanged="SelCatInst_CBChanged" 
                                  VerticalAlignment="Center" HorizontalContentAlignment="Center" Background="LightYellow" FontSize="14"
                                  FontWeight="Bold" BorderThickness="1,1,1,1" Margin="233,0,810,0" Padding="0,4,0,0"/>
-                        <Button Grid.Row="3" Name="H_Categories_ReLoad" Click="Categories_ReLoad" Content="Reload" Margin="10,4,1153,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
-                        <Button Grid.Row="3" Name="H_Category_SaveNew" Click="Category_SaveAsNew" Content="Save as New" Margin="209,4,904,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,4"/>
-                        <Button Grid.Row="3" Name="H_Category_Save" Click="Category_Save" Content="Save" Margin="359,4,810,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
+
+                        <Button Grid.Row="3" Name="H_Categories_ReLoad" Click="Categories_ReLoad" Content="Reload" Margin="10,4,1153,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
+                        <Button Grid.Row="3" Name="H_Category_SaveNew" Click="Category_SaveAsNew" Content="Save as New" Margin="209,4,904,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
+                        <Button Grid.Row="3" Name="H_Category_Save" Click="Category_Save" Content="Save" Margin="359,4,810,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
                         <Button Grid.Row="3" Grid.Column="0" Name="H_Category_Delete" Click="Category_Delete"  Content="Delete" HorizontalAlignment="Left"
-                                Width="85" Margin="110,4,-65,5" FontSize="18" FontWeight="Bold" Padding="0,0,0,4" Grid.ColumnSpan="2"/>
-                        <Label Grid.Row="2" Content="Intézmény Leírása:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Left" Margin="460,0,600,0"/>
-                        <TextBox Grid.Row="2" Name="H_CategoryInst_Desc" FontSize="16" FontWeight="Bold" Height="30" IsReadOnly="True"
-                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="635,4,40,4" Padding="0,0,0,3"/>
-                        <Label Grid.Row="3" Content="Intézmény Elérhetősége:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Left" Margin="460,0,560,0"/>
-                        <TextBox Grid.Row="3" Name="H_CategoryInst_Contact" FontSize="16" FontWeight="Bold" Height="30" IsReadOnly="True"
-                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="685,4,40,4" Padding="0,0,0,3"/>
-                        <Button Grid.Row="1" Grid.Column="2" Name="H_Categories_Clear" Click="Categories_Clear" Content="" Margin="1220,4,12,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,4" Grid.RowSpan="2"/>
+                                Width="85" Margin="110,4,-65,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,3" Grid.ColumnSpan="2"/>
+
                         <Label Grid.Row="1" Content="Bejelentések száma:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Left" Margin="630,0,440,0"/>
                         <TextBox Grid.Row="1" x:Name="H_Category_Reports_N" FontSize="16" FontWeight="Bold" Height="30" IsReadOnly="True"
-                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="825,4,361,4" Padding="0,0,0,3"/>
+                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="818,4,361,4" Padding="0,0,0,3"/>
+
+                        <Label Grid.Row="2" Content="Intézmény Leírása:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Left" Margin="460,0,600,0"/>
+                        <TextBox Grid.Row="2" Name="H_CategoryInst_Desc" FontSize="16" FontWeight="Bold" Height="30" IsReadOnly="True"
+                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="635,4,39,4" Padding="0,0,0,3"/>
+
+                        <Label Grid.Row="3" Content="Intézmény Elérhetősége:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Left" Margin="460,0,560,0"/>
+                        <TextBox Grid.Row="3" Name="H_CategoryInst_Contact" FontSize="16" FontWeight="Bold" Height="30" IsReadOnly="True"
+                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="685,4,12,4" Padding="0,0,0,3"/>
+
+                        <Button Grid.Row="1" Grid.Column="2" Name="H_Categories_Clear" Click="Categories_Clear" Content="" Margin="1220,4,12,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,4" Grid.RowSpan="2"/>
                     </Grid>
                 </StackPanel>
                 <StackPanel Name="Header_Challenges" Background="LightBlue" Visibility="Hidden">
@@ -390,7 +402,7 @@
                         </StackPanel>
                     </Grid>
                 </StackPanel>
-                <StackPanel Name="Main_Categories" Background="#F0F0F0" Grid.ColumnSpan="3" Visibility="Visible">
+                <StackPanel Name="Main_Categories" Background="#F0F0F0" Grid.ColumnSpan="3" Visibility="Hidden">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*"/>
@@ -412,7 +424,7 @@
                         </StackPanel>
                     </Grid>
                 </StackPanel>
-                <StackPanel Name="Main_Institutions" Background="#F0F0F0" Grid.ColumnSpan="3" Visibility="Hidden">
+                <StackPanel Name="Main_Institutions" Background="#F0F0F0" Grid.ColumnSpan="3" Visibility="Visible">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="330"/>

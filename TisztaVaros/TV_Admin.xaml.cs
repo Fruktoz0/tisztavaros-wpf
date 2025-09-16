@@ -1314,9 +1314,17 @@ namespace TisztaVaros
                 {
                     H_Inst_Delete.Background = new SolidColorBrush(Colors.Red);
                     MessageBox.Show("Az Intézménynek vannak Munkatársai, előbb a hozzárendeléseket törölni kell!");
+                    return;
                 }
-                MessageBox.Show("Intézmény Elvileg létezik, törölhető!");
-                return;
+                if (MessageBox.Show("[ '" + sel_inst.name + "' ]\n\nMindenképpen törölni akarod ezt az Intézményt?",
+                    "Intézmény Törlése:", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                {
+                    //await connection.Admin_DelInstitution(sel_inst.id);
+                    string del_res = await connection.Admin_Del_byID("/api/institutions/delete/", sel_inst.id);
+                    if (del_res == "xx") { MessageBox.Show("Nem sikerült a törlés!"); }
+                    Get_Inst_List();
+                    Inst_ClearData();
+                }
             }
         }
         private void Detach_Worker(object sender, RoutedEventArgs e)

@@ -72,10 +72,10 @@ namespace TisztaVaros
         {
             string a_route = "/api/categories/create";
             string url = Get_URL() + a_route;
-             var jsonData = new
+            var jsonData = new
             {
                 categoryName = name,
-                defaultInstitutionId=def_instId
+                defaultInstitutionId = def_instId
             };
             try
             {
@@ -179,10 +179,10 @@ namespace TisztaVaros
             }
             return a_out;
         }
-        public async Task<string>Admin_DelUser(string a_email)
+        public async Task<string> Admin_DelUser(string a_email)
         {
             string a_route = "/api/auth/delete/" + a_email;
-            string url = Get_URL() + a_route; 
+            string url = Get_URL() + a_route;
             try
             {
                 HttpClient client = new HttpClient();
@@ -191,7 +191,48 @@ namespace TisztaVaros
                 response.EnsureSuccessStatusCode();
                 string responseInString = await response.Content.ReadAsStringAsync();
                 Message del_msg = JsonConvert.DeserializeObject<Message>(responseInString);
-                return del_msg.message;    
+                return del_msg.message;
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(a_route + "\n\n" + e.Message);
+            }
+            return "xx";
+        }
+        public async Task<string> Admin_Del_byID(string a_route, string vmi_id)
+        {
+            //string a_route = "/api/institutions/delete/" + inst_id;
+            string url = Get_URL() + a_route + vmi_id;
+            try
+            {
+                HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
+                HttpResponseMessage response = await client.DeleteAsync(url);
+                response.EnsureSuccessStatusCode();
+                string responseInString = await response.Content.ReadAsStringAsync();
+                Message del_msg = JsonConvert.DeserializeObject<Message>(responseInString);
+                return del_msg.message;
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(a_route + "\n\n" + e.Message);
+            }
+            return "xx";
+        }
+
+        public async Task<string> Admin_DelInstitution(string inst_id)
+        {
+            string a_route = "/api/institutions/delete/" + inst_id;
+            string url = Get_URL() + a_route;
+            try
+            {
+                HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
+                HttpResponseMessage response = await client.DeleteAsync(url);
+                response.EnsureSuccessStatusCode();
+                string responseInString = await response.Content.ReadAsStringAsync();
+                Message del_msg = JsonConvert.DeserializeObject<Message>(responseInString);
+                return del_msg.message;
             }
             catch (Exception e)
             {
@@ -464,7 +505,7 @@ namespace TisztaVaros
             HttpClient client = new HttpClient();
             TV_User loggedUser = new();
             Message loginMessage = new Message();
-            string responseText="";
+            string responseText = "";
             reg_ok = false;
             string url = Get_URL() + "/api/auth/login";
             try
@@ -476,7 +517,7 @@ namespace TisztaVaros
                 };
                 string stringifiedJson = JsonConvert.SerializeObject(jsonData);
                 StringContent sendThis = new StringContent(stringifiedJson, Encoding.UTF8, "Application/JSON");
-                HttpResponseMessage response = await client.PostAsync(url, sendThis);                
+                HttpResponseMessage response = await client.PostAsync(url, sendThis);
                 responseText = await response.Content.ReadAsStringAsync();
                 response.EnsureSuccessStatusCode();
                 TV_Token getToken = JsonConvert.DeserializeObject<TV_Token>(responseText);
