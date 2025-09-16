@@ -220,15 +220,15 @@
                         <TextBox Grid.Row="2" Grid.Column="2" Name="H_User_Address" FontSize="16" FontWeight="Bold" Height="30" TextChanged="SelUser_DataChanged"
                                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="461,4,-720,4" Padding="0,0,0,3"/>
 
-                        <Label Grid.Row="3" Grid.Column="2" Content="Státusz:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Right" Margin="95,0,-48,0"/>
+                        <Label Grid.Row="3" Grid.Column="2" Content="Státusz:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Right" Margin="86,0,-39,0"/>
                         <ComboBox Grid.Row="3" Grid.Column="2" Name="CB_H_User_Status" Height="30" SelectionChanged="SelUser_CBChanged"
                                   VerticalAlignment="Center" HorizontalContentAlignment="Center" Background="red" FontSize="14"
-                                  FontWeight="Bold" BorderThickness="1,1,1,1" Margin="176,0,-150,0" Padding="0,4,0,0"/>
+                                  FontWeight="Bold" BorderThickness="1,1,1,1" Margin="169,0,-143,0" Padding="0,4,0,0"/>
                         <Label Grid.Row="3" Grid.Column="2" Content="Szerepkör:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Right" Margin="283,0,-263,0"/>
                         <ComboBox Grid.Row="3" Grid.Column="2" Name="CB_H_User_Role" Height="30" SelectionChanged="SelUser_CBChanged"
                                   VerticalAlignment="Center" HorizontalContentAlignment="Center" Background="LightYellow" FontSize="14"
-                                  FontWeight="Bold" BorderThickness="1,1,1,1" Margin="388,0,-405,0" Padding="0,4,0,0"/>
-                        <Label Grid.Row="3" Grid.Column="2" Content="Hatóság:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Right" Margin="536,0,-503,0"/>
+                                  FontWeight="Bold" BorderThickness="1,1,1,1" Margin="390,0,-407,0" Padding="0,4,0,0"/>
+                        <Label Grid.Row="3" Grid.Column="2" Content="Hatóság:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Right" Margin="541,0,-508,0"/>
                         <ComboBox Grid.Row="3" Grid.Column="2" Name="CB_H_User_Inst" Height="30" SelectionChanged="SelUser_CBChanged" 
                                   VerticalAlignment="Center" HorizontalContentAlignment="Center" Background="LightYellow" FontSize="14"
                                   FontWeight="Bold" BorderThickness="1,1,1,1" Margin="636,0,-717,0" Padding="0,4,0,0"/>
@@ -238,7 +238,7 @@
                         <Button Grid.Row="3" Grid.Column="0" Name="H_User_Delete" Click="User_Delete"  Content="Delete" HorizontalAlignment="Left"
                                 Width="85" Margin="110,4,-65,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,3" Grid.ColumnSpan="2"/>
                         <Button Grid.Row="3" Grid.Column="1" Name="H_User_SaveNew" Click="User_SaveAsNew" Content="Save as New" Margin="89,4,25,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
-                        <Button Grid.Row="3" Grid.Column="1" Name="H_User_Save" Click="User_Save" Content="Save" Margin="239,4,51,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,3" Grid.ColumnSpan="2"/>
+                        <Button Grid.Row="3" Grid.Column="2" Name="H_User_Save" Click="User_Save" Content="Save" Margin="-11,4,51,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,3" Grid.ColumnSpan="2"/>
 
                         <Button Grid.Row="1" Grid.Column="2" Name="H_User_Clear" Click="User_Clear" Content="" Margin="850,4,-747,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,3" Grid.RowSpan="2"/>
                         <StackPanel Grid.Row="3" Name="SP_Postit" Margin="839,5,-753,5" Grid.Column="2">

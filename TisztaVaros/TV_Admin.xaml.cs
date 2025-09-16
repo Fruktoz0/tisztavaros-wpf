@@ -1292,7 +1292,9 @@ namespace TisztaVaros
                     if (MessageBox.Show("[ '" + sel_cat.categoryName + "' ]\n\nMindenképpen törölni akarod ezt a kategóriát?",
                         "Kategória Törlése:", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                     {
-                        await connection.Admin_DelCategory(sel_cat.id);
+                        //await connection.Admin_DelCategory(sel_cat.id);
+                        string del_res = await connection.Admin_Del_byID("/api/categories/delete/", sel_cat.id);
+                        if (del_res == "xx") { MessageBox.Show("Nem sikerült a törlés!"); return; }
                         Get_Categories_List();
                         Categories_ClearData();
                     }
@@ -1321,7 +1323,7 @@ namespace TisztaVaros
                 {
                     //await connection.Admin_DelInstitution(sel_inst.id);
                     string del_res = await connection.Admin_Del_byID("/api/institutions/delete/", sel_inst.id);
-                    if (del_res == "xx") { MessageBox.Show("Nem sikerült a törlés!"); }
+                    if (del_res == "xx") { MessageBox.Show("Nem sikerült a törlés!"); return; }
                     Get_Inst_List();
                     Inst_ClearData();
                 }

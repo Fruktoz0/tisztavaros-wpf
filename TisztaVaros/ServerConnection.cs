@@ -38,7 +38,7 @@ namespace TisztaVaros
                 response.EnsureSuccessStatusCode();
                 string responseText = await response.Content.ReadAsStringAsync();
                 //MessageBox.Show(responseText);
-                File.WriteAllText(@"R:\All_reports.txt", responseText);
+                //File.WriteAllText(@"R:\All_reports.txt", responseText);
                 all_reports = JsonConvert.DeserializeObject<List<TV_Report>>(responseText);
             }
             catch (Exception e)
@@ -201,49 +201,7 @@ namespace TisztaVaros
         }
         public async Task<string> Admin_Del_byID(string a_route, string vmi_id)
         {
-            //string a_route = "/api/institutions/delete/" + inst_id;
             string url = Get_URL() + a_route + vmi_id;
-            try
-            {
-                HttpClient client = new HttpClient();
-                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
-                HttpResponseMessage response = await client.DeleteAsync(url);
-                response.EnsureSuccessStatusCode();
-                string responseInString = await response.Content.ReadAsStringAsync();
-                Message del_msg = JsonConvert.DeserializeObject<Message>(responseInString);
-                return del_msg.message;
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show(a_route + "\n\n" + e.Message);
-            }
-            return "xx";
-        }
-
-        public async Task<string> Admin_DelInstitution(string inst_id)
-        {
-            string a_route = "/api/institutions/delete/" + inst_id;
-            string url = Get_URL() + a_route;
-            try
-            {
-                HttpClient client = new HttpClient();
-                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
-                HttpResponseMessage response = await client.DeleteAsync(url);
-                response.EnsureSuccessStatusCode();
-                string responseInString = await response.Content.ReadAsStringAsync();
-                Message del_msg = JsonConvert.DeserializeObject<Message>(responseInString);
-                return del_msg.message;
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show(a_route + "\n\n" + e.Message);
-            }
-            return "xx";
-        }
-        public async Task<string> Admin_DelCategory(string cat_id)
-        {
-            string a_route = "/api/categories/delete/" + cat_id;
-            string url = Get_URL() + a_route;
             try
             {
                 HttpClient client = new HttpClient();
@@ -269,7 +227,6 @@ namespace TisztaVaros
                 HttpClient client = new HttpClient();
                 HttpResponseMessage response = new HttpResponseMessage();
                 string stringifiedJson = JsonConvert.SerializeObject(a_inst);
-                ;
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
                 StringContent sendThis = new StringContent(stringifiedJson, Encoding.UTF8, "Application/JSON");
                 response = await client.PostAsync(url, sendThis);
