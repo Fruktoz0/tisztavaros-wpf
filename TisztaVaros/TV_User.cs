@@ -27,7 +27,41 @@ namespace TisztaVaros
         public string c_psw { get; set; }
         public int points { get; set; }
         public string role { get; set; }
+        public string c_role { get 
+            {
+                string out_color = "";
+                if (role == "user") out_color = "White";
+                else if (role == "admin") out_color = "MediumSpringGreen";
+                else if (role == "inspector") out_color = "Yellow";
+                else if (role == "institution") out_color = "Orange";
+                return out_color;
+            }
+        }
         public string isActive { get; set; }
+
+        public string c_isActive {
+            get 
+            {
+                string out_color = "";
+                if (isActive == "archived") out_color = "LightGray";
+                else if (isActive =="active") out_color = "White";
+                else out_color = "LightGray";
+                return out_color;
+            }
+        }
+        public string c_row { 
+            get
+            {
+                string out_color = "";
+                if (isActive == "archived") out_color = "LightGray";
+                else if (role == "user") out_color = "White";
+                else if (role == "admin") out_color = "MediumSpringGreen";
+                else if (role == "inspector") out_color = "Yellow";
+                else if (role == "institution") out_color = "Orange";
+                return out_color;
+            }
+        }
+
         public string createdAt { get; set; }
         public string createdAtHH
         {

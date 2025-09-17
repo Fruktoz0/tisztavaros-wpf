@@ -10,6 +10,7 @@ using System.Globalization;
 using System.Linq;
 using System.Printing;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -58,12 +59,17 @@ namespace TisztaVaros
         TV_User sel_user;
         TV_Inst sel_inst, sel_instw;
         TV_Cats sel_cat;
+        TV_Report sel_report, sel_report_last;
         public static string new_vmi_psw = "";
-        bool chk_udata_y = false, chk_idata_y = false, chk_cdata_y = false, start_inst_y = true, start_cats_y = true, hw_now_y = true;
-        bool already_exist = false;
+        bool chk_udata_y = false, chk_idata_y = false, chk_cdata_y = false;
+        bool start_inst_y = true, start_cats_y = true, start_report_y = true;
+        bool already_exist = false, hw_now_y = true;
         string bc_Gray = "#FFDDDDDD", bc_LightGreen = "#6FB1A5", bc_Green = "#FF6EF525", tb_NotEmpty = "#FF4EFFD2", bc_Yellow = "#FFF9DD24";
         string tb_LightRed = "#FFFFACAC";
         Border cb_defBorder;
+        int view_rep_pict, max_rep_pict, sel_rep_idx;
+        string rep_pict_url = "https://tisztavaros.hu";
+        double[] pict_arany = new double[5];
 
         bool hold_workers = false;
         public static string inst_logo_url = "";
@@ -77,10 +83,16 @@ namespace TisztaVaros
         const uint MF_ENABLED = 0x00000000;
         const uint SC_CLOSE = 0xF060;
         BitmapImage empty_logo = new BitmapImage(new Uri("https://smd.hu/Team/Empty_Logo.gif"));
+        BitmapImage rep_Picture;
+
+        string[] db_status = new string[7] { "open", "accepted", "forwarded", "in_progress", "rejected", "resolved", "reopened" };
+        string[] db_statusH = new string[7] { "Megnyitva", "Befogadva", "Továbbítva", "Folyamatban", "Elutasítva", "Megoldva", "Újranyitva" };
+
 
         public TV_Admin()
         {
             InitializeComponent();
+            Panel.SetZIndex(Report_Detail, 0);
             connection = new ServerConnection();
             LocationChanged += new EventHandler(Win_Mozog);
             b_all = [B_Users, B_Categories, B_Institutions, B_Reports, B_Challenges];
@@ -154,12 +166,12 @@ namespace TisztaVaros
             App.local_y = (bool)HTTP_Local.IsChecked;
         }
 
-        private async void Get_Admin_Reports(object sender, RoutedEventArgs e)
+        private void Get_Admin_Reports(object sender, RoutedEventArgs e)
         {
             Button a_Button = sender as Button;
             ReColorButtons(a_Button);
-            list_reports = await connection.Server_Get_AllReports();
-            ListView_Reports.ItemsSource = list_reports;
+            //Back2Report_List(sender, e);
+            Get_Report_List();
         }
         private void Get_Admin_Categories(object sender, RoutedEventArgs e)
         {
@@ -204,6 +216,15 @@ namespace TisztaVaros
                 }
             }
             ListView_User.ItemsSource = list_user.OrderBy(u => u.username).ToList();
+            /*for (int i = 0; i < ListView_User.Items.Count; i++)
+            {   
+                TV_User a_user = ListView_User.Items[i] as TV_User;
+
+                if (a_user.isActive == "archived")
+                {
+                    ListView_User.Items[i].Background = Brushes.LightGray;
+                }
+            }*/
         }
         private async void Get_Inst_List()
         {
@@ -451,27 +472,6 @@ namespace TisztaVaros
                     psw_input.Top = this.Top + this.Height / 2 - psw_input.Height / 2;
                     psw_input.Left = this.Left + this.Width / 2 - psw_input.Width / 2;
                     psw_input.Show();
-                    while (new_vmi_psw == "x" && !start_inst_y)
-                    {
-                        await Task.Delay(500);
-                    }
-                    if (new_vmi_psw != "xx" && new_vmi_psw != "x")
-                    {
-                        App.postit += "PSW for '" + H_User_Email.Text + "': '" + new_vmi_psw + "'\n";
-                        string new_userId = await connection.Admin_AddNewUser(H_User_Email.Text, H_User_Name.Text, new_vmi_psw);
-                        if (new_userId == "22")
-                        {
-                            MessageBox.Show("Hiba az új felhasználó felvételénél!");
-                            return;
-                        }
-                        if (sel_user != null)
-                        {
-                            sel_user.id = new_userId;
-                            User_Update();
-                        }
-                        User_ClearData();
-                        Get_User_List(S_User_Name.Text, S_User_Email.Text);
-                    }
                 }
                 else
                 {
@@ -585,7 +585,7 @@ namespace TisztaVaros
                 }
                 else
                 {
-                    MessageBox.Show("Update Hiba!");
+                    // MessageBox.Show("Update Hiba!");
                 }
             }
             else { MessageBox.Show("Hiba"); }
@@ -753,9 +753,118 @@ namespace TisztaVaros
             }
             Inst_Sel_Stat_Auto();
         }
-        private void Report_ListView_Click(object sender, RoutedEventArgs e)
+        private async void Report_ListView_Click(object sender, RoutedEventArgs e)
         {
 
+            sel_report = ListView_Reports.SelectedItem as TV_Report;
+            if (sel_report != null)
+            {
+                Report_Detail.Visibility = Visibility.Visible;
+                Panel.SetZIndex(Report_Detail, 2);
+                ReportDetail_Cím.Content = sel_report.title;
+                ReportDetail_Desc.Text = sel_report.description;
+                ReportDetail_User.Content = sel_report.username;
+                ReportDetail_Category.Content = sel_report.category.categoryName;
+                ReportDetail_Address.Content = sel_report.address + " " + sel_report.zipCode;
+                ReportDetail_Coords.Content = sel_report.locationLat + " " + sel_report.locationLng;
+                ReportDetail_Inst.Content = sel_report.institution.name;
+                max_rep_pict = sel_report.reportImages.Count - 1;
+                if (sel_report.reportImages.Count <= 1)
+                {
+                    B_Prev_Pict.Visibility = Visibility.Hidden;
+                    B_Next_Pict.Visibility = Visibility.Hidden;
+                }
+                else
+                {
+                    B_Prev_Pict.Visibility = Visibility.Visible;
+                    B_Next_Pict.Visibility = Visibility.Visible;
+                }
+                if (sel_report != sel_report_last)
+                {
+                    view_rep_pict = 0;
+                    rep_Picture = new BitmapImage(new Uri(rep_pict_url + sel_report.reportImages[view_rep_pict].imageUrl));
+                    while (rep_Picture.Width == 1)
+                    {
+                        await Task.Delay(100);
+
+                    }
+                    sel_report_last = sel_report;
+
+                    Thickness margin = ReportDetail_Pict.Margin;
+                    margin.Top = await Get_Pict_MarginTop();
+                    ReportDetail_Pict.Margin = margin;
+                    //ReportDetail_VMI.Content = margin.Top.ToString() + " - " + rep_Picture.Width.ToString() + " - " + rep_Picture.Height.ToString();
+                }
+                ReportDetail_Pict.Source = rep_Picture;
+                ReportDetail_Status.Content = sel_report.status;
+                ReportDetail_Date.Content = sel_report.createdAtHH;
+            }
+        }
+        private async Task<double> Get_Pict_MarginTop()
+        {
+            while (rep_Picture.Width == 1)
+            {
+                await Task.Delay(100);
+
+            }
+            double mtop = (255 - rep_Picture.Height / rep_Picture.Width * 400) / 2 + 20;
+            if (mtop > 0.0) { mtop = 0.0; }
+            return mtop;
+        }
+        private void View_ReportPict_Prev(object sender, RoutedEventArgs e)
+        {
+            if (view_rep_pict > 0)
+            {
+                view_rep_pict--;
+                rep_Picture = new BitmapImage(new Uri(rep_pict_url + sel_report.reportImages[view_rep_pict].imageUrl));
+                ReportDetail_Pict.Source = rep_Picture;
+                return;
+            }
+        }
+
+        private void View_ReportPict_Next(object sender, RoutedEventArgs e)
+        {
+            if (view_rep_pict < max_rep_pict)
+            {
+                view_rep_pict++;
+                rep_Picture = new BitmapImage(new Uri(rep_pict_url + sel_report.reportImages[view_rep_pict].imageUrl));
+                ReportDetail_Pict.Source = rep_Picture;
+                return;
+            }
+        }
+
+        private async void Report_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Left) { View_ReportPict_Prev(sender, e); }
+            if (e.Key == Key.Right) { View_ReportPict_Next(sender, e); }
+            if (e.Key == Key.NumPad8)
+            {
+                Thickness margin = ReportDetail_Pict.Margin;
+                margin.Top = margin.Top - 10;
+                ReportDetail_Pict.Margin = margin;
+            }
+            else if (e.Key == Key.NumPad5)
+            {
+                Thickness margin = ReportDetail_Pict.Margin;
+                margin.Top = await Get_Pict_MarginTop();
+                margin.Left = 0;
+                ReportDetail_Pict.Margin = margin;
+            }
+            else if (e.Key == Key.NumPad2)
+            {
+                Thickness margin = ReportDetail_Pict.Margin;
+                if (margin.Top < 0)
+                {
+                    margin.Top = margin.Top + 10;
+                    ReportDetail_Pict.Margin = margin;
+                }
+            }
+            else if (e.Key == Key.Escape) { Panel.SetZIndex(Report_Detail, 0); }
+        }
+        private void Back2Report_List(object sender, RoutedEventArgs e)
+        {
+            Panel.SetZIndex(Report_Detail, 0);
+            //Report_List.Visibility = Visibility.Visible;
         }
         private async void Category_ListView_Click(object sender, RoutedEventArgs e)
         {
@@ -1095,10 +1204,10 @@ namespace TisztaVaros
                 await Task.Delay(100);
                 ListView_Inst.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFF"));
             }
-            if (start_inst_y)
+            /*if (start_inst_y)
             {
                 await Task.Delay(100);
-            }
+            }*/
             ListView_Inst.Focus();
             ListView_Inst.SelectedItem = ListView_Inst.Items[0];
             ListView_Inst.UpdateLayout();
@@ -1216,26 +1325,29 @@ namespace TisztaVaros
         private async void User_Delete(object sender, RoutedEventArgs e)
         {
             string del_name = H_User_Name.Text;
-            string del_msg = await connection.Admin_DelUser(H_User_Email.Text.ToString());
-            if (del_msg == "Nem vagyok Teszt üzemmódban.")
+            if (MessageBox.Show("[ '" + del_name + "' ]\n\nMindenképpen törölni akarod ezt a felhasználót", "Felhasnáló Törlése:", 
+                MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
-                MessageBox.Show("A törlés most nem engedélyezett, csak teszt üzemmódban!");
-                return;
-            }
-            if (del_msg != "xx")
-            {
-                TV_User a_del = list_user.Find(u => u.email == H_User_Email.Text);
-                if (a_del != null)
+                string del_msg = await connection.Admin_DelUser(H_User_Email.Text.ToString());
+                if (del_msg == "Nem vagyok Teszt üzemmódban.")
                 {
-                    Get_User_List(S_User_Name.Text, S_User_Email.Text);
+                    MessageBox.Show("A törlés most nem engedélyezett, csak teszt üzemmódban!");
+                    return;
                 }
-                User_ClearData();
-                MessageBox.Show("User: '" + del_name + "'\n\n" + del_msg);
-                return;
+                if (del_msg != "xx")
+                {
+                    TV_User a_del = list_user.Find(u => u.email == H_User_Email.Text);
+                    if (a_del != null)
+                    {
+                        Get_User_List(S_User_Name.Text, S_User_Email.Text);
+                    }
+                    User_ClearData();
+                    MessageBox.Show("User: '" + del_name + "'\n\n" + del_msg);
+                    return;
+                }
+                MessageBox.Show("A törlés nem sikerült!");
             }
-            MessageBox.Show("A törlés nem sikerült!");
         }
-
         public bool Valid_Email(string email)
         {
             try
@@ -1282,7 +1394,6 @@ namespace TisztaVaros
             H_Category_SaveNew.Background = H_User_Search.Background;
             Categories_ClearData();
         }
-
         private async void Category_Delete(object sender, RoutedEventArgs e)
         {
             if (sel_cat != null)
@@ -1292,7 +1403,6 @@ namespace TisztaVaros
                     if (MessageBox.Show("[ '" + sel_cat.categoryName + "' ]\n\nMindenképpen törölni akarod ezt a kategóriát?",
                         "Kategória Törlése:", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                     {
-                        //await connection.Admin_DelCategory(sel_cat.id);
                         string del_res = await connection.Admin_Del_byID("/api/categories/delete/", sel_cat.id);
                         if (del_res == "xx") { MessageBox.Show("Nem sikerült a törlés!"); return; }
                         Get_Categories_List();
@@ -1304,6 +1414,33 @@ namespace TisztaVaros
                     MessageBox.Show("Ezt a kategóriát nem tudom törölni, mert már " + H_Category_Reports_N.Text +
                         " bejelentés érkezett rá!", "Kategória Törlése:");
                 }
+            }
+        }
+
+        private void Report_ReLoad(object sender, RoutedEventArgs e)
+        {
+            Get_Report_List();
+        }
+
+        private async void Get_Report_List()
+        {
+            if (!start_report_y)
+            {
+                ListView_Reports.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bus_Yellow));
+            }
+            list_reports = await connection.Server_Get_AllReports();
+            ListView_Reports.ItemsSource = list_reports;
+            if (!start_report_y)
+            {
+                await Task.Delay(100);
+                ListView_Reports.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFF"));
+            }
+            start_report_y = false;
+            foreach (var item in list_reports)
+            {
+                if (item.reportImages.Count > 1) { item.pict_db = "+"; }
+                else { item.pict_db = ""; }
+                //item.pict_db = item.reportImages.Count.ToString();
             }
         }
         private async void Inst_Delete(object sender, RoutedEventArgs e)
@@ -1402,6 +1539,26 @@ namespace TisztaVaros
             {
                 Logo_Actual();
                 SelInst_CHK_Modified();
+            }
+            else if (sender is InputBox)
+            {
+                if (new_vmi_psw != "xx" && new_vmi_psw != "x")
+                {
+                    App.postit += "PSW for '" + H_User_Email.Text + "': '" + new_vmi_psw + "'\n";
+                    string new_userId = await connection.Admin_AddNewUser(H_User_Email.Text, H_User_Name.Text, new_vmi_psw);
+                    if (new_userId == "22")
+                    {
+                        MessageBox.Show("Hiba az új felhasználó felvételénél!");
+                        return;
+                    }
+                    if (sel_user != null)
+                    {
+                        sel_user.id = new_userId;
+                        User_Update();
+                    }
+                    User_ClearData();
+                    Get_User_List(S_User_Name.Text, S_User_Email.Text);
+                }
             }
         }
         private void Logo_Actual()
