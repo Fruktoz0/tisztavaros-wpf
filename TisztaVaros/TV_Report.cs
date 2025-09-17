@@ -11,6 +11,12 @@ namespace TisztaVaros
         public TV_Report() { }
 
         public int id { get; set; }
+        public string view_id { get
+            { 
+                return id.ToString("0000"); ;
+            }
+            set { } 
+        }
         public string userId { get; set; }
         public string title { get; set; }
         public string description { get; set; }
@@ -37,6 +43,7 @@ namespace TisztaVaros
                 return "https://tisztavaros.hu" + reportImages[0].imageUrl; 
             }
         }
+        public string pict_db { get; set; }
         public TVR_User user { get; set; }
         public string username { get { return user.username; } }
         public TVR_Category category { get; set; }

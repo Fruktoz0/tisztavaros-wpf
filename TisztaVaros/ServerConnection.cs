@@ -183,18 +183,24 @@ namespace TisztaVaros
         {
             string a_route = "/api/auth/delete/" + a_email;
             string url = Get_URL() + a_route;
+            int res_status = 0;
             try
             {
                 HttpClient client = new HttpClient();
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
                 HttpResponseMessage response = await client.DeleteAsync(url);
+                res_status = (int)response.StatusCode;
                 response.EnsureSuccessStatusCode();
-                string responseInString = await response.Content.ReadAsStringAsync();
-                Message del_msg = JsonConvert.DeserializeObject<Message>(responseInString);
+                string responseText = await response.Content.ReadAsStringAsync();
+                Message del_msg = JsonConvert.DeserializeObject<Message>(responseText);
                 return del_msg.message;
             }
             catch (Exception e)
             {
+                if (res_status == 401)
+                {
+
+                }
                 MessageBox.Show(a_route + "\n\n" + e.Message);
             }
             return "xx";
