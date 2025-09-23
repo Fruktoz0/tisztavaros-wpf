@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:TisztaVaros"
         mc:Ignorable="d"
         Title="Tiszta Város Admin:" Height="850" Width="1500" ResizeMode="NoResize"
-    xmlns:theme="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2">
+        xmlns:theme="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2"
+        KeyDown="TV_Admin_KeyDown">
     <Window.Resources>
         <Style TargetType="{x:Type TextBox}">
             <Style.Resources>
@@ -22,10 +23,17 @@
                 </Style>
             </Style.Resources>
         </Style>
+        <Style TargetType="{x:Type DatePicker}">
+            <Style.Resources>
+                <Style TargetType="{x:Type Border}">
+                    <Setter Property="CornerRadius" Value="3" />
+                </Style>
+            </Style.Resources>
+        </Style>
         <Style x:Key="KerekGomb" TargetType="Button">
             <Style.Resources>
                 <Style TargetType="{x:Type Border}">
-                    <Setter Property="CornerRadius" Value="15" />
+                    <Setter Property="CornerRadius" Value="7" />
                 </Style>
             </Style.Resources>
         </Style>
@@ -59,7 +67,7 @@
             </Button>
             <Image Grid.Row="2" Panel.ZIndex="4" Width="20" Margin="15,-2,175,0">
                 <Image.Source>
-                    <BitmapImage UriSource="https://smd.hu/Team/Icon_User_Big4.png" />
+                    <BitmapImage UriSource="https://smd.hu/Team/Icon/Icon_User_Big.png" />
                 </Image.Source>
             </Image>
             <Button Grid.Row="3" Name="B_Reports" Click="Get_Admin_Reports" Content="Bejelentések:" Margin="15,10,15,15" FontSize="17" Foreground="White" Background="#6FB1A5">
@@ -69,7 +77,7 @@
             </Button>
             <Image Grid.Row="3" Panel.ZIndex="4" Width="22" Margin="15,-2,175,0">
                 <Image.Source>
-                    <BitmapImage UriSource="https://smd.hu/Team/Icon_Reports_Big.png" />
+                    <BitmapImage UriSource="https://smd.hu/Team/Icon/Icon_Reports_Big.png" />
                 </Image.Source>
             </Image>
             <Button Grid.Row="4" Name="B_Categories" Click="Get_Admin_Categories" Content="Kategoriák:" Margin="15,10,15,15" FontSize="17" Foreground="White" Background="#6FB1A5">
@@ -79,7 +87,7 @@
             </Button>
             <Image Grid.Row="4" Panel.ZIndex="4" Width="20" Margin="15,-2,175,0">
                 <Image.Source>
-                    <BitmapImage UriSource="https://smd.hu/Team/Icon_Reports_Big.png" />
+                    <BitmapImage UriSource="https://smd.hu/Team/Icon/Icon_Reports_Big.png" />
                 </Image.Source>
             </Image>
             <Button Grid.Row="5" Name="B_Institutions" Click="Get_Admin_Institutions" Content="Intézmények:" Margin="15,10,15,15" FontSize="17" Foreground="White" Background="#6FB1A5">
@@ -89,30 +97,35 @@
             </Button>
             <Image Grid.Row="5" Panel.ZIndex="4" Width="20" Margin="15,-2,175,0">
                 <Image.Source>
-                    <BitmapImage UriSource="https://smd.hu/Team/Icon_Inst_Big.png" />
+                    <BitmapImage UriSource="https://smd.hu/Team/Icon/Icon_Inst_Big.png" />
                 </Image.Source>
             </Image>
-            <Button Grid.Row="6" Name="B_Challenges" Click="Get_Admin_Challenges" Content="Kihívások:" Margin="15,10,15,15" FontSize="17" Foreground="White" Background="#6FB1A5">
+            <Button Grid.Row="6" Name="B_Challenges" Click="Get_Admin_Challenges" Content="Kihívások:" Margin="15,0,15,15" FontSize="17" Foreground="White" Background="#6FB1A5" Height="45" VerticalAlignment="Bottom">
                 <Button.BitmapEffect>
                     <DropShadowBitmapEffect Color="Gray" Direction="-80" ShadowDepth="5" Softness=".5" />
                 </Button.BitmapEffect>
             </Button>
             <Image Grid.Row="6" Panel.ZIndex="4" Width="20" Margin="15,-2,175,0">
                 <Image.Source>
-                    <BitmapImage UriSource="https://smd.hu/Team/Icon_Inst_Big.png" />
+                    <BitmapImage UriSource="https://smd.hu/Team/Icon/Icon_Inst_Big.png" />
                 </Image.Source>
             </Image>
+            <Button Grid.Row="7" Name="B_AddPict" Click="Add_Admin_Picture" Content="Add Picture" Margin="15,10,15,281" Height="45" FontSize="17" Foreground="White" Background="#6FB1A5">
+                <Button.BitmapEffect>
+                    <DropShadowBitmapEffect Color="Gray" Direction="-80" ShadowDepth="5" Softness=".5" />
+                </Button.BitmapEffect>
+            </Button>
+            <TextBox Grid.Row="7" Name="A_Err" Text="Chk:" Margin="15,164,15,120" Background="AntiqueWhite" TextWrapping="Wrap" Visibility="Hidden"/>
             <CheckBox Click="HTTP_Local_Click" x:Name="HTTP_Local" Content="HTTP Local" FontSize="10" FontWeight="Bold" Margin="150,4,3,91" Height="20" IsChecked="True"/>
-            <ComboBox Grid.Row="7" Name="CB_H_Default" Height="30" BorderThickness="1,1,1,1" Padding="0,4,0,0" Margin="5,165,230,164" RenderTransformOrigin="0.5,0.5">
-                <ComboBox.RenderTransform>
-                    <TransformGroup>
-                        <ScaleTransform ScaleX="-1"/>
-                        <SkewTransform/>
-                        <RotateTransform/>
-                        <TranslateTransform/>
-                    </TransformGroup>
-                </ComboBox.RenderTransform>
-            </ComboBox>
+            <!-- Default ComboBox for Get Default Brushing-->
+            <ComboBox Grid.Row="7" Name="CB_H_Default" Height="30" BorderThickness="1,1,1,1" Padding="0,4,0,0" Margin="15,283,184,46" Visibility="Hidden"/>
+            <!-- -->
+
+            <Button Grid.Row="7" x:Name="B_New_PSW" Click="Mod_Admin_Password" Content="Új Jelszó" Margin="15,80,15,212" FontSize="17" Foreground="White" Background="#FFAC6AE6">
+                <Button.BitmapEffect>
+                    <DropShadowBitmapEffect Color="Gray" Direction="-80" ShadowDepth="5" Softness=".5" />
+                </Button.BitmapEffect>
+            </Button>
         </Grid>
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
@@ -120,7 +133,7 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <Grid Grid.Row="0" Background="#FFFDF5">
-                <StackPanel Name="Header_Ini" Background="#FFFDF5"  Visibility="Hidden">
+                <StackPanel Name="Header_Ini" Background="#FFFDF5"  Visibility="Visible">
                     <Label Content="Üdvözöllek az Admin felületen!" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,20,0,0"/>
                     <Label Content="Itt kezelheted a felhasználókat, bejelentéseket, kategóriákat, intézményeket és kihívásokat." FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,5,0,0"/>
                 </StackPanel>
@@ -146,26 +159,26 @@
                         <TextBox Grid.Row="2" Name="H_Inst_Email" FontSize="16" FontWeight="Bold" Height="30" TextChanged="SelInst_DataChanged"
                                 HorizontalContentAlignment="Center" Margin="180,4,730,4" VerticalContentAlignment="Center" Padding="0,0,0,3"/>
 
-                        <Label Grid.Row="3" Content="Leírás:" FontSize="18" FontWeight="Bold" Width="108"
-                                 HorizontalAlignment="Left" HorizontalContentAlignment="Right" Margin="490,0,0,0"/>
+                        <Label Grid.Row="3" Content="Leírás:" FontSize="18" FontWeight="Bold" Width="64"
+                                 HorizontalAlignment="Left" HorizontalContentAlignment="Right" Margin="534,0,0,0"/>
                         <TextBox Grid.Row="3" Name="H_Inst_Desc" FontSize="16" FontWeight="Bold" Height="30" TextChanged="SelInst_DataChanged"
                                 HorizontalContentAlignment="Center" Margin="605,4,12,4" VerticalContentAlignment="Center" Padding="0,0,0,3"/>
 
                         <Label Grid.Row="1" Content="Zip:" FontSize="18" FontWeight="Bold" Width="46" HorizontalAlignment="Left" HorizontalContentAlignment="Right" Margin="530,0,0,0"/>
-                        <TextBox Grid.Row="1" Name="H_Inst_Zip" FontSize="16" FontWeight="Bold" Height="30" TextChanged="SelInst_DataChanged" 
+                        <TextBox Grid.Row="1" Name="H_Inst_Zip" FontSize="16" FontWeight="Bold" Height="30" TextChanged="SelInst_DataChanged"
                                  HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="582,4,595,4" Padding="0,0,0,3"/>
 
-                        <Label Grid.Row="1" Content="City:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Right" Margin="560,0,530,0"/>
+                        <Label Grid.Row="1" Content="City:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Right" Margin="675,0,530,0"/>
                         <TextBox Grid.Row="1" Name="H_Inst_City" FontSize="16" FontWeight="Bold" Height="30" TextChanged="SelInst_DataChanged" 
                                  HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="723,4,285,4" Padding="0,0,0,3"/>
 
-                        <Label Grid.Row="2" Content="Address:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Right" Margin="435,0,632,0"/>
+                        <Label Grid.Row="2" Content="Address:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Right" Margin="540,0,632,0"/>
                         <TextBox Grid.Row="2" Name="H_Inst_Address" FontSize="16" FontWeight="Bold" Height="30" TextChanged="SelInst_DataChanged" 
                                  HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="625,4,39,4" Padding="0,0,0,3"/>
 
-                        <Label Grid.Row="1" Content="Tel:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Right" Margin="970,0,235,0"/>
+                        <Label Grid.Row="1" Content="Tel:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Right" Margin="980,0,235,0"/>
                         <TextBox Grid.Row="1" Name="H_Inst_Tel" FontSize="16" FontWeight="Bold" Height="30" TextChanged="SelInst_DataChanged" 
-                                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="1020,4,39,5" Padding="0,0,0,3"/>
+                                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="1020,4,39,4" Padding="0,0,0,3"/>
 
                         <Button Grid.Row="3" Name="H_Inst_ReLoad" Click="Inst_ReLoad" Content="Reload" Margin="10,4,1153,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
                         <Button Grid.Row="3" Name="H_Inst_SaveNew" Click="Inst_SaveAsNew" Content="Save as New" Margin="209,4,904,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
@@ -176,7 +189,7 @@
                                 Foreground="White" FontWeight="Bold" Padding="0,-3,0,0"/>
                     </Grid>
                 </StackPanel>
-                <StackPanel Name="Header_Users" Background="#FFFDF5" Visibility="Visible">
+                <StackPanel Name="Header_Users" Background="#FFFDF5" Visibility="Hidden">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="120"/>
@@ -240,7 +253,7 @@
                         <Button Grid.Row="3" Grid.Column="1" Name="H_User_SaveNew" Click="User_SaveAsNew" Content="Save as New" Margin="89,4,25,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
                         <Button Grid.Row="3" Grid.Column="2" Name="H_User_Save" Click="User_Save" Content="Save" Margin="-11,4,51,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,3" Grid.ColumnSpan="2"/>
 
-                        <Button Grid.Row="1" Grid.Column="2" Name="H_User_Clear" Click="User_Clear" Content="" Margin="850,4,-747,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,3" Grid.RowSpan="2"/>
+                        <Button Grid.Row="1" Grid.Column="2" Name="H_User_Clear" Click="User_Clear" Content="" Margin="848,0,-744,8" FontSize="18" FontWeight="Bold" Padding="0,0,0,3" Grid.RowSpan="2"/>
                         <StackPanel Grid.Row="3" Name="SP_Postit" Margin="839,5,-753,5" Grid.Column="2">
                             <Image MouseLeftButtonUp="Admin_Postit" Name="Img_Postit" Source="https://smd.hu/Team/post-it.png" Height="25" />
                         </StackPanel>
@@ -256,11 +269,43 @@
                             <RowDefinition Height="5"/>
                         </Grid.RowDefinitions>
                         <Label Grid.Row="1" Content="Bejelentések:" FontSize="24" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="7,0,0,0"/>
-                        <Label Grid.Row="2" Content="Itt kezelheted a bejelentéseket." FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,5,0,0"/>
+
+                        <Label Grid.Row="2" Content="Dátum kezd:" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="118,0,0,0"/>
+                        <DatePicker Grid.Row="2" Name="datePicker_From" SelectedDate="2025-09-01" SelectedDateFormat="Short" FontSize="14" FontWeight="Bold" Margin="238,4,894,4" Padding="4,4,0,0"
+                                    SelectedDateChanged="Report_Date_Changed"/>
+
                         <Button Grid.Row="3" Name="H_Reports_ReLoad" Click="Report_ReLoad" Content="Reload" Margin="10,4,1153,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
+                        <Label Grid.Row="3" Content="Dátum vég:" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="126,0,0,0"/>
+                        <DatePicker Grid.Row="3" Name="datePicker_Until" SelectedDate="2025-09-01" SelectedDateFormat="Short" FontSize="14" FontWeight="Bold" Margin="238,4,894,4" Padding="4,4,0,0"
+                                    SelectedDateChanged="Report_Date_Changed"/>
+
+                        <Button Grid.Row="3" x:Name="H_Reports_TextSearch" Click="Report_Filtering" Content="Keres" Margin="371,4,792,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
+                        <Button Grid.Row="3" x:Name="H_Reports_TextSearch_Clear" Click="Report_Filtering_Clear" Content="" Margin="465,4,765,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,3"/>
+                        <TextBox Grid.Row="3" Name="S_Report_PartialText" FontSize="14" FontWeight="Bold" Height="30" MaxLength="20" HorizontalContentAlignment="Center" 
+                                 Margin="492,4,345,4" VerticalContentAlignment="Center" Padding="0,0,0,3" KeyUp="Report_PartialKeyUp"/>
+
+                        <Label Grid.Row="2" Content="Utolsó" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="366,0,0,0"/>
+                        <ComboBox Grid.Row="2" Name="CB_H_Report_DLong" Height="30" SelectionChanged="Report_DLong_CBChanged"
+                                  VerticalAlignment="Center" HorizontalContentAlignment="Center" FontSize="16" FontWeight="Bold" 
+                                  BorderThickness="1,1,1,1" Margin="436,0,714,0" Padding="0,3,0,0"/>
+
+                        <Label Grid.Row="2" Content="Intézmény:" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="547,0,0,0" Width="105"/>
+                        <ComboBox Grid.Row="2" Name="CB_H_Report_Inst" Height="30" SelectionChanged="SH_ReportInst_CBChanged" Width="250"
+                                  VerticalAlignment="Center" HorizontalContentAlignment="Center" Background="red" FontSize="15"
+                                  FontWeight="Bold" BorderThickness="1,1,1,1" Margin="610,0,300,0" Padding="0,5,0,0"/>
+
+                        <Label Grid.Row="3" Content="Vezérlő billentyűk:" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="928,0,0,0" Width="170"/>
+                        <Image Grid.Row="2" Name="Rep_Control" Source="https://smd.hu/Team/Cursor_Rep.gif" Margin="1113,30,52,8" Grid.RowSpan="2"/>
+
+                        <Image Grid.Row="3" Name="Rep_Control_Over_CTRL" Source="https://smd.hu/Team/Cursor_RepOver_CTRL.png" Margin="1113.5,7.5,111.5,5" Height="25" Visibility="Hidden"/>
+
+                        <Image Grid.Row="3" Name="Rep_Control_Over_Left" Source="https://smd.hu/Team/Cursor_RepOver_Left.png" Margin="1141,7,89,4" Visibility="Hidden"/>
+                        <Image Grid.Row="3" Name="Rep_Control_Over_Right" Source="https://smd.hu/Team/Cursor_RepOver_Right.png" Margin="1178.5,7,52.5,4" Visibility="Hidden"/>
+                        <Image Grid.Row="3" Name="Rep_Control_Over_Down" Source="https://smd.hu/Team/Cursor_RepOver_Down.png" Margin="1160,6,71,4" Visibility="Hidden"/>
+                        <Image Grid.Row="2" Name="Rep_Control_Over_Up" Source="https://smd.hu/Team/Cursor_RepOver_Up.png" Margin="1159.5,24,70.5,21" Visibility="Hidden" Grid.RowSpan="2"/>
                     </Grid>
                 </StackPanel>
-                <StackPanel Name="Header_Categories" Background="#FFFDF5" Visibility="Hidden">
+                <StackPanel Name="Header_Categories" Background="#FFFDF5" Visibility="Visible">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="6"/>
@@ -284,7 +329,7 @@
                                 Width="85" Margin="110,4,-65,4" FontSize="18" FontWeight="Bold" Padding="0,0,0,3" Grid.ColumnSpan="2"/>
 
                         <Label Grid.Row="1" Content="Bejelentések száma:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Left" Margin="630,0,440,0"/>
-                        <TextBox Grid.Row="1" x:Name="H_Category_Reports_N" FontSize="16" FontWeight="Bold" Height="30" IsReadOnly="True"
+                        <TextBox Grid.Row="1" x:Name="H_Category_Reports_N" FontSize="16" FontWeight="Bold" Height="30" IsReadOnly="True" Background="#FFDDDDDD"
                             HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="818,4,361,4" Padding="0,0,0,3"/>
 
                         <Label Grid.Row="2" Content="Intézmény Leírása:" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Left" Margin="460,0,600,0"/>
@@ -339,7 +384,7 @@
                         </Grid>
                     </Grid>
                 </StackPanel>
-                <StackPanel Name="Main_Users" Background="#F0F0F0" Visibility="Visible">
+                <StackPanel Name="Main_Users" Background="#F0F0F0" Visibility="Hidden">
                     <StackPanel Name="User_List" Grid.Row="0" Grid.Column="0" Background="#FFFFFF" Margin="10">
                         <ListView x:Name="ListView_User" GridViewColumnHeader.Click="User_SortHeaderClick" MouseDoubleClick="User_ListView_Click" Background="#FFFDF5">
                             <ListView.View>
@@ -347,7 +392,7 @@
                                     <GridViewColumn Header="Név" Width="140">
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding username}" Background="{Binding c_row}"/>
+                                                <TextBlock Text="{Binding v_username}" Background="{Binding c_row}"/>
                                             </DataTemplate>
                                         </GridViewColumn.CellTemplate>
                                     </GridViewColumn>
@@ -355,18 +400,12 @@
                                     <GridViewColumn Header="Státusz" Width="70">
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding isActive}" Background="{Binding c_row}"/>
+                                                <TextBlock Text="{Binding v_isActive}" Background="{Binding c_row}"/>
                                             </DataTemplate>
                                         </GridViewColumn.CellTemplate>
                                     </GridViewColumn>
                                     <GridViewColumn Header="Pontok" DisplayMemberBinding="{Binding points}" Width="60"/>
-                                    <GridViewColumn Header="Szerepkör" Width="80">
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding role}" Background="{Binding c_row}"/>
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
+                                    <GridViewColumn Header="Szerepkör" DisplayMemberBinding="{Binding role}" Width="80"/>
                                     <GridViewColumn Header="Intézmény" DisplayMemberBinding="{Binding institution}" Width="110"/>
                                     <GridViewColumn Header="Regisztráció" DisplayMemberBinding="{Binding createdAtHH}" Width="110"/>
                                     <GridViewColumn Header="Zip" DisplayMemberBinding="{Binding zipCode}" Width="50"/>
@@ -377,7 +416,7 @@
                         </ListView>
                     </StackPanel>
                 </StackPanel>
-                <StackPanel Name="Main_Reports" Background="#F0F0F0" Visibility="Hidden">
+                <StackPanel Name="Main_Reports" Background="#F0F0F0" Visibility="Visible">
                     <Grid>
                         <StackPanel Name="Report_Detail" Background="#FFFFFF" Panel.ZIndex="2" Margin="387,12,14,12" Visibility="Visible">
                             <Border Margin="0" BorderThickness="1" CornerRadius="2" BorderBrush="#FFA4A4A4" Height="656">
@@ -392,51 +431,80 @@
                                             <RowDefinition Height="189*"/>
                                         </Grid.RowDefinitions>
                                         <Button Grid.Row="0" x:Name="M_Back2Report" Click="Back2Report_List" Content="← Vissza a listához" FontSize="14" FontWeight="Bold" 
-                                        Foreground="#009688" Padding="-3,0,0,2" Height="30" BorderBrush="White" Background="White" Margin="10,10,700,141" BorderThickness="0"/>
+                                                Foreground="#009688" Padding="-3,0,0,2" Height="30" BorderBrush="White" Background="White" Margin="10,10,700,141" BorderThickness="0"/>
 
-                                        <Label Name="ReportDetail_Cím" Content="Kidőlt fa az úton" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Left" Margin="10,40,480,106"/>
-                                        <TextBox Name="ReportDetail_Desc" FontSize="14" Text="Az úttestet egy kidőlt fa teljesen elzárja." BorderThickness="0"
-                                                 HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Margin="10,75,480,61" TextWrapping="Wrap" Padding="3,0,0,0">
+                                        <TextBox Name="ReportDetail_Cím" Text="Az úttestet egy kidőlt fa teljesen elzárja." BorderThickness="0" FontSize="18" FontWeight="Bold"
+                                                 HorizontalContentAlignment="Left" VerticalContentAlignment="Top" Margin="10,40,480,70" TextWrapping="Wrap" Padding="3,0,0,0">
                                         </TextBox>
 
-                                        <Label FontSize="14" Content="Bejelentő:" FontWeight="Bold" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="10,120,760,36"/>
-                                        <Label Name="ReportDetail_User" Content="teszt" FontSize="14" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="82,120,480,36"/>
+                                        <TextBox Name="ReportDetail_Desc" FontSize="14" Text="Az úttestet egy kidőlt fa teljesen elzárja." BorderThickness="0" 
+                                                 HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Margin="10,89,480,47" TextWrapping="Wrap" Padding="3,0,0,0">
+                                        </TextBox>
 
-                                        <Label FontSize="14" Content="Kategória:" FontWeight="Bold" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="10,145,765,11"/>
-                                        <Label Name="ReportDetail_Category" Content="Zöldterület gondozatlansága" FontSize="14" HorizontalContentAlignment="Left" Height="25"
-                                               Padding="4,2,0,2" Margin="87,145,480,11"/>
+                                        <Label FontSize="14" Content="Bejelentő:" FontWeight="Bold" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="10,136,760,21"/>
+                                        <Label Name="ReportDetail_User" Content="teszt" FontSize="14" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="84,136,480,21"/>
 
-                                        <Label FontSize="14" Content="Város:" FontWeight="Bold" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="10,170,790,175" Grid.RowSpan="2"/>
-                                        <Label Name="ReportDetail_City" Content="Pécs" FontSize="14" HorizontalContentAlignment="Left" Height="25" Padding="4,2,0,2" Margin="63,170,606,175" Grid.RowSpan="2"/>
+                                        <Label FontSize="14" Content="Kategória:" FontWeight="Bold" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="10,160,765,186" Height="24" Grid.RowSpan="2"/>
+                                        <Label Name="ReportDetail_Category" Content="Zöldterület gondozatlansága" FontSize="14" HorizontalContentAlignment="Left" Height="24"
+                                               Padding="4,2,0,2" Margin="88,161,480,185" Grid.RowSpan="2"/>
 
-                                        <Label FontSize="14" Content="Cím:" FontWeight="Bold" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="10,14,800,150" Grid.Row="1"/>
-                                        <Label Name="ReportDetail_Address" Content="Béke utca 12. , 7624" FontSize="14" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="46,14,480,150" Grid.Row="1"/>
+                                        <Label FontSize="14" Content="Város:" FontWeight="Bold" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="10,3,790,161" Grid.Row="1"/>
+                                        <Label Name="ReportDetail_City" Content="Pécs" FontSize="14" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="58,3,606,161" Grid.Row="1"/>
 
-                                        <Label FontSize="14" Content="Koordináták:" FontWeight="Bold" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="10,39,745,125" Grid.Row="1"/>
-                                        <Label Name="ReportDetail_Coords" Content="47.476, 19.1576" FontSize="14" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="103,39,480,125" Grid.Row="1"/>
+                                        <Label FontSize="14" Content="Cím:" FontWeight="Bold" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="10,27,800,138" Grid.Row="1"/>
+                                        <Label Name="ReportDetail_Address" Content="Béke utca 12. , 7624" FontSize="14" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="46,27,480,138" Grid.Row="1"/>
 
-                                        <Label FontSize="14" Content="Intézmény:" FontWeight="Bold" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="10,64,755,100" Grid.Row="1"/>
-                                        <Label Name="ReportDetail_Inst" Content="FŐKERT Nonprofit Zrt." FontSize="14" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="96,64,480,100" Grid.Row="1"/>
+                                        <Label FontSize="14" Content="Koordináták:" FontWeight="Bold" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="10,51,745,114" Grid.Row="1"/>
+                                        <Label Name="ReportDetail_Coords" Content="47.476, 19.1576" FontSize="14" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="103,51,480,114" Grid.Row="1"/>
+                                        <Image Name="Google" Source="https://smd.hu/Team/location-pin_32x32.png" MouseLeftButtonUp="Call_GoogleMaps"  Margin="105,32,500,100" Width="32" Height="32"  Grid.Row="1"/>
 
-                                        <Label FontSize="14" Content="Státusz:" FontWeight="Bold" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="10,89,780,75" Grid.Row="1"/>
-                                        <Label Name="ReportDetail_Status" Content="Megnyitva" FontSize="14" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="72,89,480,75" Grid.Row="1"/>
+                                        <Label FontSize="14" Content="Intézmény:" FontWeight="Bold" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="10,75,755,90" Grid.Row="1"/>
+                                        <Label Name="ReportDetail_Inst" Content="FŐKERT Nonprofit Zrt." FontSize="14" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="92,75,480,90" Grid.Row="1"/>
 
-                                        <Label FontSize="14" Content="Dátum:" FontWeight="Bold" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="10,114,780,50" Grid.Row="1"/>
-                                        <Label Name="ReportDetail_Date" Content="2025-09-15 14:00" FontSize="14" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="72,114,480,50" Grid.Row="1"/>
+                                        <Label FontSize="14" Content="Státusz:" FontWeight="Bold" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="10,99,780,66" Grid.Row="1"/>
+                                        <Label Name="ReportDetail_Status" Content="Megnyitva" FontSize="14" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="71,99,700,66" Grid.Row="1"/>
 
-                                        <StackPanel Background="Beige" Grid.RowSpan="2" Margin="408,40,54,75">
-                                            <Image Name="ReportDetail_Pict" Source="https://smd.hu/Team/Empty_Logo.gif" Margin="0,0,0,0" Width="400"/>
+                                        <Label FontSize="14" Content="Dátum:" FontWeight="Bold" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="10,123,780,41" Grid.Row="1"/>
+                                        <Label Name="ReportDetail_Date" Content="2025-09-15 14:00" FontSize="14" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="68,123,650,41" Grid.Row="1"/>
+
+                                        <Label FontSize="14" Content="Megerősítve:" FontWeight="Bold" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="232,123,520,41" Grid.Row="1"/>
+                                        <Label Name="ReportDetail_Confirmed" FontSize="14" Content="2" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="326,123,500,41" Grid.Row="1"/>
+
+                                        <StackPanel Background="Beige" Grid.RowSpan="2" Margin="425,40,37,75">
+                                            <Image Name="ReportDetail_Pict" Source="https://smd.hu/Team/Empty_Logo.gif" Margin="0,0,0,0" Width="400" MouseLeftButtonUp="Show_BigPicture"/>
                                         </StackPanel>
 
-                                        <Border Margin="10,150,10,-276" BorderThickness="1" CornerRadius="4" BorderBrush="#FFA4A4A4" Grid.Row="1" Background="#FFF7F7F7">
-                                            <Label Content="Státusz történet:" FontSize="14" FontWeight="Bold" Margin="5,6,700,276"/>
+                                        <Button Content="Kép Törlése" Click="Report_DelPicture_Click" Height="25" Width="80" Background="White" FontSize="12" Margin="460,120,200,41" Grid.Row="1"/>
+                                        <Button Content="+ Kép Hozzáadása" Click="Report_AddPicture_Click" Height="25" Width="120" Background="White" FontSize="12" Margin="600,120,100,41" Grid.Row="1"/>
+
+                                        <Border Margin="10,163,10,-276" BorderThickness="1" CornerRadius="4" BorderBrush="#FFA4A4A4" Grid.Row="1" Background="#FFF7F7F7">
+                                            <Label Content="Státusz történet:" FontSize="14" FontWeight="Bold" Margin="6,3,700,270"/>
                                         </Border>
-                                        <Button Content="+ Új státuszváltás" Width="100" Height="25" Background="White" FontSize="12" Margin="202,140,60,-19" Grid.Row="1"></Button>
-                                        
-                                        <Button Name="B_Prev_Pict" Content="←" Style="{StaticResource KerekGomb}" Background="White" FontSize="20" FontWeight="Bold" 
-                                                Margin="367,143,450,8" Padding="0,-2,0,5" Click="View_ReportPict_Prev"/>
-                                        <Button Name="B_Next_Pict" Content="→" Style="{StaticResource KerekGomb}" Background="White" FontSize="20" FontWeight="Bold"
-                                                Margin="805,143,12,8" Padding="0,-2,0,5" Click="View_ReportPict_Next"/>
+
+                                        <Button Name="B_Prev_Pict" Content="←" Style="{StaticResource KerekGomb}" Foreground="White" Background="#6FB1A5" FontSize="24" FontWeight="Bold" 
+                                                Margin="392,143,425,8" Padding="0,-5,0,5" Click="View_ReportPict_Prev"/>
+                                        <Button Name="B_Next_Pict" Content="→" Style="{StaticResource KerekGomb}" Foreground="White" Background="#6FB1A5" FontSize="24" FontWeight="Bold"
+                                                Margin="813,143,4,8" Padding="0,-5,0,5" Click="View_ReportPict_Next"/>
+
+                                        <Label x:Name="ReportDetail_Azon" FontSize="13" FontWeight="Bold" Content="2025/0001" HorizontalContentAlignment="Left" Padding="4,2,0,2" Margin="144,171,620,-6" Grid.Row="1"/>
+                                        <Button Content="+ Új státuszváltás" Width="100" Height="25" Background="White" FontSize="12" Margin="452,169,310,-7" Grid.Row="1"></Button>
+
+                                        <ListView x:Name="ListView_History" MouseDoubleClick="RepDetail_ListView_Click" Background="#FFFDF5" Margin="22,201,34,-263" Grid.Row="1">
+                                            <ListView.View>
+                                                <GridView>
+                                                    <GridViewColumn Header="Dátum" DisplayMemberBinding="{Binding changedAtHH}" Width="110"/>
+                                                    <GridViewColumn Header="Státusz" DisplayMemberBinding="{Binding status}" Width="90"/>
+                                                    <GridViewColumn Header="Felhasználó" DisplayMemberBinding="{Binding changedBy.username}" Width="100"/>
+                                                    <GridViewColumn Header="Megjegyzés" Width="470">
+                                                        <GridViewColumn.CellTemplate>
+                                                            <DataTemplate>
+                                                                <TextBlock Text="{Binding comment}" VerticalAlignment="Center" TextWrapping="Wrap"></TextBlock>
+                                                            </DataTemplate>
+                                                        </GridViewColumn.CellTemplate>
+                                                    </GridViewColumn>
+                                                </GridView>
+                                            </ListView.View>
+                                        </ListView>
                                     </Grid>
                                 </Grid>
                             </Border>
@@ -444,7 +512,7 @@
                         <StackPanel Name="Report_List" Background="#FFFFFF" Panel.ZIndex="1" Margin="10,10,12,10" Visibility="Visible">
                             <ListView x:Name="ListView_Reports" GridViewColumnHeader.Click="Report_SortHeaderClick" MouseDoubleClick="Report_ListView_Click" Background="#FFF"
                                   ScrollViewer.VerticalScrollBarVisibility="Visible" Height="660" FontSize="14" MouseLeftButtonUp="Report_ListView_Click" KeyUp="Report_KeyDown"
-                                      PreviewKeyDown="Report_ListView_Click" PreviewKeyUp ="Report_ListView_Click">
+                                      PreviewKeyUp ="Report_ListView_Click">
                                 <ListView.ItemContainerStyle>
                                     <Style>
                                         <Setter Property="Control.Background" Value="White" />
@@ -455,10 +523,10 @@
                                 </ListView.ItemContainerStyle>
                                 <ListView.View>
                                     <GridView>
-                                        <GridViewColumn Header="Id" Width="35">
+                                        <GridViewColumn Header="Id" Width="40">
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding view_id}" FontSize="10"/>
+                                                    <TextBlock Text="{Binding view_id}" FontSize="12"/>
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
@@ -470,14 +538,13 @@
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
-                                        <GridViewColumn Header="" DisplayMemberBinding="{Binding pict_db}" Width="18"/>
-                                        <!-- <GridViewColumn Header="." Width="18">
+                                        <GridViewColumn Header="" Width="18">
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding pict_db}" FontSize="10"/>
+                                                    <TextBlock Text="{Binding pict_db}" FontSize="12"/>
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
-                                        </GridViewColumn> -->
+                                        </GridViewColumn>
                                         <GridViewColumn Header="Bejelentő" DisplayMemberBinding="{Binding username}" Width="120"/>
                                         <GridViewColumn Header="Cím" Width="180">
                                             <GridViewColumn.CellTemplate>
@@ -496,10 +563,10 @@
                                         <GridViewColumn Header="Kategória" DisplayMemberBinding="{Binding kategoria}" Width="220"/>
                                         <GridViewColumn Header="Város" DisplayMemberBinding="{Binding city}" Width="120"/>
                                         <GridViewColumn Header="Dátum" DisplayMemberBinding="{Binding createdAtHH}" Width="120"/>
-                                        <GridViewColumn Header="Intézmény" Width="120">
+                                        <GridViewColumn Header="Intézmény" Width="110">
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding intezmeny}" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                                                    <TextBlock Text="{Binding intezmeny}" FontSize="12" VerticalAlignment="Center" TextWrapping="Wrap"/>
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
@@ -509,20 +576,34 @@
                         </StackPanel>
                     </Grid>
                 </StackPanel>
-                <StackPanel Name="Main_Categories" Background="#F0F0F0" Visibility="Hidden">
+                <StackPanel Name="Main_Categories" Background="#F0F0F0" Visibility="Visible">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
                         <StackPanel Name="Category_List" Background="#FFFFFF" Margin="10,11,12,19">
                             <ListView Name="ListView_Categories" GridViewColumnHeader.Click="Category_SortHeaderClick" MouseDoubleClick="Category_ListView_Click"
-                                      Background="#FFFDF5" ScrollViewer.VerticalScrollBarVisibility="Visible">
+                                      Background="#FFFDF5" ScrollViewer.VerticalScrollBarVisibility="Visible" Height="665">
+                                <ListView.ItemContainerStyle>
+                                    <Style>
+                                        <Setter Property="Control.Background" Value="#FFFDF5" />
+                                        <Setter Property="Control.BorderThickness" Value="0,0.5,0,0" />
+                                        <Setter Property="Control.BorderBrush" Value="Gray" />
+                                        <Setter Property="Control.HorizontalContentAlignment" Value="Center"/>
+                                    </Style>
+                                </ListView.ItemContainerStyle>
                                 <ListView.View>
                                     <GridView>
                                         <GridViewColumn Header="Kategória Neve" DisplayMemberBinding="{Binding categoryName}" Width="220"/>
-                                        <GridViewColumn Header="Report db" DisplayMemberBinding="{Binding rep_db}" Width="60"/>
+                                        <GridViewColumn Header="Rep." DisplayMemberBinding="{Binding rep_db}" Width="50"/>
                                         <GridViewColumn Header="Hozzárendelt Intézmény" DisplayMemberBinding="{Binding institution.name}" Width="200"/>
-                                        <GridViewColumn Header="Intézmény Leírása" DisplayMemberBinding="{Binding linked_inst_desc}" Width="300"/>
+                                        <GridViewColumn Header="Intézmény Leírása" Width="220">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding linked_inst_desc}"  VerticalAlignment="Center" HorizontalAlignment="Center" TextWrapping="Wrap"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
                                         <GridViewColumn Header="Létrehozás Dátuma" DisplayMemberBinding="{Binding createdAtHH}" Width="120"/>
                                         <GridViewColumn Header="Intézmény Elérhetősége" DisplayMemberBinding="{Binding linked_inst_contact}" Width="390"/>
                                     </GridView>
@@ -531,7 +612,7 @@
                         </StackPanel>
                     </Grid>
                 </StackPanel>
-                <StackPanel Name="Main_Institutions" Background="#F0F0F0" Visibility="Hidden">
+                <StackPanel Name="Main_Institutions" Background="#F0F0F0" Visibility="Visible">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="330"/>
@@ -539,16 +620,37 @@
                             <RowDefinition Height="205*"/>
                         </Grid.RowDefinitions>
                         <StackPanel Name="Inst_List" Background="#FFFFFF" Margin="10,11,12,19" Height="300">
-                            <ListView x:Name="ListView_Inst" GridViewColumnHeader.Click="Inst_SortHeaderClick" PreviewKeyDown="Get_WorkerList" PreviewKeyUp ="Get_WorkerList" Height="300"
-                                      MouseLeftButtonUp="Get_WorkerList" MouseDoubleClick="Inst_ListView_Click" Background="#FFFDF5" ScrollViewer.VerticalScrollBarVisibility="Visible">
+                            <ListView x:Name="ListView_Inst" GridViewColumnHeader.Click="Inst_SortHeaderClick" PreviewKeyDown="Get_WorkerList_Key" PreviewKeyUp ="Get_WorkerList_Key" Height="300"
+                                      MouseLeftButtonUp="Get_WorkerList_Key" MouseDoubleClick="Inst_ListView_Click" Background="#FFFDF5" ScrollViewer.VerticalScrollBarVisibility="Visible">
+                                <ListView.ItemContainerStyle>
+                                    <Style>
+                                        <Setter Property="Control.Background" Value="#FFFDF5" />
+                                        <Setter Property="Control.BorderThickness" Value="0,0.5,0,0" />
+                                        <Setter Property="Control.BorderBrush" Value="Gray" />
+                                        <Setter Property="Control.HorizontalContentAlignment" Value="Center"/>
+                                    </Style>
+                                </ListView.ItemContainerStyle>
                                 <ListView.View>
                                     <GridView>
                                         <GridViewColumn Header="Intézmény Neve" DisplayMemberBinding="{Binding name}" Width="190"/>
-                                        <GridViewColumn Header="Email" DisplayMemberBinding="{Binding email}" Width="200"/>
-                                        <GridViewColumn Header="Leírás" DisplayMemberBinding="{Binding description}" Width="300"/>
+                                        <GridViewColumn Header="Email" DisplayMemberBinding="{Binding email}" Width="220"/>
+                                        <GridViewColumn Header="Leírás" Width="300">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding description}"  VerticalAlignment="Center" HorizontalAlignment="Center" TextWrapping="Wrap"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
                                         <GridViewColumn Header="Reg. Dátum" DisplayMemberBinding="{Binding createdAtHH}" Width="110"/>
                                         <GridViewColumn Header="Logo?" DisplayMemberBinding="{Binding logo}" Width="40"/>
-                                        <GridViewColumn Header="Elérhetőségek" DisplayMemberBinding="{Binding contactInfo}" Width="390"/>
+                                        <GridViewColumn Header="Elérhetőségek" Width="340">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding cInfo}"  VerticalAlignment="Center" HorizontalAlignment="Center" TextWrapping="Wrap"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+
                                     </GridView>
                                 </ListView.View>
                             </ListView>
@@ -602,6 +704,7 @@
                     </Grid>
                 </StackPanel>
                 <StackPanel Name="Main_Challenges" Background="#FFB9E2EF" Visibility="Hidden">
+                    <WebBrowser x:Name="wbMaps" Source="https://www.smd.hu" Margin="20,20,20,20" Height="600"/>
                 </StackPanel>
             </Grid>
         </Grid>

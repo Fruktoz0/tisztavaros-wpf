@@ -3,7 +3,9 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.NetworkInformation;
@@ -13,7 +15,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
 using System.Xml.Linq;
-using System.IO;
+
 
 namespace TisztaVaros
 {
@@ -25,6 +27,176 @@ namespace TisztaVaros
         public static int get_db;
         public static TV_User l_user;
 
+
+
+        public async Task<string> Server_ExistCategory(string a_cat_name)
+        {
+            string a_route = "/api/categories/byCategory";
+            string url = Get_URL() + a_route;
+            int res_status = 0;
+            var jsonData = new
+            {
+                categoryName = a_cat_name,
+            };
+            try
+            {
+                HttpClient client = new HttpClient();
+                string stringifiedJson = JsonConvert.SerializeObject(jsonData);
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
+                StringContent sendThis = new StringContent(stringifiedJson, Encoding.UTF8, "Application/JSON");
+                HttpResponseMessage response = await client.PostAsync(url, sendThis);
+                res_status = (int)response.StatusCode;
+                string responseText = await response.Content.ReadAsStringAsync();
+                Message add_msg = JsonConvert.DeserializeObject<Message>(responseText);
+                MessageBox.Show(add_msg.message);
+                if (res_status == 201)
+                {
+                    return "00";
+                }
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(a_route + "\n\n" + e.Message);
+            }
+            return "xx";
+        }
+        public async Task<List<TV_Report>> Server_Get_AllReports_FromDate(string a_k_date, string a_v_date)
+        {
+            List<TV_Report> all_reports = new List<TV_Report>();
+            string a_route = "/api/reports/getAllReportsFromDate";
+            string url = Get_URL() + a_route;
+            var jsonData = new
+            {
+                k_date = a_k_date,
+                v_date = a_v_date
+            };
+            try
+            {
+                HttpClient client = new HttpClient();
+                string stringifiedJson = JsonConvert.SerializeObject(jsonData);
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
+                StringContent sendThis = new StringContent(stringifiedJson, Encoding.UTF8, "Application/JSON");
+                HttpResponseMessage response = await client.PostAsync(url, sendThis);
+                response.EnsureSuccessStatusCode();
+                string responseText = await response.Content.ReadAsStringAsync();
+                //File.WriteAllText(@"R:\All_reports.txt", responseText);
+                all_reports = JsonConvert.DeserializeObject<List<TV_Report>>(responseText);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(a_route + "\n\n" + e.Message);
+            }
+            return all_reports;
+        }
+        public async Task<string> Server_AddNewPicture(int a_rep_id, string a_pict_url)
+        {
+            string a_route = "/api/reports/addPicture/" + a_rep_id;
+            string url = Get_URL() + a_route;
+            int res_status = 0;
+
+            try
+            {
+                HttpClient client = new HttpClient();
+                var multipartContent = new MultipartFormDataContent();
+                var fileBytes = File.ReadAllBytes(a_pict_url);
+                multipartContent.Add(new ByteArrayContent(fileBytes), "file", a_pict_url);
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
+                HttpResponseMessage response = await client.PostAsync(url, multipartContent);
+                res_status = (int)response.StatusCode;
+                string responseText = await response.Content.ReadAsStringAsync();
+                Message add_msg = JsonConvert.DeserializeObject<Message>(responseText);
+                MessageBox.Show(add_msg.message);
+                if (res_status == 201)
+                {
+                    return "00";
+                }
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(a_route + "\n\n" + e.Message);
+            }
+            return "xx";
+        }
+        public async Task<string> Admin_ModUser_Password(string a_email, string a_psw)
+        {
+            string a_route = "/api/auth/nemzet/";
+            string url = Get_URL() + a_route;
+            int res_status = 0;
+
+            var jsonData = new
+            {
+                email = a_email,
+                password = a_psw
+            };
+            try
+            {
+                HttpClient client = new HttpClient();
+                string stringifiedJson = JsonConvert.SerializeObject(jsonData);
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
+                StringContent sendThis = new StringContent(stringifiedJson, Encoding.UTF8, "Application/JSON");
+                HttpResponseMessage response = await client.PostAsync(url, sendThis);
+                res_status = (int)response.StatusCode;
+                //response.EnsureSuccessStatusCode();
+                string responseText = await response.Content.ReadAsStringAsync();
+                MessageBox.Show(responseText);
+                Message mod_msg = JsonConvert.DeserializeObject<Message>(responseText);
+                if (res_status == 201)
+                {
+                    return mod_msg.message;
+                }
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(a_route + "\n\n" + e.Message);
+            }
+            return "xx";
+        }
+        public async Task<List<TV_StatusHistory>> Server_Get_StatusHistory(int a_report_id)
+        {
+            List<TV_StatusHistory> all_logs = new List<TV_StatusHistory>();
+            string a_route = "/api/reports/" + a_report_id + "/status-history";
+            string url = Get_URL() + a_route;
+            try
+            {
+                HttpClient client = new HttpClient();
+                HttpResponseMessage response = new HttpResponseMessage();
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
+                response = await client.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+                string responseText = await response.Content.ReadAsStringAsync();
+                //File.WriteAllText(@"R:\All_StatusHistory.txt", responseText);
+                all_logs = JsonConvert.DeserializeObject<List<TV_StatusHistory>>(responseText);
+                //File.WriteAllText(@"R:\All_History.txt", JsonConvert.SerializeObject(all_logs));
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(a_route + "\n\n" + e.Message);
+            }
+            return all_logs;
+        }
+        public async Task<List<TV_ForwardingLogs>> Server_Get_ForwardingLogs(int a_report_id)
+        {
+            List<TV_ForwardingLogs> all_logs = new List<TV_ForwardingLogs>();
+            string a_route = "/api/reports/" + a_report_id + "/forwardLogs";
+            string url = Get_URL() + a_route;
+            try
+            {
+                HttpClient client = new HttpClient();
+                HttpResponseMessage response = new HttpResponseMessage();
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
+                response = await client.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+                string responseText = await response.Content.ReadAsStringAsync();
+                //File.WriteAllText(@"R:\All_FW_Reps.txt", responseText);
+                all_logs = JsonConvert.DeserializeObject<List<TV_ForwardingLogs>>(responseText);
+                //File.WriteAllText(@"R:\All_FW_Logs.txt", JsonConvert.SerializeObject(all_logs));
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(a_route + "\n\n" + e.Message);
+            }
+            return all_logs;
+        }
         public async Task<List<TV_Report>> Server_Get_AllReports()
         {
             List<TV_Report> all_reports = new List<TV_Report>();
@@ -82,6 +254,7 @@ namespace TisztaVaros
                 HttpClient client = new HttpClient();
                 HttpResponseMessage response = new HttpResponseMessage();
                 string stringifiedJson = JsonConvert.SerializeObject(jsonData);
+                //File.WriteAllText(@"R:\Send_NewCategory.txt", stringifiedJson);
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
                 StringContent sendThis = new StringContent(stringifiedJson, Encoding.UTF8, "Application/JSON");
                 response = await client.PostAsync(url, sendThis);
@@ -306,7 +479,7 @@ namespace TisztaVaros
             }
             return "22";
         }
-        public async Task<string> Check_ExistUser(string a_email, string a_name)
+        public async Task<string> Check_ExistUser(string a_name, string a_email)
         {
             string a_route = "/api/admin/user_chk";
             string url = Get_URL() + a_route;

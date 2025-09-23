@@ -15,12 +15,23 @@ namespace TisztaVaros
         public string email { get; set; }
         public string description { get; set; }
         public string contactInfo { get; set; }
+        public string cInfo { get { return contactInfo.Substring(4, contactInfo.Length - 4); } }
         public string logo { get; set; }
         public string logoUrl { get; set; }
         public string createdAt { get; set; }
         public string createdAtHH
         {
-            get { return createdAt.Substring(0, 16).Replace('T', ' '); }
+            get
+            {
+                if (createdAt == null)
+                {
+                    return "";
+                }
+                else
+                {
+                    return createdAt.Substring(0, 16).Replace('T', ' ');
+                }
+            }
         }
     }
 }

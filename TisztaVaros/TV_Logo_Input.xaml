@@ -1,11 +1,11 @@
-﻿<Window x:Class="TisztaVaros.View_Logo"
+﻿<Window x:Class="TisztaVaros.TV_Logo_Input"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TisztaVaros"
         mc:Ignorable="d"
-        Title="Logo" Height="200" Width="1000" Background="Cornsilk">
+                Title="Logo" Height="200" Width="1000" Background="Cornsilk">
     <Window.Resources>
         <Style TargetType="{x:Type TextBox}">
             <Style.Resources>
@@ -40,3 +40,4 @@
         <Button Grid.Column="1" Click="InstLogo_Cancel" Content="Cancel" Margin="421,120,254,5" FontSize="18" FontWeight="Bold"/>
     </Grid>
 </Window>
+

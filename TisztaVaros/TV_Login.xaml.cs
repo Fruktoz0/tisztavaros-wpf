@@ -30,7 +30,7 @@ namespace TisztaVaros
         List<Label> l_list = new List<Label>();
         bool hide_y = true;
         string a_psw = "", t_psw;
-        TV_Admin aWindow;
+        public static TV_Admin aWindow;
         public static double a_top, a_left;
 
         [DllImport("user32.dll")]

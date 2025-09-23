@@ -8,7 +8,6 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
@@ -16,17 +15,16 @@ using System.Windows.Shapes;
 namespace TisztaVaros
 {
     /// <summary>
-    /// Interaction logic for View_Logo.xaml
+    /// Interaction logic for TV_Logo_Input.xaml
     /// </summary>
-    public partial class View_Logo : Window
+    public partial class TV_Logo_Input : Window
     {
         string LogoUrlBackup;
-        public View_Logo()
+        public TV_Logo_Input()
         {
             InitializeComponent();
             LogoUrlBackup = TV_Admin.inst_logo_url;
         }
-
         private void LogoURL_DataChanged(object sender, TextChangedEventArgs e)
         {
             try
@@ -38,12 +36,6 @@ namespace TisztaVaros
                 Logo_IMG.Source = null;
             }
         }
-
-        private void Try_View_Logo(object sender, RoutedEventArgs e)
-        {
-
-        }
-
         private void InstLogo_Save(object sender, RoutedEventArgs e)
         {
             if (Logo_IMG.Source == null)
@@ -56,7 +48,6 @@ namespace TisztaVaros
             }
             this.Close();
         }
-
         private void InstLogo_Cancel(object sender, RoutedEventArgs e)
         {
             TV_Admin.inst_logo_url = LogoUrlBackup;

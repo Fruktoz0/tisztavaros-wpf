@@ -43,6 +43,8 @@ namespace TisztaVaros
                 return "https://tisztavaros.hu" + reportImages[0].imageUrl; 
             }
         }
+        public string confirmed { get; set; }
+
         public string pict_db { get; set; }
         public TVR_User user { get; set; }
         public string username { get { return user.username; } }
@@ -60,7 +62,7 @@ namespace TisztaVaros
         public int reportId { get; set; }
         public string imageUrl { get; set; }
     }
-    class TVR_User
+    public class TVR_User
     {
         public string username { get; set; }
         public string avatarStyle { get; set; }

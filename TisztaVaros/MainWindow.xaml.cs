@@ -40,12 +40,17 @@ namespace TisztaVaros
         {
             InitializeComponent();
             connection = new ServerConnection();
+            //Window_Login_Auto();
         }
 
         private void Window_Login(object sender, RoutedEventArgs e)
         {
+            Window_Login_Auto();
+        }
+        private void Window_Login_Auto()
+        {
             lWindow = new TV_Login();
-            var myLoc = this.PointToScreen(new Point(0, 0));
+            //var myLoc = this.PointToScreen(new Point(0, 0));
             lWindow.Closed += Bezarka;
 
             var hwnd = new WindowInteropHelper(this).Handle;
@@ -57,6 +62,7 @@ namespace TisztaVaros
             lWindow.Show();
             this.Hide();
         }
+
         private void Window_Registration(object sender, RoutedEventArgs e)
         {
             rWindow = new TV_Registration();

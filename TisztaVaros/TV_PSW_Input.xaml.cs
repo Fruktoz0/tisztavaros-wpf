@@ -15,22 +15,22 @@ using System.Windows.Shapes;
 namespace TisztaVaros
 {
     /// <summary>
-    /// Interaction logic for InputBox.xaml
+    /// Interaction logic for TV_PSW_Input.xaml
     /// </summary>
-    public partial class InputBox : Window
+    public partial class TV_PSW_Input : Window
     {
-        public InputBox()
+        public TV_PSW_Input()
         {
             InitializeComponent();
             Vmi_Password.Focus();
-           }
+        }
 
         private void Get_PSW_OK(object sender, RoutedEventArgs e)
         {
             string a_psw = Vmi_Password.Text;
-            if (a_psw.Length < 6)   
+            if (a_psw.Length < 6)
             {
-                MessageBox.Show("A jelszónak legalább 6 karakter hosszúnak kell lennie!", "Hiba!");    
+                MessageBox.Show("A jelszónak legalább 6 karakter hosszúnak kell lennie!", "Hiba!");
             }
             else
             {

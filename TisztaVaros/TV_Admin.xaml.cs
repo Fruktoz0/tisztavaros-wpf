@@ -1,17 +1,26 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Numerics;
 using System.Printing;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
+using System.Runtime.Intrinsics.X86;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -28,6 +37,8 @@ using System.Windows.Media.Media3D;
 using System.Windows.Shapes;
 using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
+using static System.Net.WebRequestMethods;
+using File = System.IO.File;
 
 namespace TisztaVaros
 {
@@ -49,6 +60,9 @@ namespace TisztaVaros
         List<TV_Inst> list_inst = new List<TV_Inst>();
         List<TV_Cats> list_cats = new List<TV_Cats>();
         List<TV_Report> list_reports = new List<TV_Report>();
+        List<TV_ForwardingLogs> list_ForwardingLogs = new List<TV_ForwardingLogs>();
+        List<TV_StatusHistory> list_StatusHistory = new List<TV_StatusHistory>();
+        List<TV_StatusHistory> list_HistoryAll = new List<TV_StatusHistory>();
         bool[] order_user_y = new bool[10] { true, true, true, true, true, true, true, true, true, true };
         bool[] order_reps_y = new bool[10] { true, true, true, true, true, true, true, true, true, true };
         bool[] order_inst_y = new bool[5] { true, true, true, true, true };
@@ -59,21 +73,25 @@ namespace TisztaVaros
         TV_User sel_user;
         TV_Inst sel_inst, sel_instw;
         TV_Cats sel_cat;
-        TV_Report sel_report, sel_report_last;
+        static TV_Report sel_report, sel_report_last;
         public static string new_vmi_psw = "";
-        bool chk_udata_y = false, chk_idata_y = false, chk_cdata_y = false;
+        public static List<string> a_img_urls = new();
+        bool chk_udata_y = true, chk_idata_y = false, chk_cdata_y = false;
         bool start_inst_y = true, start_cats_y = true, start_report_y = true;
-        bool already_exist = false, hw_now_y = true;
+        bool already_exist = false, hw_now_y = false;
         string bc_Gray = "#FFDDDDDD", bc_LightGreen = "#6FB1A5", bc_Green = "#FF6EF525", tb_NotEmpty = "#FF4EFFD2", bc_Yellow = "#FFF9DD24";
         string tb_LightRed = "#FFFFACAC";
         Border cb_defBorder;
-        int view_rep_pict, max_rep_pict, sel_rep_idx;
-        string rep_pict_url = "https://tisztavaros.hu";
+        public static int view_rep_pict, max_rep_pict, sel_rep_idx;
+        public static string rep_pict_url = "https://tisztavaros.hu";
         double[] pict_arany = new double[5];
+        string[] last_n_days = new string[] { "1 nap", "3 nap", "1 hét", "2 hét", "1 hónap", "1 év", "Összes" };
+        int[] last_ndays_n = new int[] { -1, -3, -7, -14, -30, -365, -20000 };
+        string a_sel_menu = "";
 
         bool hold_workers = false;
         public static string inst_logo_url = "";
-        View_Logo logoURLWindow;
+        TV_Logo_Input logoURLWindow;
 
         [DllImport("user32.dll")]
         static extern IntPtr GetSystemMenu(IntPtr hWnd, bool bRevert);
@@ -83,11 +101,14 @@ namespace TisztaVaros
         const uint MF_ENABLED = 0x00000000;
         const uint SC_CLOSE = 0xF060;
         BitmapImage empty_logo = new BitmapImage(new Uri("https://smd.hu/Team/Empty_Logo.gif"));
-        BitmapImage rep_Picture;
+        public static BitmapImage rep_Picture;
 
         string[] db_status = new string[7] { "open", "accepted", "forwarded", "in_progress", "rejected", "resolved", "reopened" };
         string[] db_statusH = new string[7] { "Megnyitva", "Befogadva", "Továbbítva", "Folyamatban", "Elutasítva", "Megoldva", "Újranyitva" };
 
+        string e_user, psw_input_using = "";
+        bool u_save_y, u_savenew_y, u_fromlist_y, c_save_y, c_savenew_y;
+        string pict_path;
 
         public TV_Admin()
         {
@@ -104,18 +125,34 @@ namespace TisztaVaros
             HTTP_Local.IsChecked = App.local_y;
             CB_H_User_Role.ItemsSource = allRoles;
             CB_H_User_Status.ItemsSource = allStatus;
+            datePicker_From.SelectedDate = DateTime.Now;
+            datePicker_Until.SelectedDate = DateTime.Now.AddDays(-14);
+            CB_H_Report_DLong.ItemsSource = last_n_days;
+            CB_H_Report_DLong.SelectedValue = "2 hét";
+
+            pict_path = Directory.GetCurrentDirectory().Substring(0, 3) + "TV_Picts";
+            Directory.CreateDirectory(pict_path + "\\uploads");
+        }
+        private void TV_Admin_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.A && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+            {
+                if (e.Key == Key.A && Keyboard.IsKeyDown(Key.LeftCtrl))
+                {
+                    if (A_Err.Visibility == Visibility.Hidden) { A_Err.Visibility = Visibility.Visible; }
+                    else { A_Err.Visibility = Visibility.Hidden; }
+                }
+            }
         }
         private void Logo_Click(object sender, EventArgs e)
         {
             Stack_Main_Ini();
         }
-
         private void Stack_Main_Ini()
         {
             ReColor_All("Ini");
             Get_All_db();
         }
-
         private async void Get_All_db()
         {
             int user_db = await connection.Server_Get_db("/api/admin/user_db");
@@ -125,7 +162,6 @@ namespace TisztaVaros
             int vote_db = await connection.Server_Get_db("/api/votes/vote_db");
             Vote_Number_N.Content = vote_db.ToString();
         }
-
         private void Get_Admin_Users(object sender, RoutedEventArgs e)
         {
             Button a_Button = sender as Button;
@@ -134,8 +170,8 @@ namespace TisztaVaros
 
         void ReColorButtons(Button a_Button)
         {
-            string a_sel = a_Button.Name.Split('_')[1];
-            ReColor_All(a_sel);
+            a_sel_menu = a_Button.Name.Split('_')[1];
+            ReColor_All(a_sel_menu);
             a_Button.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(colorSelectButton));
         }
         void ReColor_All(string a_sel)
@@ -170,13 +206,20 @@ namespace TisztaVaros
         {
             Button a_Button = sender as Button;
             ReColorButtons(a_Button);
-            //Back2Report_List(sender, e);
-            Get_Report_List();
+            if (start_report_y)
+            {
+                Get_Report_List();
+            }
+            else
+            {
+                ListView_Reports.Focus();
+            }
         }
         private void Get_Admin_Categories(object sender, RoutedEventArgs e)
         {
             Button a_Button = sender as Button;
             ReColorButtons(a_Button);
+            ListView_Categories.Focus();
         }
         private void Get_Admin_Institutions(object sender, RoutedEventArgs e)
         {
@@ -184,11 +227,11 @@ namespace TisztaVaros
             ReColorButtons(a_Button);
             if (start_inst_y)
             {
-                Inst_ReLoad(sender, e);
+                Inst_ReLoad_Auto();
                 start_inst_y = false;
             }
+            ListView_Inst.Focus();
         }
-
         private void Get_Admin_Challenges(object sender, RoutedEventArgs e)
         {
             Button a_Button = sender as Button;
@@ -198,7 +241,6 @@ namespace TisztaVaros
         {
             Get_User_List(S_User_Name.Text, S_User_Email.Text);
         }
-
         private async void Get_User_List(string s_name, string s_email)
         {
             list_user = await connection.Search_User(s_name, s_email);
@@ -215,16 +257,8 @@ namespace TisztaVaros
                     item.institution = "";
                 }
             }
-            ListView_User.ItemsSource = list_user.OrderBy(u => u.username).ToList();
-            /*for (int i = 0; i < ListView_User.Items.Count; i++)
-            {   
-                TV_User a_user = ListView_User.Items[i] as TV_User;
-
-                if (a_user.isActive == "archived")
-                {
-                    ListView_User.Items[i].Background = Brushes.LightGray;
-                }
-            }*/
+            list_user = list_user.OrderBy(u => u.username).ToList();
+            ListView_User.ItemsSource = list_user;
         }
         private async void Get_Inst_List()
         {
@@ -236,10 +270,14 @@ namespace TisztaVaros
                 if (item.logoUrl != "" && item.logoUrl != null) { item.logo = "Logo"; }
             }
             inst_Names.Sort();
-            ListView_Inst.ItemsSource = list_inst.OrderBy(u => u.name).ToList();
             inst_Names = inst_Names.OrderBy(n => n).ToList();
             CB_H_User_Inst.ItemsSource = inst_Names;
             CB_H_Category_Inst.ItemsSource = inst_Names;
+            CB_H_Report_Inst.ItemsSource = inst_Names;
+
+            ListView_Inst.ItemsSource = list_inst.OrderBy(u => u.name).ToList();
+            ListView_Inst.SelectedItem = 0;
+            ListView_Inst.Focus();
         }
         private void User_SortHeaderClick(object sender, RoutedEventArgs e)
         {
@@ -435,6 +473,7 @@ namespace TisztaVaros
         private void User_ClearData()
         {
             chk_udata_y = false;
+            u_fromlist_y = false;
             H_User_Name.Text = "";
             H_User_Email.Text = "";
             H_User_Zip.Text = "";
@@ -449,79 +488,210 @@ namespace TisztaVaros
             Change_ComboBoxBorderColor(CB_H_User_Inst, "");
 
             sel_user = new TV_User();
+            chk_udata_y = true;
         }
         private async void User_SaveAsNew(object sender, RoutedEventArgs e)
         {
             H_User_Email.Text = H_User_Email.Text.Trim();
             H_User_Name.Text = H_User_Name.Text.Trim();
-            bool ok_emal_y = Valid_Email(H_User_Email.Text);
-            if (H_User_Name.Text.Length >= 4 && H_User_Email.Text.Length >= 6 && ok_emal_y)
+            if (u_savenew_y)
             {
-                string e_user = await connection.Check_ExistUser(H_User_Email.Text, H_User_Name.Text);
-                if (e_user == "00")
+                bool ok_emal_y = Valid_Email(H_User_Email.Text);
+                if (H_User_Name.Text.Length >= 4 && H_User_Email.Text.Length >= 6 && ok_emal_y)
                 {
-                    InputBox psw_input = new InputBox();
-                    new_vmi_psw = "x";
-                    psw_input.Closed += Bezarka;
-
-                    var hwnd = new WindowInteropHelper(this).Handle;
-                    IntPtr hMenu = GetSystemMenu(hwnd, false);
-                    EnableMenuItem(hMenu, SC_CLOSE, MF_GRAYED);
-
-                    this.IsEnabled = false;
-                    psw_input.Top = this.Top + this.Height / 2 - psw_input.Height / 2;
-                    psw_input.Left = this.Left + this.Width / 2 - psw_input.Width / 2;
-                    psw_input.Show();
+                    e_user = await connection.Check_ExistUser(H_User_Name.Text, H_User_Email.Text);
+                    if (e_user == "00")
+                    {
+                        psw_input_using = "SaveAsNew";
+                        Get_New_PSW();
+                    }
+                    else
+                    {
+                        if (e_user == "01")
+                        {
+                            MessageBox.Show("Email már létezik!");
+                            return;
+                        }
+                        if (e_user == "11")
+                        {
+                            MessageBox.Show("Név és Email már létezik!");
+                            return;
+                        }
+                        if (e_user == "10")
+                        {
+                            MessageBox.Show("Név már létezik!");
+                            return;
+                        }
+                        MessageBox.Show("Egészen más Hiba!!");
+                    }
                 }
-                else
+                else if (H_User_Name.Text.Length < 4)
                 {
-                    if (e_user == "01")
-                    {
-                        MessageBox.Show("Email már létezik!");
-                        return;
-                    }
-                    if (e_user == "11")
-                    {
-                        MessageBox.Show("Név és Email már létezik!");
-                        return;
-                    }
-                    if (e_user == "10")
-                    {
-                        MessageBox.Show("Név már létezik!");
-                        return;
-                    }
-                    MessageBox.Show("Egészen más Hiba!!");
+                    MessageBox.Show("A név túl rövid!");
+                    return;
                 }
-            }
-            else if (H_User_Name.Text.Length < 4)
-            {
-                MessageBox.Show("A név túl rövid!");
-                return;
-            }
-            else if (H_User_Email.Text.Length < 6 || !ok_emal_y)
-            {
-                MessageBox.Show("Az email cím nem megfelelő!");
-                return;
+                else if (H_User_Email.Text.Length < 6 || !ok_emal_y)
+                {
+                    MessageBox.Show("Az email cím nem megfelelő!");
+                    return;
+                }
             }
         }
-        private async void User_Save(object sender, RoutedEventArgs e)
+        private void Get_New_PSW()
         {
-            bool do_y = await Changed_UserData();
-            if (do_y)
+            TV_PSW_Input psw_input = new TV_PSW_Input();
+            new_vmi_psw = "x";
+            psw_input.Closed += Bezarka;
+
+            var hwnd = new WindowInteropHelper(this).Handle;
+            IntPtr hMenu = GetSystemMenu(hwnd, false);
+            EnableMenuItem(hMenu, SC_CLOSE, MF_GRAYED);
+
+            this.IsEnabled = false;
+            psw_input.Top = this.Top + this.Height / 2 - psw_input.Height / 2;
+            psw_input.Left = this.Left + this.Width / 2 - psw_input.Width / 2;
+            psw_input.Show();
+        }
+        private void User_Save(object sender, RoutedEventArgs e)
+        {
+            if (u_save_y)
             {
                 User_Update();
             }
         }
+        private async void Changed_UserData()
+        {
+            string chk = "---";
+            bool do_y = false;
+            u_savenew_y = false;
+            u_save_y = false;
+            if (chk_udata_y)
+            {
+                chk = "-1-";
+                string a_user_name = H_User_Name.Text.Trim();
+                string a_user_emil = H_User_Email.Text.Trim();
+
+                if ((a_user_name == "" || a_user_emil == "") && !u_fromlist_y)
+                {
+                    CB_H_User_Status.SelectedIndex = -1;
+                    Change_ComboBoxBorderColor(CB_H_User_Status, "");
+                    CB_H_User_Role.SelectedIndex = -1;
+                    Change_ComboBoxBorderColor(CB_H_User_Role, "");
+                    CB_H_User_Inst.SelectedIndex = -1;
+                    Change_ComboBoxBorderColor(CB_H_User_Inst, "");
+                    H_User_SaveColor();
+                    return;
+                }
+                if (!u_fromlist_y)
+                {
+                    chk = "New";
+                    CB_H_User_Status.SelectedItem = "active";
+                    CB_H_User_Role.SelectedItem = "user";
+                    e_user = await connection.Check_ExistUser(a_user_name, a_user_emil);
+                    if (e_user == "00")
+                    {
+                        u_savenew_y = true;
+                    }
+                    else
+                    {
+                        if (e_user[0] == '1') { H_User_Name.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_LightRed)); }
+                        if (e_user[1] == '1') { H_User_Email.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_LightRed)); }
+                    }
+                }
+                else
+                {
+                    e_user = await connection.Check_ExistUser(a_user_name, a_user_emil);
+                    do_y = H_User_Zip.Text != NL(sel_user.zipCode) || H_User_Zip.Text != NL(sel_user.zipCode) || H_User_City.Text != NL(sel_user.city)
+                        || H_User_Address.Text != NL(sel_user.address) || CB_H_User_Role.SelectedItem.ToString() != sel_user.role
+                        || CB_H_User_Status.SelectedItem.ToString() != sel_user.isActive
+                        || CB_H_User_Inst.SelectedItem.ToString() != NL(sel_user.institution);
+                    if ((a_user_name == "" || a_user_emil == "") && chk_udata_y)
+                    {
+                        if (a_user_name == "")
+                        {
+                            H_User_Name.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_LightRed));
+                        }
+                        if (a_user_emil == "")
+                        {
+                            H_User_Email.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_LightRed));
+                        }
+                    }
+                    else if (a_user_name == sel_user.username && a_user_emil == sel_user.email)
+                    {
+                        chk = "==,==";
+                        H_User_Name.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_NotEmpty));
+                        H_User_Email.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_NotEmpty));
+                        u_save_y = do_y;
+                    }
+                    else
+                    {
+                        if (a_user_name != sel_user.username && a_user_emil == sel_user.email)
+                        {
+                            chk = "!=,==";
+                            if (e_user[0] == '1')
+                            {
+                                H_User_Name.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_LightRed));
+                            }
+                            else
+                            {
+                                u_save_y = true;
+                            }
+                        }
+                        else if (a_user_name == sel_user.username && a_user_emil != sel_user.email && e_user[1] == '0')
+                        {
+                            chk = "==,!=";
+                            if (e_user[1] == '1')
+                            {
+                                H_User_Email.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_LightRed));
+                            }
+                            else { u_save_y = true; }
+                        }
+                        else //(H_User_Name.Text != sel_user.username && H_User_Email.Text != sel_user.email)
+                        {
+                            chk = "!=,!=";
+                            if (e_user == "00")
+                            {
+                                u_savenew_y = true;
+                                u_save_y = true;
+                            }
+                            else
+                            {
+                                u_savenew_y = false;
+                                u_save_y = false;
+                                if (e_user[0] == '1') { H_User_Name.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_LightRed)); }
+                                if (e_user[1] == '1') { H_User_Email.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_LightRed)); }
+                            }
+                        }
+                    }
+                }
+            }
+            A_Err.Text = "[" + chk + "] AsNew=" + u_savenew_y.ToString() + " | Save=" + u_save_y.ToString()
+                + " | Udata=" + chk_udata_y.ToString() + " | 4List=" + u_fromlist_y.ToString();
+            H_User_SaveColor();
+        }
+        private string NL(string inp)
+        {
+            if (inp == null)
+            {
+                return "";
+            }
+            return inp;
+        }
+        private void H_User_SaveColor()
+        {
+
+            if (u_save_y) { H_User_Save.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_Green)); }
+            else { H_User_Save.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_Gray)); }
+
+            if (u_savenew_y) { H_User_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFF9DD24")); }
+            else { H_User_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_Gray)); }
+        }
         private void Category_Save(object sender, RoutedEventArgs e)
         {
-            bool do_y = SelCategory_CHK_Modified();
-            if (do_y)
+            //SelCategory_CHK_Modified();
+            if (c_save_y)
             {
                 Category_Update();
-            }
-            else if (already_exist)
-            {
-                MessageBox.Show("Na, ilyen kategória már van, ez nem egy új!", "Névütközés:");
             }
         }
         private async void Category_Update()
@@ -547,21 +717,21 @@ namespace TisztaVaros
         }
         private async void User_Update()
         {
-            sel_user.username = H_User_Name.Text;
-            sel_user.email = H_User_Email.Text;
-            if (H_User_Zip.Text != "")
-            {
-                sel_user.zipCode = H_User_Zip.Text;
-            }
-            else
-            {
-                sel_user.zipCode = null;
-            }
-            sel_user.city = H_User_City.Text;
-            sel_user.address = H_User_Address.Text;
+            if (sel_user == null) { sel_user = new TV_User(); }
+
+            sel_user.username = H_User_Name.Text.Trim();
+            sel_user.email = H_User_Email.Text.Trim();
+            H_User_Zip.Text = H_User_Zip.Text.Trim();
+
+            if (H_User_Zip.Text != "") { sel_user.zipCode = H_User_Zip.Text; }
+            else { sel_user.zipCode = null; }
+
+            sel_user.city = H_User_City.Text.Trim();
+            sel_user.address = H_User_Address.Text.Trim();
             sel_user.role = CB_H_User_Role.SelectedItem.ToString();
             sel_user.isActive = CB_H_User_Status.SelectedItem.ToString();
-            if (CB_H_User_Inst.SelectedItem.ToString() != "")
+
+            if (CB_H_User_Inst.SelectedIndex > 0)
             {
                 TV_Inst a_found = list_inst.Find(i => i.name == CB_H_User_Inst.SelectedItem.ToString());
                 if (a_found != null)
@@ -580,8 +750,13 @@ namespace TisztaVaros
                 if (a_index > -1)
                 {
                     Get_User_List(S_User_Name.Text, S_User_Email.Text);
-                    User_ClearData();
                     MessageBox.Show("Elvileg Frissítve");
+                    a_index = list_user.FindIndex(u => u.id == sel_user.id);
+                    if (a_index > -1)
+                    {
+                        ListView_User.SelectedIndex = a_index;
+                        User_ClearData();
+                    }
                 }
                 else
                 {
@@ -589,35 +764,6 @@ namespace TisztaVaros
                 }
             }
             else { MessageBox.Show("Hiba"); }
-        }
-        private async Task<bool> Changed_UserData()
-        {
-            bool do_y = false;
-            if (chk_udata_y)
-            {
-                do_y = do_y || H_User_Name.Text != sel_user.username || H_User_Email.Text != sel_user.email || H_User_Zip.Text != sel_user.zipCode
-                    || H_User_Zip.Text != sel_user.zipCode || H_User_City.Text != sel_user.city || H_User_Address.Text != sel_user.address
-                    || CB_H_User_Role.SelectedItem.ToString() != sel_user.role || CB_H_User_Status.SelectedItem.ToString() != sel_user.isActive
-                    || CB_H_User_Inst.SelectedItem.ToString() != sel_user.institution;
-
-                if (H_User_Name.Text != sel_user.username && H_User_Email.Text != sel_user.email)
-                {
-                    string e_user = await connection.Check_ExistUser(H_User_Email.Text, H_User_Name.Text);
-                    if (e_user == "00")
-                    {
-                        H_User_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFF9DD24"));
-                    }
-                    else
-                    {
-                        H_User_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_Gray));
-                    }
-                }
-                else
-                {
-                    H_User_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_Gray));
-                }
-            }
-            return do_y;
         }
         private void User_OnKeyDownHandler(object sender, KeyEventArgs e)
         {
@@ -633,18 +779,6 @@ namespace TisztaVaros
         {
             this.Title = "Tiszta Város - Admin (Top: " + this.Top + " Left: " + this.Left + ")";
         }
-        private async void SelUser_CHK_Modified()
-        {
-            bool do_y = await Changed_UserData();
-            if (do_y)
-            {
-                H_User_Save.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FF6EF525"));
-            }
-            else
-            {
-                H_User_Save.Background = H_User_Search.Background;
-            }
-        }
         private void SelCatInst_CBChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!hw_now_y)
@@ -654,7 +788,7 @@ namespace TisztaVaros
                 {
                     Change_ComboBoxBorderColor(a_cb, tb_NotEmpty);
                     TV_Inst a_found = list_inst.Find(i => i.name == CB_H_Category_Inst.SelectedItem.ToString());
-                    H_CategoryInst_Desc.Text = a_found.name;
+                    H_CategoryInst_Desc.Text = a_found.description;
                     H_CategoryInst_Desc.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_NotEmpty));
                     H_CategoryInst_Contact.Text = a_found.contactInfo;
                     H_CategoryInst_Contact.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_NotEmpty));
@@ -702,10 +836,51 @@ namespace TisztaVaros
         }
         private void SelUser_CBChanged(object sender, SelectionChangedEventArgs e)
         {
+            Color_CBChanged(sender, e);
+            Changed_UserData();
+        }
+        private void SH_ReportInst_CBChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Color_CBChanged(sender, e);
+            string a_inst = CB_H_Report_Inst.SelectedItem.ToString();
+            if (a_inst == "")
+            {
+                ListView_Reports.ItemsSource = list_reports;
+            }
+            else
+            {
+                ListView_Reports.ItemsSource = list_reports.Where(r => r.institution.name == a_inst).ToList();
+            }
+            if (ListView_Reports.Items.Count == 0) { Panel.SetZIndex(Report_Detail, 0); }
+            else { ListView_Reports.SelectedItem = ListView_Reports.Items[0]; Report_ListView_Click_Auto(); }
+        }
+        private void Call_GoogleMaps(object sender, EventArgs s)
+        {
+            string url = "https://www.google.com/maps/search/?api=1&query=" + Conv_Coords(sel_report.locationLat.ToString()) + "%2C"
+                + Conv_Coords(sel_report.locationLat.ToString()) + "&zoom=0"; ;
+            // https://www.google.com/maps/search/?api=1&query=47.5951518%2C-122.3316393
+            //  47°41'17.5"N+19°10'06.6"E
+            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+
+
+            string url2 = "https://www.google.com/maps/@?api=1&map_action=map&center=" + Conv_Coords(sel_report.locationLat.ToString()) + "%2C"
+                + Conv_Coords(sel_report.locationLat.ToString()) + "&zoom=10&basemap=terrain"; ;
+            // https://www.google.com/maps/@?api=1&map_action=map&center=-33.712206%2C150.311941&zoom=12&basemap=terrain
+            //Process.Start(new ProcessStartInfo(url2) { UseShellExecute = true });
+            //MessageBox.Show(url);
+        }
+        private string Conv_Coords(string inp)
+        {
+            string outka = inp.Replace('.', ',');
+            string out_int = outka.Split(',')[0] + "°";
+            string out_fract = outka.Split(',')[1] + "000000";
+            return out_int + out_fract.Substring(0, 2) + "'" + out_fract.Substring(2, 2) + '"' + out_fract.Substring(4, 2) + "." + out_fract.Substring(6, 1); ;
+        }
+        private void Color_CBChanged(object sender, SelectionChangedEventArgs e)
+        {
             ComboBox a_cb = sender as ComboBox;
             if (a_cb.SelectedItem != "") { Change_ComboBoxBorderColor(a_cb, tb_NotEmpty); }
             else { Change_ComboBoxBorderColor(a_cb, ""); }
-            SelUser_CHK_Modified();
         }
         private void Admin_Postit(object sender, RoutedEventArgs e)
         {
@@ -736,13 +911,28 @@ namespace TisztaVaros
                 B_Inst_Workers.Foreground = new SolidColorBrush(Colors.Black);
             }
         }
+        private async void Get_WorkerList_Key(object sender, RoutedEventArgs e)
+        {
+            sel_instw = ListView_Inst.SelectedItem as TV_Inst;
+            Inst_Sel_Stat_Auto();
+        }
         private async void Get_WorkerList(object sender, RoutedEventArgs e)
         {
             Get_WorkerList_Auto();
         }
         private async void Get_WorkerList_Auto()
         {
-            sel_instw = ListView_Inst.SelectedItem as TV_Inst;
+            int a_idx=0;
+            if (start_inst_y)
+            {
+                sel_instw = ListView_Inst.Items[0] as TV_Inst;
+            }
+            else
+            {
+                a_idx = ListView_Inst.SelectedIndex;
+                sel_instw = ListView_Inst.SelectedItem as TV_Inst;
+            }
+
             if (!hold_workers)
             {
                 if (sel_instw != null)
@@ -752,22 +942,86 @@ namespace TisztaVaros
                 }
             }
             Inst_Sel_Stat_Auto();
+            ListView_Inst.Focus();
+            ListView_Inst.SelectedIndex = a_idx;
         }
+        private void Inst_Sel_Stat(object sender, RoutedEventArgs e)
+        {
+            Inst_Sel_Stat_Auto();
+        }
+        private async void Inst_Sel_Stat_Auto()
+        {
+            string a_id = "";
+            string a_logo_Url = "";
+            if (sel_instw != null)
+            {
+                a_id = sel_instw.id;
+                a_logo_Url = sel_instw.logoUrl;
+            }
+
+            if (a_id != null)
+            {
+                List<TV_User> sel_workers = await connection.Get_Workers(a_id, "Inst_Sel_Stat_Auto");
+                Del_Workers.ItemsSource = sel_workers.OrderBy(u => u.username).ToList();
+                int workers_db = sel_workers.Count;
+                if (workers_db > 0)
+                {
+                    B_Inst_Detach.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bus_Yellow));
+                }
+                else
+                {
+                    B_Inst_Detach.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_Gray));
+                }
+                SetColor_Label(workers_db, Inst_WorkersNum);
+                int rep_db = await connection.Server_Get_InstValami_db("/api/reports/report_Inst_db", a_id);
+                SetColor_Label(rep_db, Inst_ReportNum);
+                int news_db = await connection.Server_Get_InstValami_db("/api/news/news_Inst_db", a_id);
+                SetColor_Label(news_db, Inst_NewsNum);
+                if (a_logo_Url != null && a_logo_Url != "")
+                {
+                    Inst_LogoImg_Del.Source = new BitmapImage(new Uri(a_logo_Url));
+                }
+                else
+                {
+                    Inst_LogoImg_Del.Source = new BitmapImage(new Uri("http://smd.hu/Team/Empty_Logo.gif"));
+                }
+            }
+        }
+
         private async void Report_ListView_Click(object sender, RoutedEventArgs e)
         {
-
+            Report_ListView_Click_Auto();
+        }
+        private async void Report_ListView_Click_Auto()
+        {
             sel_report = ListView_Reports.SelectedItem as TV_Report;
-            if (sel_report != null)
+            if (sel_report != null && sel_report != sel_report_last || Panel.GetZIndex(Report_Detail) == 0)
             {
+                a_img_urls = new List<string>();
+                foreach (var item in sel_report.reportImages)
+                {
+                    a_img_urls.Add(item.imageUrl);
+                    DWL_Pict(item.imageUrl);
+                }
                 Report_Detail.Visibility = Visibility.Visible;
                 Panel.SetZIndex(Report_Detail, 2);
-                ReportDetail_Cím.Content = sel_report.title;
+                ReportDetail_City.Content = sel_report.city;
+                ReportDetail_Cím.Text = sel_report.title;
                 ReportDetail_Desc.Text = sel_report.description;
                 ReportDetail_User.Content = sel_report.username;
                 ReportDetail_Category.Content = sel_report.category.categoryName;
                 ReportDetail_Address.Content = sel_report.address + " " + sel_report.zipCode;
                 ReportDetail_Coords.Content = sel_report.locationLat + " " + sel_report.locationLng;
                 ReportDetail_Inst.Content = sel_report.institution.name;
+                ReportDetail_Azon.Content = sel_report.createdAt.Substring(0, 4) + "/" + sel_report.id;
+                if (sel_report.confirmed == null)
+                {
+                    ReportDetail_Confirmed.Content = "0x";
+                }
+                else
+                {
+                    ReportDetail_Confirmed.Content = sel_report.confirmed + "x";
+                }
                 max_rep_pict = sel_report.reportImages.Count - 1;
                 if (sel_report.reportImages.Count <= 1)
                 {
@@ -776,7 +1030,7 @@ namespace TisztaVaros
                 }
                 else
                 {
-                    B_Prev_Pict.Visibility = Visibility.Visible;
+                    B_Prev_Pict.Visibility = Visibility.Hidden;
                     B_Next_Pict.Visibility = Visibility.Visible;
                 }
                 if (sel_report != sel_report_last)
@@ -788,16 +1042,61 @@ namespace TisztaVaros
                         await Task.Delay(100);
 
                     }
-                    sel_report_last = sel_report;
-
                     Thickness margin = ReportDetail_Pict.Margin;
                     margin.Top = await Get_Pict_MarginTop();
                     ReportDetail_Pict.Margin = margin;
                     //ReportDetail_VMI.Content = margin.Top.ToString() + " - " + rep_Picture.Width.ToString() + " - " + rep_Picture.Height.ToString();
                 }
+
                 ReportDetail_Pict.Source = rep_Picture;
                 ReportDetail_Status.Content = sel_report.status;
                 ReportDetail_Date.Content = sel_report.createdAtHH;
+                list_StatusHistory = await connection.Server_Get_StatusHistory(sel_report.id);
+                list_HistoryAll = list_StatusHistory;
+
+                list_ForwardingLogs = await connection.Server_Get_ForwardingLogs(sel_report.id);
+                foreach (var item in list_ForwardingLogs)
+                {
+                    TV_StatusHistory new_item = new();
+                    new_item.status = "forwarded";
+                    new_item.changedAt = item.forwardedAt;
+                    new_item.changedBy = new TVR_User();
+                    new_item.changedBy.username = item.forwardedByUser.username;
+                    new_item.comment = "[ " + item.forwardedFrom.name + " -> " + item.forwardedTo.name + " ]\n" + item.reason;
+
+                    list_HistoryAll.Add(new_item);
+                }
+
+                TV_StatusHistory new_open = new();
+                new_open.status = "open";
+                new_open.changedAt = sel_report.createdAt;
+                new_open.changedBy = new TVR_User();
+                new_open.changedBy.username = sel_report.user.username;
+                new_open.comment = "'X' akta megnyitva, beküldve.";
+                list_HistoryAll.Add(new_open);
+
+                ListView_History.ItemsSource = list_HistoryAll.OrderBy(u => u.changedAt).ToList();
+                if (list_HistoryAll.Count > 0)
+                {
+                    ListView_History.SelectedItem = ListView_History.Items[list_HistoryAll.Count - 1];
+                    ListView_History.UpdateLayout();
+                }
+                sel_report_last = sel_report;
+                if (start_report_y)
+                {
+                    start_report_y = false;
+                }
+            }
+        }
+        private void DWL_Pict(string a_url)
+        {
+            string web_url = rep_pict_url + a_url;
+            if (!File.Exists(pict_path + a_url))
+            {
+                using (var client = new WebClient())
+                {
+                    client.DownloadFile(web_url, pict_path + a_url);
+                }
             }
         }
         private async Task<double> Get_Pict_MarginTop()
@@ -816,27 +1115,57 @@ namespace TisztaVaros
             if (view_rep_pict > 0)
             {
                 view_rep_pict--;
-                rep_Picture = new BitmapImage(new Uri(rep_pict_url + sel_report.reportImages[view_rep_pict].imageUrl));
-                ReportDetail_Pict.Source = rep_Picture;
-                return;
+                if (view_rep_pict == 0)
+                {
+                    B_Prev_Pict.Visibility = Visibility.Hidden;
+                }
+                B_Next_Pict.Visibility = Visibility.Visible;
+                Show_NewPicture();
             }
         }
-
-        private void View_ReportPict_Next(object sender, RoutedEventArgs e)
+        private async void Show_NewPicture()
+        {
+            rep_Picture = new BitmapImage(new Uri(rep_pict_url + sel_report.reportImages[view_rep_pict].imageUrl));
+            Thickness margin = ReportDetail_Pict.Margin;
+            margin.Top = await Get_Pict_MarginTop();
+            ReportDetail_Pict.Source = rep_Picture;
+            ReportDetail_Pict.Margin = margin;
+        }
+        private async void View_ReportPict_Next(object sender, RoutedEventArgs e)
         {
             if (view_rep_pict < max_rep_pict)
             {
                 view_rep_pict++;
-                rep_Picture = new BitmapImage(new Uri(rep_pict_url + sel_report.reportImages[view_rep_pict].imageUrl));
-                ReportDetail_Pict.Source = rep_Picture;
-                return;
+                if (view_rep_pict == max_rep_pict)
+                {
+                    B_Next_Pict.Visibility = Visibility.Hidden;
+                }
+                B_Prev_Pict.Visibility = Visibility.Visible;
+                Show_NewPicture();
             }
         }
-
+        private void Users_KeyDown(object sender, KeyEventArgs e)
+        {
+            ;
+            if (e.Key == Key.A && Keyboard.IsKeyDown(Key.LeftCtrl))
+            {
+                if (A_Err.Visibility == Visibility.Hidden) { A_Err.Visibility = Visibility.Visible; }
+                else { A_Err.Visibility = Visibility.Hidden; }
+            }
+        }
         private async void Report_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Left) { View_ReportPict_Prev(sender, e); }
-            if (e.Key == Key.Right) { View_ReportPict_Next(sender, e); }
+            if (e.Key.Equals(Key.RightCtrl))
+            {
+                Rep_Cursor_OFF();
+                Rep_Control_Over_CTRL.Visibility = Visibility.Visible;
+                Show_BigPicture(sender, e);
+            }
+            if (e.Key == Key.Left) { View_ReportPict_Prev(sender, e); Rep_Cursor_OFF(); Rep_Control_Over_Left.Visibility = Visibility.Visible; return; }
+            if (e.Key == Key.Right) { View_ReportPict_Next(sender, e); Rep_Cursor_OFF(); Rep_Control_Over_Right.Visibility = Visibility.Visible; return; }
+            if (e.Key == Key.Up) { Rep_Cursor_OFF(); Rep_Control_Over_Up.Visibility = Visibility.Visible; return; }
+            if (e.Key == Key.Down) { Rep_Cursor_OFF(); Rep_Control_Over_Down.Visibility = Visibility.Visible; return; }
+            if (e.Key == Key.Down) { Rep_Cursor_OFF(); Rep_Control_Over_Down.Visibility = Visibility.Visible; return; }
             if (e.Key == Key.NumPad8)
             {
                 Thickness margin = ReportDetail_Pict.Margin;
@@ -861,6 +1190,13 @@ namespace TisztaVaros
             }
             else if (e.Key == Key.Escape) { Panel.SetZIndex(Report_Detail, 0); }
         }
+        internal void Rep_Cursor_OFF()
+        {
+            Rep_Control_Over_Left.Visibility = Visibility.Hidden;
+            Rep_Control_Over_Right.Visibility = Visibility.Hidden;
+            Rep_Control_Over_Up.Visibility = Visibility.Hidden;
+            Rep_Control_Over_Down.Visibility = Visibility.Hidden;
+        }
         private void Back2Report_List(object sender, RoutedEventArgs e)
         {
             Panel.SetZIndex(Report_Detail, 0);
@@ -877,10 +1213,12 @@ namespace TisztaVaros
                 sel_cat = item as TV_Cats;
                 H_Category_Name.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_NotEmpty));
                 H_Category_Name.Text = sel_cat.categoryName;
+                CB_H_Category_Inst.SelectedIndex = -1;
                 hw_now_y = false;
                 CB_H_Category_Inst.SelectedItem = sel_cat.institution.name;
                 int a_db = await connection.Server_Get_ReportCat_db(sel_cat.id);
                 H_Category_Reports_N.Text = a_db.ToString();
+                H_Category_Save.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_Gray));
                 if (a_db > 0)
                 {
                     H_Category_Reports_N.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_Yellow));
@@ -889,6 +1227,7 @@ namespace TisztaVaros
                 {
                     H_Category_Reports_N.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_Green));
                 }
+                SelCategory_CHK_Modified();
             }
         }
         private void Inst_ListView_Click(object sender, RoutedEventArgs e)
@@ -916,7 +1255,7 @@ namespace TisztaVaros
                     H_Inst_Address.Text = addr.Split('|')[0].Split(',')[1].Trim();
                     if (addr.Contains(" | "))
                     {
-                        H_Inst_Tel.Text = addr.Split('|')[1].Trim();
+                        H_Inst_Tel.Text = addr.Split('|')[1].Trim().Split(":")[1].Trim();
                     }
                 }
                 inst_logo_url = sel_inst.logoUrl;
@@ -965,6 +1304,7 @@ namespace TisztaVaros
             if (item != null)
             {
                 chk_udata_y = false;
+                u_fromlist_y = true;
                 sel_user = item as TV_User;
                 H_User_Name.Text = sel_user.username;
                 H_User_Email.Text = sel_user.email;
@@ -992,69 +1332,82 @@ namespace TisztaVaros
         }
         private void SelCategory_DataChanged(object sender, TextChangedEventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            bool do_y = SelCategory_CHK_Modified();
+            SelCategory_CHK_Modified();
+            //sender.focus()
         }
-        private bool SelCategory_CHK_Modified()
+        private void SelCategory_CHK_Modified()
         {
             if (!hw_now_y)
             {
+                c_save_y = false;
+                c_savenew_y = false;
+                ListView_Categories.SelectedItem = sel_cat;
+                string c_name = H_Category_Name.Text;
+                string c_inst = CB_H_Category_Inst.Text;
+                bool sel_cinst_y = CB_H_Category_Inst.SelectedIndex > 0;
+                bool sel_cname_y = c_name != "";
+                TV_Cats cat_found = new();
+
+                if (sel_cname_y) { cat_found = list_cats.Find(c => c.categoryName.ToUpper() == c_name.ToUpper()); }
+
                 if (chk_cdata_y)
                 {
-                    bool do_y = sel_cat.categoryName != H_Category_Name.Text && H_Category_Name.Text != "";
-                    TV_Cats cat_found = list_cats.Find(c => c.categoryName == H_Category_Name.Text);
-                    if (cat_found != null && cat_found.categoryName != sel_cat.categoryName)
+                    if (c_name == sel_cat.categoryName)
                     {
-                        int cat_index = ListView_Categories.Items.IndexOf(cat_found);
-                        if (cat_index != -1) { ListView_Categories.SelectedIndex = cat_index; }
-                        H_Category_Name.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_LightRed));
-                        H_Category_Save.Background = H_User_Search.Background;
-                        H_Category_SaveNew.Background = H_User_Search.Background;
-                        already_exist = true;
-                        return false;
+                        if (c_inst != sel_cat.linked_inst)
+                        {
+                            c_save_y = true;
+                        }
                     }
-                    if (do_y)
+                    else if (cat_found != null)
                     {
-                        H_Category_Save.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_Green));
-                        H_Category_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_Yellow));
+                        H_Category_Name.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_LightRed));
+                        ListView_Categories.SelectedItem = cat_found;
                     }
                     else
-                    {
-                        H_Category_Save.Background = H_User_Search.Background;
-                        H_Category_SaveNew.Background = H_User_Search.Background;
-                    }
-                    if (H_Category_Name.Text != "")
                     {
                         H_Category_Name.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_NotEmpty));
+                        c_savenew_y = true;
                     }
-                    else
-                    {
-                        H_Category_Name.Background = new SolidColorBrush(Colors.White);
-                    }
-                    return do_y;
                 }
                 else
                 {
-                    bool do_y = H_Category_Name.Text != "" || CB_H_Category_Inst.SelectedItem.ToString() != "";
-                    if (do_y)
+                    if (cat_found != null)
                     {
-                        TV_Cats exist_cat = list_cats.Find(u => u.categoryName == H_Category_Name.Text);
-                        if (exist_cat != null)
-                        {
-                            MessageBox.Show("Ilyen kategória már létezik!");
-                            return false;
-                        }
+                        H_Category_Name.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_LightRed));
                     }
-                    return do_y;
+                    else
+                    {
+                        if (sel_cname_y)
+                        {
+                            H_Category_Name.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_NotEmpty));
+                        }
+                        else
+                        {
+                            H_Category_Name.Background = new SolidColorBrush(Colors.White);
+                        }
+                        c_savenew_y = sel_cinst_y && sel_cname_y;
+                    }
                 }
+                H_Category_SaveColor();
             }
-            return false;
         }
+        private void H_Category_SaveColor()
+        {
 
+            if (c_save_y)
+            {
+                H_Category_Save.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_Green));
+            }
+            else { H_Category_Save.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_Gray)); }
+
+            if (c_savenew_y) { H_Category_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFF9DD24")); }
+            else { H_Category_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_Gray)); }
+        }
         private void SelUser_DataChanged(object sender, TextChangedEventArgs e)
         {
             TextBox tb = sender as TextBox;
-            SelUser_CHK_Modified();
+            Changed_UserData();
             if (tb.Text != "")
             {
                 tb.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_NotEmpty));
@@ -1090,6 +1443,7 @@ namespace TisztaVaros
         private void Categories_Clear(object sender, RoutedEventArgs e)
         {
             Categories_ClearData();
+            ListView_Categories.Focus();
         }
         private void Categories_ClearData()
         {
@@ -1188,6 +1542,10 @@ namespace TisztaVaros
                 else { item.rep_db = a_db.ToString(); }
             }
             ListView_Categories.ItemsSource = list_cats.OrderBy(c => c.categoryName).ToList();
+            ListView_Categories.Focus();
+            ListView_Categories.SelectedItem = ListView_Categories.Items[0];
+            ListView_Categories.SelectedIndex = 0;
+
             if (!start_cats_y)
             {
                 await Task.Delay(100);
@@ -1197,6 +1555,10 @@ namespace TisztaVaros
         }
         private async void Inst_ReLoad(object sender, RoutedEventArgs e)
         {
+            Inst_ReLoad_Auto();
+        }
+        private async void Inst_ReLoad_Auto()
+        {
             Get_Inst_List();
             if (!start_inst_y)
             {
@@ -1204,13 +1566,6 @@ namespace TisztaVaros
                 await Task.Delay(100);
                 ListView_Inst.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFF"));
             }
-            /*if (start_inst_y)
-            {
-                await Task.Delay(100);
-            }*/
-            ListView_Inst.Focus();
-            ListView_Inst.SelectedItem = ListView_Inst.Items[0];
-            ListView_Inst.UpdateLayout();
             Get_WorkerList_Auto();
         }
         private void Put_SelInst()
@@ -1265,7 +1620,7 @@ namespace TisztaVaros
         }
         private async void Inst_Logo(object sender, RoutedEventArgs e)
         {
-            logoURLWindow = new View_Logo();
+            logoURLWindow = new TV_Logo_Input();
             logoURLWindow.Logo_IMG.Source = null;
             logoURLWindow.Inst_Name.Content = H_Inst_Name.Text;
             logoURLWindow.Inst_Logo_URL.Text = inst_logo_url;
@@ -1324,28 +1679,33 @@ namespace TisztaVaros
 
         private async void User_Delete(object sender, RoutedEventArgs e)
         {
+
             string del_name = H_User_Name.Text;
-            if (MessageBox.Show("[ '" + del_name + "' ]\n\nMindenképpen törölni akarod ezt a felhasználót", "Felhasnáló Törlése:", 
-                MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            string del_emil = H_User_Email.Text;
+            if (del_name != "" && del_emil != "")
             {
-                string del_msg = await connection.Admin_DelUser(H_User_Email.Text.ToString());
-                if (del_msg == "Nem vagyok Teszt üzemmódban.")
+                if (MessageBox.Show("[ '" + del_name + "' ]\n\nMindenképpen törölni akarod ezt a felhasználót", "Felhasnáló Törlése:",
+                    MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
-                    MessageBox.Show("A törlés most nem engedélyezett, csak teszt üzemmódban!");
-                    return;
-                }
-                if (del_msg != "xx")
-                {
-                    TV_User a_del = list_user.Find(u => u.email == H_User_Email.Text);
-                    if (a_del != null)
+                    string del_msg = await connection.Admin_DelUser(del_emil);
+                    if (del_msg == "Nem vagyok Teszt üzemmódban.")
                     {
-                        Get_User_List(S_User_Name.Text, S_User_Email.Text);
+                        MessageBox.Show("A törlés most nem engedélyezett, csak teszt üzemmódban!");
+                        return;
                     }
-                    User_ClearData();
-                    MessageBox.Show("User: '" + del_name + "'\n\n" + del_msg);
-                    return;
+                    if (del_msg != "xx")
+                    {
+                        TV_User a_del = list_user.Find(u => u.email == del_emil);
+                        if (a_del != null)
+                        {
+                            Get_User_List(S_User_Name.Text, S_User_Email.Text);
+                        }
+                        User_ClearData();
+                        MessageBox.Show("User: '" + del_name + "'\n\n" + del_msg);
+                        return;
+                    }
+                    MessageBox.Show("A törlés nem sikerült!");
                 }
-                MessageBox.Show("A törlés nem sikerült!");
             }
         }
         public bool Valid_Email(string email)
@@ -1361,38 +1721,42 @@ namespace TisztaVaros
             }
         }
 
+        private async void Add_Admin_Picture(object sender, RoutedEventArgs e)
+        {
+            return;
+            /*int a_id = 20;
+            string a_uri = "R:\\56820-58e0dc105fbca.png";
+            string rea_add = await connection.Server_AddNewPicture( a_id,  a_uri);*/
+        }
+        private async void Mod_Admin_Password(object sender, RoutedEventArgs e)
+        {
+            if (a_sel_menu == "Users")
+            {
+                if (H_User_Name.Text != "" && H_User_Email.Text != "")
+                {
+                    psw_input_using = "New_PSW";
+                    Get_New_PSW();
+                }
+            }
+        }
         private async void Category_SaveAsNew(object sender, RoutedEventArgs e)
         {
-            string new_name = H_Category_Name.Text;
-            TV_Cats cat_found = list_cats.Find(u => u.categoryName == new_name);
-            if (cat_found != null)
+            if (c_savenew_y)
             {
-                int cat_index = ListView_Categories.Items.IndexOf(cat_found);
-                if (cat_index != -1)
+                string new_name = H_Category_Name.Text;
+                string new_cat_inst_id = list_inst.Find(u => u.name == CB_H_Category_Inst.SelectedItem).id;
+                string new_cat_id = await connection.Server_AddNewCategory(new_name, new_cat_inst_id);
+                if (new_cat_id == "22")
                 {
-                    ListView_Categories.SelectedIndex = cat_index;
+                    MessageBox.Show("Nem sikerült az Új kategória hozzáadása!");
+                    return;
                 }
-                MessageBox.Show("Na, ilyen kategória már van, ez nem egy új!", "Névütközés:");
-                H_Category_Name.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFF16262"));
-                return;
+                Get_Categories_List();
+                H_Category_Save.Background = H_User_Search.Background;
+                H_Category_SaveNew.Background = H_User_Search.Background;
+                Categories_ClearData();
+
             }
-            string cat_inst = CB_H_Category_Inst.SelectedItem.ToString();
-            if (cat_inst == "")
-            {
-                MessageBox.Show("Nincs kiválasztva a Kategóriához Intézmény!");
-                return;
-            }
-            string new_cat_inst_id = list_inst.Find(u => u.name == cat_inst).id;
-            string new_cat_id = await connection.Server_AddNewCategory(new_name, new_cat_inst_id);
-            if (new_cat_id == "22")
-            {
-                MessageBox.Show("Nem sikerült az Új kategória hozzáadása!");
-                return;
-            }
-            Get_Categories_List();
-            H_Category_Save.Background = H_User_Search.Background;
-            H_Category_SaveNew.Background = H_User_Search.Background;
-            Categories_ClearData();
         }
         private async void Category_Delete(object sender, RoutedEventArgs e)
         {
@@ -1416,36 +1780,120 @@ namespace TisztaVaros
                 }
             }
         }
-
         private void Report_ReLoad(object sender, RoutedEventArgs e)
         {
             Get_Report_List();
         }
-
         private async void Get_Report_List()
         {
             if (!start_report_y)
             {
                 ListView_Reports.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bus_Yellow));
             }
-            list_reports = await connection.Server_Get_AllReports();
-            ListView_Reports.ItemsSource = list_reports;
+            string v_date = datePicker_From.Text.Replace(". ", "-").Replace(".", "") + "T00:00:00.000Z";
+            string k_date = datePicker_Until.Text.Replace(". ", "-").Replace(".", "") + "T00:00:00.000Z";
+            list_reports = await connection.Server_Get_AllReports_FromDate(k_date, v_date);
+            //list_reports = await connection.Server_Get_AllReports();
+            if (list_reports.Count == 0)
+            {
+                ListView_Reports.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFF"));
+                ListView_Reports.ItemsSource = list_reports;
+                return;
+            }
             if (!start_report_y)
             {
                 await Task.Delay(100);
                 ListView_Reports.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFF"));
             }
-            start_report_y = false;
             foreach (var item in list_reports)
             {
                 if (item.reportImages.Count > 1) { item.pict_db = "+"; }
                 else { item.pict_db = ""; }
-                //item.pict_db = item.reportImages.Count.ToString();
+                item.pict_db = item.reportImages.Count.ToString();
+            }
+            ListView_Reports.ItemsSource = list_reports;
+            ListView_Reports.SelectedIndex = 0;
+            ListView_Reports.Focus();
+
+            Report_ListView_Click_Auto();
+        }
+
+        private void Report_Filtering(object sender, RoutedEventArgs e)
+        {
+            Report_Filtering_Auto();
+        }
+        private void Report_Filtering_Auto()
+        {
+            ListView_Reports.ItemsSource = list_reports.Where(r =>
+                r.title.Contains(S_Report_PartialText.Text) || r.description.Contains(S_Report_PartialText.Text)).ToList();
+            if (ListView_Reports.Items.Count == 0) { Panel.SetZIndex(Report_Detail, 0); }
+            else { ListView_Reports.SelectedItem = ListView_Reports.Items[0]; Report_ListView_Click_Auto(); }
+            if (ListView_Reports.Items.Count == 0)
+            {
+                S_Report_PartialText.Focus();
+            }
+            else
+            {
+                ListView_Reports.Focus();
             }
         }
+        private void Report_DelPicture_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Ez még az Adminnak sem megengedett, egylőre!");
+        }
+
+        private async void Report_AddPicture_Click(object sender, RoutedEventArgs e)
+        {
+            if (max_rep_pict >= 3)
+            {
+                MessageBox.Show("Már van 3 db kép!");
+            }
+            else
+            {
+                int a_id = sel_report.id;
+                var ofd = new Microsoft.Win32.OpenFileDialog();// { Filter = "JPEG Files (*.jpeg)|*.jpeg|PNG Files (*.png)|*.png|JPG Files (*.jpg)|*.jpg|GIF Files (*.gif)|*.gif" };
+                var result = ofd.ShowDialog();
+                if (result == false) return;
+                MessageBox.Show(ofd.FileName);
+                string a_uri = ofd.FileName;// "R:\\56820-58e0dc105fbca.png";
+                //string rea_add = await connection.Server_AddNewPicture( a_id,  a_uri);
+            }
+        }
+        private void Report_Filtering_Clear(object sender, RoutedEventArgs e)
+        {
+            S_Report_PartialText.Text = "";
+            Get_Report_List();
+        }
+        private void Report_PartialKeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                Report_Filtering_Auto();
+            }
+        }
+
+        private void Report_DLong_CBChanged(object sender, SelectionChangedEventArgs e)
+        {
+            int a_idx = CB_H_Report_DLong.SelectedIndex;
+            int a_eltol = 0;
+            if (a_idx == 6)
+            {
+                datePicker_Until.SelectedDate = DateTime.Parse("2000.01.01");
+            }
+            else
+            {
+                a_eltol = last_ndays_n[CB_H_Report_DLong.SelectedIndex];
+                datePicker_Until.SelectedDate = DateTime.Now.AddDays(a_eltol);
+            }
+            if (!start_report_y)
+            {
+                Get_Report_List();
+            }
+        }
+
         private async void Inst_Delete(object sender, RoutedEventArgs e)
         {
-            if (sel_inst.id != null)
+            if (sel_inst != null)
             {
                 List<TV_User> mod_workers = await connection.Get_Workers(sel_inst.id, "Inst_Delete");
                 Del_Workers.ItemsSource = mod_workers;
@@ -1470,48 +1918,6 @@ namespace TisztaVaros
         {
 
         }
-        private void Inst_Sel_Stat(object sender, RoutedEventArgs e)
-        {
-            Inst_Sel_Stat_Auto();
-        }
-        private async void Inst_Sel_Stat_Auto()
-        {
-            string a_id = "";
-            string a_logo_Url = "";
-            if (sel_instw != null)
-            {
-                a_id = sel_instw.id;
-                a_logo_Url = sel_instw.logoUrl;
-            }
-
-            if (a_id != null)
-            {
-                List<TV_User> sel_workers = await connection.Get_Workers(a_id, "Inst_Sel_Stat_Auto");
-                Del_Workers.ItemsSource = sel_workers;
-                int workers_db = sel_workers.Count;
-                if (workers_db > 0)
-                {
-                    B_Inst_Detach.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bus_Yellow));
-                }
-                else
-                {
-                    B_Inst_Detach.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_Gray));
-                }
-                SetColor_Label(workers_db, Inst_WorkersNum);
-                int rep_db = await connection.Server_Get_InstValami_db("/api/reports/report_Inst_db", a_id);
-                SetColor_Label(rep_db, Inst_ReportNum);
-                int news_db = await connection.Server_Get_InstValami_db("/api/news/news_Inst_db", a_id);
-                SetColor_Label(news_db, Inst_NewsNum);
-                if (a_logo_Url != null && a_logo_Url != "")
-                {
-                    Inst_LogoImg_Del.Source = new BitmapImage(new Uri(a_logo_Url));
-                }
-                else
-                {
-                    Inst_LogoImg_Del.Source = new BitmapImage(new Uri("http://smd.hu/Team/Empty_Logo.gif"));
-                }
-            }
-        }
         private void SetColor_Label(int xmi_db, TextBox out_label)
         {
             out_label.Text = xmi_db.ToString();
@@ -1528,37 +1934,52 @@ namespace TisztaVaros
                 out_label.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bus_Yellow));
             }
         }
-
         private async void Bezarka(object sender, EventArgs e)
         {
             var hwnd = new WindowInteropHelper(this).Handle;
             IntPtr hMenu = GetSystemMenu(hwnd, false);
             EnableMenuItem(hMenu, SC_CLOSE, MF_ENABLED);
             this.IsEnabled = true;
-            if (sender is View_Logo)
+            if (sender is TV_Logo_Input)
             {
                 Logo_Actual();
                 SelInst_CHK_Modified();
             }
-            else if (sender is InputBox)
+            else if (sender is TV_PSW_Input)
             {
                 if (new_vmi_psw != "xx" && new_vmi_psw != "x")
                 {
-                    App.postit += "PSW for '" + H_User_Email.Text + "': '" + new_vmi_psw + "'\n";
-                    string new_userId = await connection.Admin_AddNewUser(H_User_Email.Text, H_User_Name.Text, new_vmi_psw);
-                    if (new_userId == "22")
+                    if (psw_input_using == "New_PSW")
                     {
-                        MessageBox.Show("Hiba az új felhasználó felvételénél!");
-                        return;
+                        string a_email = H_User_Email.Text;
+                        if (a_email != "" && new_vmi_psw != "")
+                        {
+                            string mod_res = await connection.Admin_ModUser_Password(a_email, new_vmi_psw);
+                        }
                     }
-                    if (sel_user != null)
+                    else if (psw_input_using == "SaveAsNew")
                     {
-                        sel_user.id = new_userId;
+                        App.postit += "PSW for '" + H_User_Name.Text + " - " + H_User_Email.Text + "': '" + new_vmi_psw + "'\n";
+                        string new_userId = await connection.Admin_AddNewUser(H_User_Email.Text, H_User_Name.Text, new_vmi_psw);
+                        if (new_userId == "22")
+                        {
+                            MessageBox.Show("Hiba az új felhasználó felvételénél!");
+                            return;
+                        }
+                        if (sel_user != null)
+                        {
+                            sel_user.id = new_userId;
+                        }
                         User_Update();
+                        //User_ClearData();
+                        Get_User_List(S_User_Name.Text, S_User_Email.Text);
+                        H_User_SaveNew.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_Gray));
                     }
-                    User_ClearData();
-                    Get_User_List(S_User_Name.Text, S_User_Email.Text);
                 }
+            }
+            else if (sender is TV_Show_Picture)
+            {
+                Rep_Control_Over_CTRL.Visibility = Visibility.Hidden;
             }
         }
         private void Logo_Actual()
@@ -1583,7 +2004,7 @@ namespace TisztaVaros
         }
         private void Report_SortHeaderClick(object sender, RoutedEventArgs e)
         {
-            string[] headText = ["Kép", "Bejelentő", "Cím", "Kategória", "Város", "Dátum", "Intézmény"];
+            string[] headText = ["Id", "Kép", "Bejelentő", "Cím", "Kategória", "Város", "Dátum", "Intézmény"];
             try
             {
                 string a_head = ((GridViewColumnHeader)e.OriginalSource).Column.Header.ToString();
@@ -1593,6 +2014,17 @@ namespace TisztaVaros
                     {
                         switch (a_head)
                         {
+                            case "Id":
+                                if (order_reps_y[i])
+                                {
+                                    ListView_Reports.ItemsSource = list_reports.OrderBy(u => u.id).ToList();
+                                }
+                                else
+                                {
+                                    ListView_Reports.ItemsSource = list_reports.OrderByDescending(u => u.id).ToList();
+                                }
+                                break;
+
                             case "Kép":
                                 ListView_Reports.ItemsSource = list_reports.OrderByDescending(u => u.createdAt).ToList();
                                 break;
@@ -1745,6 +2177,41 @@ namespace TisztaVaros
             {
                 throw new NotImplementedException();
             }
+        }
+        public void Show_BigPicture(object sender, RoutedEventArgs e)
+        {
+            TV_Show_Picture view_big = new TV_Show_Picture();
+            view_big.Closed += Bezarka;
+
+            var hwnd = new WindowInteropHelper(this).Handle;
+            IntPtr hMenu = GetSystemMenu(hwnd, false);
+            EnableMenuItem(hMenu, SC_CLOSE, MF_GRAYED);
+            double a_top = this.Top;
+            double a_left = this.Left;
+
+            double BarWidth = SystemParameters.VirtualScreenWidth - SystemParameters.WorkArea.Width;
+            double BarHeight = SystemParameters.VirtualScreenHeight - SystemParameters.WorkArea.Height;
+            view_big.Show();
+            if (this.Left < 0)
+            {
+                view_big.Left = -(BarWidth + view_big.ActualWidth) / 2;
+            }
+            else
+            {
+                view_big.Left = (SystemParameters.VirtualScreenWidth - view_big.ActualWidth - BarWidth) / 2;
+            }
+            view_big.Top = (SystemParameters.VirtualScreenHeight - view_big.ActualHeight - BarHeight) / 2;
+        }
+        private void Report_Date_Changed(object sender, EventArgs e)
+        {
+            if (!start_report_y)
+            {
+                Get_Report_List();
+            }
+        }
+        private void RepDetail_ListView_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Edit History");
         }
     }
 }

@@ -1,0 +1,27 @@
+﻿<Window x:Class="TisztaVaros.TV_Show_Picture"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TisztaVaros"
+        mc:Ignorable="d"
+        Title="TV_Show_Picture" Width="1200" Height="800">
+    <Window.Resources>
+        <Style x:Key="KerekGomb" TargetType="Button">
+            <Style.Resources>
+                <Style TargetType="{x:Type Border}">
+                    <Setter Property="CornerRadius" Value="30" />
+                </Style>
+            </Style.Resources>
+        </Style>
+    </Window.Resources>
+    <Grid KeyUp="Report_BigPictKeyDown">
+        <StackPanel MouseLeftButtonUp="BigPict_Close" KeyUp="Report_BigPictKeyDown">
+            <Image Name="Report_BigPict" Source="https://smd.hu/Team/Empty_Logo.gif" Margin="0,0,0,0" Width="1000" Height="780"/>
+        </StackPanel>
+        <Button x:Name="B_Prev_Pict" Content="←" Style="{StaticResource KerekGomb}" Foreground="White" Background="#6FB1A5"
+                FontSize="36" FontWeight="Bold" Padding="0,-5,0,5" Click="View_ReportBigPict_Prev" Height="45" Width="45" Margin="28,340,1107,350"/>
+        <Button x:Name="B_Next_Pict" Content="→" Style="{StaticResource KerekGomb}" Foreground="White" Background="#6FB1A5"
+                FontSize="36" FontWeight="Bold" Padding="0,-5,0,5" Click="View_ReportBigPict_Next" Height="45" Width="45" Margin="1103,365,17,350"/>
+    </Grid>
+</Window>
