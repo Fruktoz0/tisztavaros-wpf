@@ -56,16 +56,11 @@ namespace TisztaVaros
         private async void Server_Login(object sender, RoutedEventArgs e)
         {
             string a_emil = Inp_Name.Text;
-            if (a_emil == "" && a_psw == "")
+            /*if (a_emil == "" && a_psw == "") // AutoLigon as Admin
             {
                 a_emil = "admin@admin.hu";
-                if (App.local_y)
-                {
-                    a_psw = "admin";
-                    //a_psw = "admin123";
-                }
-                else { a_psw = "admin"; }
-            }
+                a_psw = "admin";
+            }*/
             if (a_emil == "" && a_psw == "")
             {
                 Inp_Name.Focus();
@@ -103,13 +98,14 @@ namespace TisztaVaros
                 }
                 else if (loggedUser.role == "inspector")
                 {
-                    MessageBox.Show("Welcome, " + loggedUser.role + "!", "User Login:");
+                    MessageBox.Show("Welcome, " + loggedUser.role + "!", "Inspector Login:");
+                    // Ez csak megbízás után fejlesztendő!
                 }
                 else
                 {
                     if (ServerConnection.login_ok)
                     {
-                        MessageBox.Show("Nincs megfelelő jogosultságod ide belépni!", "User Login:");
+                        MessageBox.Show("Nincs megfelelő jogosultságod ide belépni!", "Admin Login:");
                     }
                     else
                     {

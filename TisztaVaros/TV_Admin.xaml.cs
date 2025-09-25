@@ -17,6 +17,7 @@ using System.Numerics;
 using System.Printing;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
@@ -120,7 +121,8 @@ namespace TisztaVaros
         {
             InitializeComponent();
 
-            pict_path = Directory.GetCurrentDirectory().Substring(0, 3) + "TV_Picts";
+            //pict_path = Directory.GetCurrentDirectory().Substring(0, 3) + "TV_Picts";
+            pict_path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\TV_Picts";
             Directory.CreateDirectory(pict_path + "\\Logo");
             Directory.CreateDirectory(pict_path + "\\uploads");
             Directory.CreateDirectory(pict_path + "\\uploads\\challenges");
