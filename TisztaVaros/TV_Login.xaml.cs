@@ -182,6 +182,9 @@ namespace TisztaVaros
             this.Left = a_left;
             HTTP_Local.IsChecked = App.local_y;
             this.Show();
+            a_psw = "";
+            t_psw = "";
+            Inp_PSW.Text = "";
         }
         private void Win_Mozog(object sender, EventArgs e)
         {

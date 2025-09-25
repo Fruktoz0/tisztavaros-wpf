@@ -4,6 +4,6 @@
              xmlns:local="clr-namespace:TisztaVaros"
              StartupUri="TV_Login.xaml">
     <Application.Resources>
-         <!-- Version 0.916 -->
+         <!-- Version 0.917 -->
     </Application.Resources>
 </Application>
