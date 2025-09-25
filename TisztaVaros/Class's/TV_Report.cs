@@ -11,11 +11,10 @@ namespace TisztaVaros
         public TV_Report() { }
 
         public int id { get; set; }
-        public string view_id { get
-            { 
-                return id.ToString("0000"); ;
-            }
-            set { } 
+        public string view_id
+        {
+            get { return id.ToString("0000"); }
+            set { }
         }
         public string userId { get; set; }
         public string title { get; set; }
@@ -35,16 +34,16 @@ namespace TisztaVaros
             set { }
         }
         public List<TVR_Images> reportImages { get; set; }
-        public string firstPictURL { get {
-                if(reportImages[0].imageUrl=="")
-                {
-                    return "https://smd.hu/Team/placeholderimage.png";
-                }
-                return "https://tisztavaros.hu" + reportImages[0].imageUrl; 
+        public string firstPictURL
+        {
+            get
+            {
+                if (reportImages[0].imageUrl == "") { return "https://smd.hu/Team/placeholderimage.png"; }
+                else if (App.local_y) { return TV_Admin.pict_path + reportImages[0].imageUrl; }
+                else { return "https://tisztavaros.hu" + reportImages[0].imageUrl; }
             }
         }
         public string confirmed { get; set; }
-
         public string pict_db { get; set; }
         public TVR_User user { get; set; }
         public string username { get { return user.username; } }
@@ -54,11 +53,10 @@ namespace TisztaVaros
         public TRV_Inst institution { get; set; }
         public string intezmeny { get { return institution.name; } }
     }
-
     class TVR_Images
     {
         public TVR_Images() { }
-        public int id { get; set; }
+        public string id { get; set; }
         public int reportId { get; set; }
         public string imageUrl { get; set; }
     }

@@ -43,6 +43,7 @@ namespace TisztaVaros
         public TV_Login()
         {
             InitializeComponent();
+            if (App.local_y) { Login_Logo.Source = new BitmapImage(new Uri("D:\\TV_Picts\\tisztavaros_logo_Middle.png")); }
             connection = new ServerConnection();
             LocationChanged += new EventHandler(Win_Mozog);
             Inp_Name.Focus();
@@ -90,7 +91,7 @@ namespace TisztaVaros
                     aWindow.Show();
                     if (this.Left < 0)
                     {
-                        aWindow.Left = -(BarWidth + aWindow.ActualWidth)/2;
+                        aWindow.Left = -(BarWidth + aWindow.ActualWidth) / 2;
                     }
                     else
                     {

@@ -31,7 +31,7 @@
         <StackPanel 
             HorizontalAlignment="Center"
             VerticalAlignment="Center" >
-            <Image Width="350" Source="https://smd.hu/Team/tisztavaros_logo_Middle.png" />
+            <Image Name="Login_Logo" Width="350" Source="https://smd.hu/Team/tisztavaros_logo_Middle.png" />
         </StackPanel>
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>

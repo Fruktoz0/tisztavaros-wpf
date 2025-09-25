@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
 using System.Xml.Linq;
+using TisztaVaros.Class_s;
 
 
 namespace TisztaVaros
@@ -28,6 +29,76 @@ namespace TisztaVaros
         public static TV_User l_user;
 
 
+        public async Task<List<TV_UserChallenges>> Server_Get_UserChallenges(int a_id)
+        {
+            List<TV_UserChallenges> all_userchalls = new List<TV_UserChallenges>();
+            string a_route = "/api/challenges/userChallenges/" + a_id;
+            string url = Get_URL() + a_route;
+            try
+            {
+                HttpClient client = new HttpClient();
+                HttpResponseMessage response = new HttpResponseMessage();
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
+                response = await client.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+                string responseText = await response.Content.ReadAsStringAsync();
+                //File.WriteAllText(@"R:\All_UserChallenges.txt", responseText);
+                all_userchalls = JsonConvert.DeserializeObject<List<TV_UserChallenges>>(responseText);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(a_route + "\n\n" + e.Message);
+            }
+            return all_userchalls;
+        }
+        public async Task<string> Admin_DelPict_byID( string vmi_id)
+        {
+            string a_route = "/api/reports/delPict/";
+            string url = Get_URL() + a_route + vmi_id;
+            try
+            {
+                HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
+                HttpResponseMessage response = await client.DeleteAsync(url);
+                response.EnsureSuccessStatusCode();
+                string responseInString = await response.Content.ReadAsStringAsync();
+                Message del_msg = JsonConvert.DeserializeObject<Message>(responseInString);
+                return del_msg.message;
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(a_route + "\n\n" + e.Message);
+            }
+            return "xx";
+        }
+        public async Task<List<TV_Challenges>> Server_Get_AllChallenges_FromDate(string a_k_date, string a_v_date)
+        {
+            List<TV_Challenges> all_challenges = new List<TV_Challenges>();
+            string a_route = "/api/challenges/activeDate";
+            string url = Get_URL() + a_route;
+            var jsonData = new
+            {
+                k_date = a_k_date,
+                v_date = a_v_date
+            };
+            try
+            {
+                HttpClient client = new HttpClient();
+                string stringifiedJson = JsonConvert.SerializeObject(jsonData);
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
+                StringContent sendThis = new StringContent(stringifiedJson, Encoding.UTF8, "Application/JSON");
+                HttpResponseMessage response = await client.PostAsync(url, sendThis);
+                response.EnsureSuccessStatusCode();
+                string responseText = await response.Content.ReadAsStringAsync();
+                //File.WriteAllText(@"R:\All_Challneges.txt", responseText);
+                all_challenges = JsonConvert.DeserializeObject<List<TV_Challenges>>(responseText);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(a_route + "\n\n" + e.Message);
+            }
+            return all_challenges;
+        }
 
         public async Task<string> Server_ExistCategory(string a_cat_name)
         {
@@ -106,7 +177,7 @@ namespace TisztaVaros
                 string responseText = await response.Content.ReadAsStringAsync();
                 Message add_msg = JsonConvert.DeserializeObject<Message>(responseText);
                 MessageBox.Show(add_msg.message);
-                if (res_status == 201)
+                if (res_status == 200)
                 {
                     return "00";
                 }

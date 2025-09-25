@@ -40,7 +40,7 @@ namespace TisztaVaros
         {
             InitializeComponent();
             connection = new ServerConnection();
-            //Window_Login_Auto();
+            Window_Login_Auto();
         }
 
         private void Window_Login(object sender, RoutedEventArgs e)

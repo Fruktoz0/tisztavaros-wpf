@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 using System;
 using System;
 using System.Collections;
@@ -36,6 +37,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
 using System.Windows.Shapes;
 using System.Xml.Linq;
+using TisztaVaros.Class_s;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Net.WebRequestMethods;
 using File = System.IO.File;
@@ -60,11 +62,13 @@ namespace TisztaVaros
         List<TV_Inst> list_inst = new List<TV_Inst>();
         List<TV_Cats> list_cats = new List<TV_Cats>();
         List<TV_Report> list_reports = new List<TV_Report>();
+        List<TV_Challenges> list_challanges = new List<TV_Challenges>();
         List<TV_ForwardingLogs> list_ForwardingLogs = new List<TV_ForwardingLogs>();
         List<TV_StatusHistory> list_StatusHistory = new List<TV_StatusHistory>();
         List<TV_StatusHistory> list_HistoryAll = new List<TV_StatusHistory>();
         bool[] order_user_y = new bool[10] { true, true, true, true, true, true, true, true, true, true };
         bool[] order_reps_y = new bool[10] { true, true, true, true, true, true, true, true, true, true };
+        bool[] order_challs_y = new bool[10] { true, true, true, true, true, true, true, true, true, true };
         bool[] order_inst_y = new bool[5] { true, true, true, true, true };
         bool[] order_cats_y = new bool[5] { true, true, true, true, true };
         List<string> inst_Names = new List<string>();
@@ -73,11 +77,12 @@ namespace TisztaVaros
         TV_User sel_user;
         TV_Inst sel_inst, sel_instw;
         TV_Cats sel_cat;
+        TV_Challenges sel_challenge, sel_challenge_last;
         static TV_Report sel_report, sel_report_last;
         public static string new_vmi_psw = "";
         public static List<string> a_img_urls = new();
         bool chk_udata_y = true, chk_idata_y = false, chk_cdata_y = false;
-        bool start_inst_y = true, start_cats_y = true, start_report_y = true;
+        bool start_inst_y = true, start_cats_y = true, start_report_y = true, start_challenge_y = true;
         bool already_exist = false, hw_now_y = false;
         string bc_Gray = "#FFDDDDDD", bc_LightGreen = "#6FB1A5", bc_Green = "#FF6EF525", tb_NotEmpty = "#FF4EFFD2", bc_Yellow = "#FFF9DD24";
         string tb_LightRed = "#FFFFACAC";
@@ -108,15 +113,24 @@ namespace TisztaVaros
 
         string e_user, psw_input_using = "";
         bool u_save_y, u_savenew_y, u_fromlist_y, c_save_y, c_savenew_y;
-        string pict_path;
+        internal static string pict_path;
+        bool langEng_y = true;
 
         public TV_Admin()
         {
             InitializeComponent();
+
+            pict_path = Directory.GetCurrentDirectory().Substring(0, 3) + "TV_Picts";
+            Directory.CreateDirectory(pict_path + "\\Logo");
+            Directory.CreateDirectory(pict_path + "\\uploads");
+            Directory.CreateDirectory(pict_path + "\\uploads\\challenges");
+            rep_pict_url = Get_Pict_URL();
+            if (App.local_y) { Admin_Logo.Source = new BitmapImage(new Uri(pict_path + "\\tisztavaros_logo_Middle_NoText.png")); }
+
             Panel.SetZIndex(Report_Detail, 0);
             connection = new ServerConnection();
             LocationChanged += new EventHandler(Win_Mozog);
-            b_all = [B_Users, B_Categories, B_Institutions, B_Reports, B_Challenges];
+            b_all = [B_Users, B_Categories, B_Institutions, B_Reports, B_Challenges, B_New_PSW];
             sp_h_all = [Header_Ini, Header_Users, Header_Categories, Header_Institutions, Header_Reports, Header_Challenges];
             sp_m_all = [Main_Ini, Main_Users, Main_Categories, Main_Institutions, Main_Reports, Main_Challenges];
             Stack_Main_Ini();
@@ -125,24 +139,111 @@ namespace TisztaVaros
             HTTP_Local.IsChecked = App.local_y;
             CB_H_User_Role.ItemsSource = allRoles;
             CB_H_User_Status.ItemsSource = allStatus;
+
             datePicker_From.SelectedDate = DateTime.Now;
             datePicker_Until.SelectedDate = DateTime.Now.AddDays(-14);
             CB_H_Report_DLong.ItemsSource = last_n_days;
             CB_H_Report_DLong.SelectedValue = "2 hét";
 
-            pict_path = Directory.GetCurrentDirectory().Substring(0, 3) + "TV_Picts";
-            Directory.CreateDirectory(pict_path + "\\uploads");
+            datePickerC_From.SelectedDate = DateTime.Now;
+            datePickerC_Until.SelectedDate = DateTime.Now.AddDays(-14);
+            CB_H_Challenge_DLong.ItemsSource = last_n_days;
+            CB_H_Challenge_DLong.SelectedValue = "2 hét";
         }
         private void TV_Admin_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.A && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+            if (e.Key == Key.Q && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
             {
-                if (e.Key == Key.A && Keyboard.IsKeyDown(Key.LeftCtrl))
+                if (e.Key == Key.Q && Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.LeftShift))
                 {
-                    if (A_Err.Visibility == Visibility.Hidden) { A_Err.Visibility = Visibility.Visible; }
-                    else { A_Err.Visibility = Visibility.Hidden; }
+                    langEng_y = !langEng_y;
+                    if (langEng_y) { ToLangENG(); }
+                    else { ToLangHUN(); }
+                }
+                else if (e.Key == Key.Q && Keyboard.IsKeyDown(Key.LeftCtrl))
+                {
+                    if (A_Err.Visibility == Visibility.Hidden) { A_Err.Visibility = Visibility.Visible; Q_Pict.Visibility = Visibility.Visible; }
+                    else { A_Err.Visibility = Visibility.Hidden; Q_Pict.Visibility = Visibility.Hidden; }
                 }
             }
+        }
+        private void ToLangENG()
+        {
+            Q_Pict.Source = new BitmapImage(new Uri("https://www.smd.hu/Team/Q.gif"));
+            S_User_Name_L.Content = "User Name:";
+            S_User_Name_L.Width = 120;
+            Thickness margin = S_User_Name.Margin; margin.Left = 5; S_User_Name.Margin = margin;
+            S_User_Email_L.Width = 100;
+            margin = S_User_Email.Margin; margin.Left = 5; S_User_Email.Margin = margin;
+
+            H_User_Name_L.Content = "User Name::";
+            H_User_Name_L.Width = 110;
+            margin = H_User_Name_L.Margin; margin.Left = 5; H_User_Name_L.Margin = margin;
+            margin = H_User_Name.Margin; margin.Left = 120; H_User_Name.Margin = margin;
+
+            H_User_Zip_L.Content = "Zip:";
+            H_User_City_L.Content = "City:";
+            margin = H_User_City_L.Margin; margin.Left = 140; margin.Right = -76; H_User_City_L.Margin = margin;
+            margin = H_User_City.Margin; margin.Left = 201; margin.Right = -245; H_User_City.Margin = margin;
+            H_User_Address_L.Content = "Address:";
+
+            H_User_Search.Content = "Search";
+            H_User_Delete.Content = "Delete";
+            H_User_SaveNew.Content = "Save as New";
+            H_User_Save.Content = "Save";
+
+            H_Reports_ReLoad.Content = "ReLoad";
+
+            H_Categories_ReLoad.Content = "ReLoad";
+            H_Category_Delete.Content = "Dalete";
+            H_Category_SaveNew.Content = "Save as New";
+            H_Category_Save.Content = "Save";
+
+            H_Inst_ReLoad.Content = "Reload";
+            H_Inst_Delete.Content = "Delete";
+            H_Inst_SaveNew.Content = "Save as New";
+            H_Inst_Save.Content = "Save";
+
+            H_Challenges_ReLoad.Content = "Betölt";
+        }
+        private void ToLangHUN()
+        {
+            Q_Pict.Source = new BitmapImage(new Uri("https://www.smd.hu/Team/Q2.gif"));
+            S_User_Name_L.Content = "Név:";
+            S_User_Name_L.Width = 80;
+            Thickness margin = S_User_Name.Margin; margin.Left = -35; S_User_Name.Margin = margin;
+            S_User_Email_L.Width = 80;
+            margin = S_User_Email.Margin; margin.Left = -35; S_User_Email.Margin = margin;
+
+            H_User_Name_L.Content = "Név:";
+            H_User_Name_L.Width = 55;
+            margin = H_User_Name_L.Margin; margin.Left = 0; H_User_Name_L.Margin = margin;
+            margin = H_User_Name.Margin; margin.Left = 60; H_User_Name.Margin = margin;
+
+            H_User_Zip_L.Content = "Irsz:";
+            H_User_City_L.Content = "Város:";
+            margin = H_User_City_L.Margin; margin.Left = 140; margin.Right = -86; H_User_City_L.Margin = margin;
+            margin = H_User_City.Margin; margin.Left = 210; margin.Right = -277; H_User_City.Margin = margin;
+            H_User_Address_L.Content = "Cím:";
+
+            H_User_Search.Content = "Keres";
+            H_User_Delete.Content = "Törlés";
+            H_User_SaveNew.Content = "Új Felhasználó";
+            H_User_Save.Content = "Mentés";
+
+            H_Reports_ReLoad.Content = "Betölt";
+
+            H_Categories_ReLoad.Content = "Betölt";
+            H_Category_Delete.Content = "Törlés";
+            H_Category_SaveNew.Content = "Új ketegória";
+            H_Category_Save.Content = "Mentés";
+
+            H_Inst_ReLoad.Content = "Betölt";
+            H_Inst_Delete.Content = "Törlés";
+            H_Inst_SaveNew.Content = "Új Intézmény";
+            H_Inst_Save.Content = "Mentés";
+
+            H_Challenges_ReLoad.Content = "Betölt";
         }
         private void Logo_Click(object sender, EventArgs e)
         {
@@ -166,6 +267,7 @@ namespace TisztaVaros
         {
             Button a_Button = sender as Button;
             ReColorButtons(a_Button);
+            B_New_PSW.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFAC6AE6"));
         }
 
         void ReColorButtons(Button a_Button)
@@ -215,6 +317,20 @@ namespace TisztaVaros
                 ListView_Reports.Focus();
             }
         }
+        private void Get_Admin_Challenges(object sender, RoutedEventArgs e)
+        {
+            Button a_Button = sender as Button;
+            ReColorButtons(a_Button);
+            if (start_challenge_y)
+            {
+                Get_Challenge_List();
+                start_challenge_y = false;
+            }
+            else
+            {
+                ListView_Challenges.Focus();
+            }
+        }
         private void Get_Admin_Categories(object sender, RoutedEventArgs e)
         {
             Button a_Button = sender as Button;
@@ -232,14 +348,12 @@ namespace TisztaVaros
             }
             ListView_Inst.Focus();
         }
-        private void Get_Admin_Challenges(object sender, RoutedEventArgs e)
+        private async void User_Search(object sender, RoutedEventArgs e)
         {
-            Button a_Button = sender as Button;
-            ReColorButtons(a_Button);
-        }
-        private void User_Search(object sender, RoutedEventArgs e)
-        {
+            ListView_User.Visibility = Visibility.Hidden;
             Get_User_List(S_User_Name.Text, S_User_Email.Text);
+            await Task.Delay(100);
+            ListView_User.Visibility = Visibility.Visible;
         }
         private async void Get_User_List(string s_name, string s_email)
         {
@@ -274,6 +388,7 @@ namespace TisztaVaros
             CB_H_User_Inst.ItemsSource = inst_Names;
             CB_H_Category_Inst.ItemsSource = inst_Names;
             CB_H_Report_Inst.ItemsSource = inst_Names;
+            CB_H_Challenge_Inst.ItemsSource = inst_Names;
 
             ListView_Inst.ItemsSource = list_inst.OrderBy(u => u.name).ToList();
             ListView_Inst.SelectedItem = 0;
@@ -854,6 +969,21 @@ namespace TisztaVaros
             if (ListView_Reports.Items.Count == 0) { Panel.SetZIndex(Report_Detail, 0); }
             else { ListView_Reports.SelectedItem = ListView_Reports.Items[0]; Report_ListView_Click_Auto(); }
         }
+        private void SH_ChallengeInst_CBChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Color_CBChanged(sender, e);
+            string a_inst = CB_H_Challenge_Inst.SelectedItem.ToString();
+            if (a_inst == "")
+            {
+                ListView_Challenges.ItemsSource = list_challanges;
+            }
+            else
+            {
+                ListView_Challenges.ItemsSource = list_challanges.Where(r => r.inst_name == a_inst).ToList();
+            }
+            if (ListView_Challenges.Items.Count == 0) { Panel.SetZIndex(Report_Detail, 0); }
+            else { ListView_Challenges.SelectedItem = ListView_Reports.Items[0]; Report_ListView_Click_Auto(); }
+        }
         private void Call_GoogleMaps(object sender, EventArgs s)
         {
             string url = "https://www.google.com/maps/search/?api=1&query=" + Conv_Coords(sel_report.locationLat.ToString()) + "%2C"
@@ -884,7 +1014,7 @@ namespace TisztaVaros
         }
         private void Admin_Postit(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show(App.postit, "Admin Post-it:");
+            MessageBox.Show(App.postit, "Admin Post-it [Password Reminder]:");
         }
         private async void Hold_WorkerList(object sender, RoutedEventArgs e)
         {
@@ -922,7 +1052,7 @@ namespace TisztaVaros
         }
         private async void Get_WorkerList_Auto()
         {
-            int a_idx=0;
+            int a_idx = 0;
             if (start_inst_y)
             {
                 sel_instw = ListView_Inst.Items[0] as TV_Inst;
@@ -959,7 +1089,7 @@ namespace TisztaVaros
                 a_logo_Url = sel_instw.logoUrl;
             }
 
-            if (a_id != null)
+            if (a_id != null && a_id != "")
             {
                 List<TV_User> sel_workers = await connection.Get_Workers(a_id, "Inst_Sel_Stat_Auto");
                 Del_Workers.ItemsSource = sel_workers.OrderBy(u => u.username).ToList();
@@ -979,123 +1109,175 @@ namespace TisztaVaros
                 SetColor_Label(news_db, Inst_NewsNum);
                 if (a_logo_Url != null && a_logo_Url != "")
                 {
-                    Inst_LogoImg_Del.Source = new BitmapImage(new Uri(a_logo_Url));
+                    if (App.vanNet_y)
+                    {
+                        Inst_LogoImg_Del.Source = new BitmapImage(new Uri(a_logo_Url));
+                        DWL_Pict(a_logo_Url);
+                    }
+                    else { Inst_LogoImg_Del.Source = new BitmapImage(new Uri(pict_path + "\\Logo\\" + a_logo_Url.Split("/").Last())); }
                 }
-                else
-                {
-                    Inst_LogoImg_Del.Source = new BitmapImage(new Uri("http://smd.hu/Team/Empty_Logo.gif"));
-                }
+                else { Inst_LogoImg_Del.Source = new BitmapImage(new Uri("http://smd.hu/Team/Empty_Logo.gif")); }
             }
         }
-
         private async void Report_ListView_Click(object sender, RoutedEventArgs e)
         {
             Report_ListView_Click_Auto();
         }
+        private void Challenge_ListView_Click(object sender, SelectionChangedEventArgs e)
+        {
+            Challenge_ListView_Click_Auto();
+        }
+        private async void Challenge_ListView_Click(object sender, RoutedEventArgs e)
+        {
+            Challenge_ListView_Click_Auto();
+        }
+        private async void Challenge_ListView_Click_Auto()
+        {
+            sel_challenge = ListView_Challenges.SelectedItem as TV_Challenges;
+            if (sel_challenge != null)
+            {
+                if (sel_challenge != sel_challenge_last || Panel.GetZIndex(Challenge_Detail) == 0)
+                {
+                    Report_Detail.Visibility = Visibility.Visible;
+                    Panel.SetZIndex(Challenge_Detail, 2);
+                    ChallengeDetail_Cím.Text = sel_challenge.title;
+                    ChallengeDetail_Desc.Text = sel_challenge.description;
+                    ChallengeDetail_cosPoints.Content = sel_challenge.costPoints;
+                    ChallengeDetail_rewardPoints.Content = sel_challenge.rewardPoints;
+                    ChallengeDetail_startDate.Content = sel_challenge.startDateHH;
+                    ChallengeDetail_endDate.Content = sel_challenge.endDateHH;
+                    ChallengeDetail_Pict.Source = new BitmapImage(new Uri(Corr_URL(rep_pict_url + sel_challenge.image)));
+                    DWL_Pict(sel_challenge.image);
+                    List<TV_UserChallenges> u_callenges = await connection.Server_Get_UserChallenges(sel_challenge.id);
+                    ListView_UserChallenges.ItemsSource = u_callenges;
+                }
+            }
+        }
         private async void Report_ListView_Click_Auto()
         {
             sel_report = ListView_Reports.SelectedItem as TV_Report;
-            if (sel_report != null && sel_report != sel_report_last || Panel.GetZIndex(Report_Detail) == 0)
+            if (sel_report != null)
             {
-                a_img_urls = new List<string>();
-                foreach (var item in sel_report.reportImages)
+                if (sel_report != sel_report_last || Panel.GetZIndex(Report_Detail) == 0)
                 {
-                    a_img_urls.Add(item.imageUrl);
-                    DWL_Pict(item.imageUrl);
-                }
-                Report_Detail.Visibility = Visibility.Visible;
-                Panel.SetZIndex(Report_Detail, 2);
-                ReportDetail_City.Content = sel_report.city;
-                ReportDetail_Cím.Text = sel_report.title;
-                ReportDetail_Desc.Text = sel_report.description;
-                ReportDetail_User.Content = sel_report.username;
-                ReportDetail_Category.Content = sel_report.category.categoryName;
-                ReportDetail_Address.Content = sel_report.address + " " + sel_report.zipCode;
-                ReportDetail_Coords.Content = sel_report.locationLat + " " + sel_report.locationLng;
-                ReportDetail_Inst.Content = sel_report.institution.name;
-                ReportDetail_Azon.Content = sel_report.createdAt.Substring(0, 4) + "/" + sel_report.id;
-                if (sel_report.confirmed == null)
-                {
-                    ReportDetail_Confirmed.Content = "0x";
-                }
-                else
-                {
-                    ReportDetail_Confirmed.Content = sel_report.confirmed + "x";
-                }
-                max_rep_pict = sel_report.reportImages.Count - 1;
-                if (sel_report.reportImages.Count <= 1)
-                {
-                    B_Prev_Pict.Visibility = Visibility.Hidden;
-                    B_Next_Pict.Visibility = Visibility.Hidden;
-                }
-                else
-                {
-                    B_Prev_Pict.Visibility = Visibility.Hidden;
-                    B_Next_Pict.Visibility = Visibility.Visible;
-                }
-                if (sel_report != sel_report_last)
-                {
-                    view_rep_pict = 0;
-                    rep_Picture = new BitmapImage(new Uri(rep_pict_url + sel_report.reportImages[view_rep_pict].imageUrl));
-                    while (rep_Picture.Width == 1)
+                    a_img_urls = new List<string>();
+                    foreach (var item in sel_report.reportImages)
                     {
-                        await Task.Delay(100);
-
+                        a_img_urls.Add(item.imageUrl);
+                        DWL_Pict(item.imageUrl);
                     }
-                    Thickness margin = ReportDetail_Pict.Margin;
-                    margin.Top = await Get_Pict_MarginTop();
-                    ReportDetail_Pict.Margin = margin;
-                    //ReportDetail_VMI.Content = margin.Top.ToString() + " - " + rep_Picture.Width.ToString() + " - " + rep_Picture.Height.ToString();
-                }
+                    Report_Detail.Visibility = Visibility.Visible;
+                    Panel.SetZIndex(Report_Detail, 2);
+                    ReportDetail_City.Content = sel_report.city;
+                    ReportDetail_Cím.Text = sel_report.title;
+                    ReportDetail_Desc.Text = sel_report.description;
+                    ReportDetail_User.Content = sel_report.username;
+                    ReportDetail_Category.Content = sel_report.category.categoryName;
+                    ReportDetail_Address.Content = sel_report.address + " " + sel_report.zipCode;
+                    ReportDetail_Coords.Content = sel_report.locationLat + " " + sel_report.locationLng;
+                    ReportDetail_Inst.Content = sel_report.institution.name;
+                    ReportDetail_Azon.Content = sel_report.createdAt.Substring(0, 4) + "/" + sel_report.id;
+                    if (sel_report.confirmed == null)
+                    {
+                        ReportDetail_Confirmed.Content = "0x";
+                    }
+                    else
+                    {
+                        ReportDetail_Confirmed.Content = sel_report.confirmed + "x";
+                    }
+                    max_rep_pict = sel_report.reportImages.Count - 1;
+                    if (sel_report.reportImages.Count <= 1)
+                    {
+                        B_Prev_Pict.Visibility = Visibility.Hidden;
+                        B_Next_Pict.Visibility = Visibility.Hidden;
+                    }
+                    else
+                    {
+                        B_Prev_Pict.Visibility = Visibility.Hidden;
+                        B_Next_Pict.Visibility = Visibility.Visible;
+                    }
+                    if (sel_report != sel_report_last)
+                    {
+                        view_rep_pict = 0;
+                        rep_Picture = new BitmapImage(new Uri(rep_pict_url + sel_report.reportImages[view_rep_pict].imageUrl));
+                        while (rep_Picture.Width == 1)
+                        {
+                            await Task.Delay(100);
 
-                ReportDetail_Pict.Source = rep_Picture;
-                ReportDetail_Status.Content = sel_report.status;
-                ReportDetail_Date.Content = sel_report.createdAtHH;
-                list_StatusHistory = await connection.Server_Get_StatusHistory(sel_report.id);
-                list_HistoryAll = list_StatusHistory;
+                        }
+                        Thickness margin = ReportDetail_Pict.Margin;
+                        margin.Top = await Get_Pict_MarginTop();
+                        ReportDetail_Pict.Margin = margin;
+                    }
 
-                list_ForwardingLogs = await connection.Server_Get_ForwardingLogs(sel_report.id);
-                foreach (var item in list_ForwardingLogs)
-                {
-                    TV_StatusHistory new_item = new();
-                    new_item.status = "forwarded";
-                    new_item.changedAt = item.forwardedAt;
-                    new_item.changedBy = new TVR_User();
-                    new_item.changedBy.username = item.forwardedByUser.username;
-                    new_item.comment = "[ " + item.forwardedFrom.name + " -> " + item.forwardedTo.name + " ]\n" + item.reason;
+                    ReportDetail_Pict.Source = rep_Picture;
+                    ReportDetail_Status.Content = sel_report.status;
+                    ReportDetail_Date.Content = sel_report.createdAtHH;
+                    list_StatusHistory = await connection.Server_Get_StatusHistory(sel_report.id);
+                    list_HistoryAll = list_StatusHistory;
 
-                    list_HistoryAll.Add(new_item);
-                }
+                    list_ForwardingLogs = await connection.Server_Get_ForwardingLogs(sel_report.id);
+                    foreach (var item in list_ForwardingLogs)
+                    {
+                        TV_StatusHistory new_item = new();
+                        new_item.status = "forwarded";
+                        new_item.changedAt = item.forwardedAt;
+                        new_item.changedBy = new TVR_User();
+                        new_item.changedBy.username = item.forwardedByUser.username;
+                        new_item.comment = "[ " + item.forwardedFrom.name + " -> " + item.forwardedTo.name + " ]\n" + item.reason;
 
-                TV_StatusHistory new_open = new();
-                new_open.status = "open";
-                new_open.changedAt = sel_report.createdAt;
-                new_open.changedBy = new TVR_User();
-                new_open.changedBy.username = sel_report.user.username;
-                new_open.comment = "'X' akta megnyitva, beküldve.";
-                list_HistoryAll.Add(new_open);
+                        list_HistoryAll.Add(new_item);
+                    }
 
-                ListView_History.ItemsSource = list_HistoryAll.OrderBy(u => u.changedAt).ToList();
-                if (list_HistoryAll.Count > 0)
-                {
-                    ListView_History.SelectedItem = ListView_History.Items[list_HistoryAll.Count - 1];
-                    ListView_History.UpdateLayout();
-                }
-                sel_report_last = sel_report;
-                if (start_report_y)
-                {
-                    start_report_y = false;
+                    List<TV_StatusHistory> open_found = list_HistoryAll.Where(l => l.status == "open").ToList();
+                    if (open_found.Count == 0)
+                    {
+                        TV_StatusHistory new_open = new();
+                        new_open.status = "open";
+                        new_open.changedAt = sel_report.createdAt;
+                        new_open.changedBy = new TVR_User();
+                        new_open.changedBy.username = sel_report.user.username;
+                        //new_open.comment = "'X' akta megnyitva, beküldve.";
+                        new_open.comment = "A bejelentés létrehozva";
+                        list_HistoryAll.Add(new_open);
+                    }
+
+                    ListView_History.ItemsSource = list_HistoryAll.OrderBy(u => u.changedAt).ToList();
+                    if (list_HistoryAll.Count > 0)
+                    {
+                        ListView_History.SelectedItem = ListView_History.Items[list_HistoryAll.Count - 1];
+                        ListView_History.UpdateLayout();
+                    }
+                    sel_report_last = sel_report;
+                    if (start_report_y)
+                    {
+                        start_report_y = false;
+                    }
                 }
             }
         }
         private void DWL_Pict(string a_url)
         {
-            string web_url = rep_pict_url + a_url;
-            if (!File.Exists(pict_path + a_url))
+            if (a_url.Substring(0, 4) == "http")
             {
-                using (var client = new WebClient())
+                string a_pict = a_url.Split("/").Last();
+                if (!File.Exists(pict_path + "\\Logo\\" + a_pict))
                 {
-                    client.DownloadFile(web_url, pict_path + a_url);
+                    using (var client = new WebClient())
+                    {
+                        client.DownloadFile(a_url, pict_path + "\\Logo\\" + a_pict);
+                    }
+                }
+            }
+            else
+            {
+                string web_url = rep_pict_url + a_url;
+                if (!File.Exists(pict_path + a_url))
+                {
+                    using (var client = new WebClient())
+                    {
+                        client.DownloadFile(web_url, pict_path + a_url);
+                    }
                 }
             }
         }
@@ -1144,14 +1326,11 @@ namespace TisztaVaros
                 Show_NewPicture();
             }
         }
-        private void Users_KeyDown(object sender, KeyEventArgs e)
+        private async void Challenge_KeyDown(object sender, KeyEventArgs e)
         {
-            ;
-            if (e.Key == Key.A && Keyboard.IsKeyDown(Key.LeftCtrl))
-            {
-                if (A_Err.Visibility == Visibility.Hidden) { A_Err.Visibility = Visibility.Visible; }
-                else { A_Err.Visibility = Visibility.Hidden; }
-            }
+            if (e.Key == Key.Up) { Csel_Cursor_OFF(); Csel_Control_Over_Up.Visibility = Visibility.Visible; return; }
+            if (e.Key == Key.Down) { Csel_Cursor_OFF(); Csel_Control_Over_Down.Visibility = Visibility.Visible; return; }
+            else if (e.Key == Key.Escape) { Panel.SetZIndex(Challenge_Detail, 0); }
         }
         private async void Report_KeyDown(object sender, KeyEventArgs e)
         {
@@ -1164,7 +1343,6 @@ namespace TisztaVaros
             if (e.Key == Key.Left) { View_ReportPict_Prev(sender, e); Rep_Cursor_OFF(); Rep_Control_Over_Left.Visibility = Visibility.Visible; return; }
             if (e.Key == Key.Right) { View_ReportPict_Next(sender, e); Rep_Cursor_OFF(); Rep_Control_Over_Right.Visibility = Visibility.Visible; return; }
             if (e.Key == Key.Up) { Rep_Cursor_OFF(); Rep_Control_Over_Up.Visibility = Visibility.Visible; return; }
-            if (e.Key == Key.Down) { Rep_Cursor_OFF(); Rep_Control_Over_Down.Visibility = Visibility.Visible; return; }
             if (e.Key == Key.Down) { Rep_Cursor_OFF(); Rep_Control_Over_Down.Visibility = Visibility.Visible; return; }
             if (e.Key == Key.NumPad8)
             {
@@ -1190,6 +1368,13 @@ namespace TisztaVaros
             }
             else if (e.Key == Key.Escape) { Panel.SetZIndex(Report_Detail, 0); }
         }
+        internal void Csel_Cursor_OFF()
+        {
+            Csel_Control_Over_Left.Visibility = Visibility.Hidden;
+            Csel_Control_Over_Right.Visibility = Visibility.Hidden;
+            Csel_Control_Over_Up.Visibility = Visibility.Hidden;
+            Csel_Control_Over_Down.Visibility = Visibility.Hidden;
+        }
         internal void Rep_Cursor_OFF()
         {
             Rep_Control_Over_Left.Visibility = Visibility.Hidden;
@@ -1197,10 +1382,13 @@ namespace TisztaVaros
             Rep_Control_Over_Up.Visibility = Visibility.Hidden;
             Rep_Control_Over_Down.Visibility = Visibility.Hidden;
         }
+        private void Back2Challenge_List(object sender, RoutedEventArgs e)
+        {
+            Panel.SetZIndex(Challenge_Detail, 0);
+        }
         private void Back2Report_List(object sender, RoutedEventArgs e)
         {
             Panel.SetZIndex(Report_Detail, 0);
-            //Report_List.Visibility = Visibility.Visible;
         }
         private async void Category_ListView_Click(object sender, RoutedEventArgs e)
         {
@@ -1255,7 +1443,15 @@ namespace TisztaVaros
                     H_Inst_Address.Text = addr.Split('|')[0].Split(',')[1].Trim();
                     if (addr.Contains(" | "))
                     {
-                        H_Inst_Tel.Text = addr.Split('|')[1].Trim().Split(":")[1].Trim();
+                        if (addr.Contains("Tel:"))
+                        {
+                            H_Inst_Tel.Text = addr.Split('|')[1].Trim().Split(":")[1].Trim();
+                        }
+                        else
+                        {
+                            H_Inst_Tel.Text = addr.Split('|')[1].Trim();
+                        }
+
                     }
                 }
                 inst_logo_url = sel_inst.logoUrl;
@@ -1283,12 +1479,14 @@ namespace TisztaVaros
             Freeze_Workerlist();
             if (e_logo_Url != null && e_logo_Url != "")
             {
-                Inst_LogoImg_Edit.Source = new BitmapImage(new Uri(e_logo_Url));
+                if (App.vanNet_y)
+                {
+                    Inst_LogoImg_Edit.Source = new BitmapImage(new Uri(e_logo_Url));
+                    DWL_Pict(e_logo_Url);
+                }
+                else { Inst_LogoImg_Edit.Source = new BitmapImage(new Uri(pict_path + "\\Logo\\" + e_logo_Url.Split("/").Last())); }
             }
-            else
-            {
-                Inst_LogoImg_Edit.Source = new BitmapImage(new Uri("http://smd.hu/Team/Empty_Logo.gif"));
-            }
+            else { Inst_LogoImg_Edit.Source = new BitmapImage(new Uri("http://smd.hu/Team/Empty_Logo.gif")); }
         }
         private void Workers_ListView_Click(object sender, RoutedEventArgs e)
         {
@@ -1567,6 +1765,8 @@ namespace TisztaVaros
                 ListView_Inst.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFF"));
             }
             Get_WorkerList_Auto();
+            ListView_Inst.SelectedIndex = 0;
+            ListView_Inst.Focus();
         }
         private void Put_SelInst()
         {
@@ -1576,7 +1776,7 @@ namespace TisztaVaros
             string full_addr = "Cím: " + H_Inst_Zip.Text + " " + H_Inst_City.Text + ", " + H_Inst_Address.Text;
             if (H_Inst_Tel.Text != "")
             {
-                full_addr += " | " + H_Inst_Tel.Text;
+                full_addr += " | Tel: " + H_Inst_Tel.Text;
             }
             sel_inst.contactInfo = full_addr;
             sel_inst.logoUrl = inst_logo_url;
@@ -1644,7 +1844,7 @@ namespace TisztaVaros
                 string full_addr = "Cím: " + H_Inst_Zip.Text + " " + H_Inst_City.Text + ", " + H_Inst_Address.Text;
                 if (H_Inst_Tel.Text != "")
                 {
-                    full_addr += " | " + H_Inst_Tel.Text;
+                    full_addr += " | Tel: " + H_Inst_Tel.Text;
                 }
                 do_y = do_y || H_Inst_Name.Text != sel_inst.name || H_Inst_Email.Text != sel_inst.email
                     || H_Inst_Desc.Text != sel_inst.description || full_addr != sel_inst.contactInfo || inst_logo_url != sel_inst.logoUrl;
@@ -1679,32 +1879,34 @@ namespace TisztaVaros
 
         private async void User_Delete(object sender, RoutedEventArgs e)
         {
-
-            string del_name = H_User_Name.Text;
-            string del_emil = H_User_Email.Text;
-            if (del_name != "" && del_emil != "")
+            if (sel_user != null)
             {
-                if (MessageBox.Show("[ '" + del_name + "' ]\n\nMindenképpen törölni akarod ezt a felhasználót", "Felhasnáló Törlése:",
-                    MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                string del_name = H_User_Name.Text;
+                string del_emil = H_User_Email.Text;
+                if (del_name != "" && del_emil != "")
                 {
-                    string del_msg = await connection.Admin_DelUser(del_emil);
-                    if (del_msg == "Nem vagyok Teszt üzemmódban.")
+                    if (MessageBox.Show("[ '" + del_name + "' ]\n\nMindenképpen törölni akarod ezt a felhasználót", "Felhasnáló Törlése:",
+                        MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                     {
-                        MessageBox.Show("A törlés most nem engedélyezett, csak teszt üzemmódban!");
-                        return;
-                    }
-                    if (del_msg != "xx")
-                    {
-                        TV_User a_del = list_user.Find(u => u.email == del_emil);
-                        if (a_del != null)
+                        string del_msg = await connection.Admin_DelUser(del_emil);
+                        if (del_msg == "Nem vagyok Teszt üzemmódban.")
                         {
-                            Get_User_List(S_User_Name.Text, S_User_Email.Text);
+                            MessageBox.Show("A törlés most nem engedélyezett, csak teszt üzemmódban!");
+                            return;
                         }
-                        User_ClearData();
-                        MessageBox.Show("User: '" + del_name + "'\n\n" + del_msg);
-                        return;
+                        if (del_msg != "xx")
+                        {
+                            TV_User a_del = list_user.Find(u => u.email == del_emil);
+                            if (a_del != null)
+                            {
+                                Get_User_List(S_User_Name.Text, S_User_Email.Text);
+                            }
+                            User_ClearData();
+                            MessageBox.Show("User: '" + del_name + "'\n\n" + del_msg);
+                            return;
+                        }
+                        MessageBox.Show("A törlés nem sikerült!");
                     }
-                    MessageBox.Show("A törlés nem sikerült!");
                 }
             }
         }
@@ -1780,6 +1982,46 @@ namespace TisztaVaros
                 }
             }
         }
+        private void Challenges_ReLoad(object sender, RoutedEventArgs e)
+        {
+            Get_Challenge_List();
+        }
+        private async void Get_Challenge_List()
+        {
+            Get_Challenges_List();
+        }
+        private async void Get_Challenges_List()
+        {
+            if (!start_challenge_y)
+            {
+                ListView_Challenges.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bus_Yellow));
+            }
+            string v_date = datePickerC_From.Text.Replace(". ", "-").Replace(".", "") + "T00:00:00.000Z";
+            string k_date = datePickerC_Until.Text.Replace(". ", "-").Replace(".", "") + "T00:00:00.000Z";
+            list_challanges = await connection.Server_Get_AllChallenges_FromDate(k_date, v_date);
+            foreach (var item in list_challanges)
+            {
+
+                item.inst_name = list_inst.Where(inst => inst.id == item.institutionId).ToList()[0].name;
+            }
+            if (list_challanges.Count == 0)
+            {
+                ListView_Challenges.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFF"));
+                ListView_Challenges.ItemsSource = list_challanges;
+                return;
+            }
+            if (!start_challenge_y)
+            {
+                await Task.Delay(100);
+                ListView_Challenges.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFF"));
+            }
+            ListView_Challenges.ItemsSource = list_challanges;
+            ListView_Challenges.SelectedIndex = 0;
+            ListView_Challenges.Focus();
+            Challenge_Filtering_Auto();
+
+            Challenge_ListView_Click_Auto();
+        }
         private void Report_ReLoad(object sender, RoutedEventArgs e)
         {
             Get_Report_List();
@@ -1793,7 +2035,6 @@ namespace TisztaVaros
             string v_date = datePicker_From.Text.Replace(". ", "-").Replace(".", "") + "T00:00:00.000Z";
             string k_date = datePicker_Until.Text.Replace(". ", "-").Replace(".", "") + "T00:00:00.000Z";
             list_reports = await connection.Server_Get_AllReports_FromDate(k_date, v_date);
-            //list_reports = await connection.Server_Get_AllReports();
             if (list_reports.Count == 0)
             {
                 ListView_Reports.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFF"));
@@ -1814,7 +2055,6 @@ namespace TisztaVaros
             ListView_Reports.ItemsSource = list_reports;
             ListView_Reports.SelectedIndex = 0;
             ListView_Reports.Focus();
-
             Report_ListView_Click_Auto();
         }
 
@@ -1837,11 +2077,19 @@ namespace TisztaVaros
                 ListView_Reports.Focus();
             }
         }
-        private void Report_DelPicture_Click(object sender, RoutedEventArgs e)
+        private async void Report_DelPicture_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Ez még az Adminnak sem megengedett, egylőre!");
+            string pict_id = sel_report.reportImages[view_rep_pict].id.ToString();
+            if (MessageBox.Show("Mindenképpen törölni akarod ezt a képet", "Kép Törlése:", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            {
+                string del_msg = await connection.Admin_DelPict_byID(pict_id);
+                MessageBox.Show(del_msg);
+                int a_idx = ListView_Reports.SelectedIndex;
+                sel_report_last = new();
+                Get_Report_List();
+                ListView_Reports.SelectedIndex = a_idx;
+            }
         }
-
         private async void Report_AddPicture_Click(object sender, RoutedEventArgs e)
         {
             if (max_rep_pict >= 3)
@@ -1851,18 +2099,65 @@ namespace TisztaVaros
             else
             {
                 int a_id = sel_report.id;
-                var ofd = new Microsoft.Win32.OpenFileDialog();// { Filter = "JPEG Files (*.jpeg)|*.jpeg|PNG Files (*.png)|*.png|JPG Files (*.jpg)|*.jpg|GIF Files (*.gif)|*.gif" };
+                var ofd = new Microsoft.Win32.OpenFileDialog() { Filter = "JPEG Files (*.jpeg)|*.jpeg|PNG Files (*.png)|*.png|JPG Files (*.jpg)|*.jpg|GIF Files (*.gif)|*.gif" };
                 var result = ofd.ShowDialog();
                 if (result == false) return;
                 MessageBox.Show(ofd.FileName);
                 string a_uri = ofd.FileName;// "R:\\56820-58e0dc105fbca.png";
-                //string rea_add = await connection.Server_AddNewPicture( a_id,  a_uri);
+                string rea_add = await connection.Server_AddNewPicture(a_id, a_uri);
+                if (rea_add == "00")
+                {
+                    MessageBox.Show("A kép sikeresen hozzáadva!");
+                    int a_idx = ListView_Reports.SelectedIndex;
+                    sel_report_last = new();
+                    Get_Report_List();
+                    ListView_Reports.SelectedIndex = a_idx;
+                }
+                else
+                {
+
+                }
             }
         }
+        private void Challenge_Filtering_Clear(object sender, RoutedEventArgs e)
+        {
+            S_Challenge_PartialText.Text = "";
+            Get_Challenge_List();
+        }
+
         private void Report_Filtering_Clear(object sender, RoutedEventArgs e)
         {
             S_Report_PartialText.Text = "";
             Get_Report_List();
+        }
+        private void Challenge_PartialKeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                Challenge_Filtering_Auto();
+            }
+        }
+        private void Challenge_Filtering(object sender, RoutedEventArgs e)
+        {
+            Challenge_Filtering_Auto();
+        }
+        private void Challenge_Filtering_Auto()
+        {
+            string keresett = S_Challenge_PartialText.Text.ToLower();
+            if (keresett != "")
+            {
+                ListView_Challenges.ItemsSource = list_challanges.Where(r => r.title.ToLower().Contains(keresett) || r.description.Contains(keresett)).ToList();
+                if (ListView_Challenges.Items.Count == 0) { Panel.SetZIndex(Challenge_Detail, 0); }
+                else { ListView_Reports.SelectedItem = ListView_Challenges.Items[0]; Challenge_ListView_Click_Auto(); }
+                if (ListView_Challenges.Items.Count == 0)
+                {
+                    S_Challenge_PartialText.Focus();
+                }
+                else
+                {
+                    ListView_Challenges.Focus();
+                }
+            }
         }
         private void Report_PartialKeyUp(object sender, KeyEventArgs e)
         {
@@ -1871,7 +2166,24 @@ namespace TisztaVaros
                 Report_Filtering_Auto();
             }
         }
-
+        private void Challenge_DLong_CBChanged(object sender, SelectionChangedEventArgs e)
+        {
+            int a_idx = CB_H_Challenge_DLong.SelectedIndex;
+            int a_eltol = 0;
+            if (a_idx == 6)
+            {
+                datePickerC_Until.SelectedDate = DateTime.Parse("2000.01.01");
+            }
+            else
+            {
+                a_eltol = last_ndays_n[CB_H_Challenge_DLong.SelectedIndex];
+                datePickerC_Until.SelectedDate = DateTime.Now.AddDays(a_eltol);
+            }
+            if (!start_challenge_y)
+            {
+                Get_Challenge_List();
+            }
+        }
         private void Report_DLong_CBChanged(object sender, SelectionChangedEventArgs e)
         {
             int a_idx = CB_H_Report_DLong.SelectedIndex;
@@ -1959,7 +2271,9 @@ namespace TisztaVaros
                     }
                     else if (psw_input_using == "SaveAsNew")
                     {
-                        App.postit += "PSW for '" + H_User_Name.Text + " - " + H_User_Email.Text + "': '" + new_vmi_psw + "'\n";
+                        string new_log = "PSW for '" + H_User_Name.Text + " - " + H_User_Email.Text + "': '" + new_vmi_psw + "'\n";
+                        App.postit += new_log;
+                        File.AppendAllText(pict_path + "admin_added_users.txt", new_log);
                         string new_userId = await connection.Admin_AddNewUser(H_User_Email.Text, H_User_Name.Text, new_vmi_psw);
                         if (new_userId == "22")
                         {
@@ -2001,6 +2315,95 @@ namespace TisztaVaros
                 H_Inst_Logo.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_Gray));
                 H_Inst_Logo.Foreground = new SolidColorBrush(Colors.White);
             }
+        }
+        private void Challenge_SortHeaderClick(object sender, RoutedEventArgs e)
+        {
+            string[] headText = ["Id", "Kép", "Kihívás elnevezése", "Kategória", "Pont költsége", "Pont jutalma", "Kihívás kezdete", "Kihívás vége"];
+            try
+            {
+                string a_head = ((GridViewColumnHeader)e.OriginalSource).Column.Header.ToString();
+                for (int i = 0; i < headText.Length; i++)
+                {
+                    if (a_head == headText[i])
+                    {
+                        switch (a_head)
+                        {
+                            case "Id":
+                                if (order_challs_y[i])
+                                {
+                                    ListView_Challenges.ItemsSource = list_challanges.OrderBy(u => u.id).ToList();
+                                }
+                                else
+                                {
+                                    ListView_Challenges.ItemsSource = list_challanges.OrderByDescending(u => u.id).ToList();
+                                }
+                                break;
+                            case "Kihívás elnevezése":
+                                if (order_challs_y[i])
+                                {
+                                    ListView_Challenges.ItemsSource = list_challanges.OrderBy(u => u.id).ToList();
+                                }
+                                else
+                                {
+                                    ListView_Challenges.ItemsSource = list_challanges.OrderByDescending(u => u.id).ToList();
+                                }
+                                break;
+                            case "Kategória":
+                                if (order_challs_y[i])
+                                {
+                                    ListView_Challenges.ItemsSource = list_challanges.OrderBy(u => u.category).ToList();
+                                }
+                                else
+                                {
+                                    ListView_Challenges.ItemsSource = list_challanges.OrderByDescending(u => u.category).ToList();
+                                }
+                                break;
+                            case "Pont költsége":
+                                if (order_challs_y[i])
+                                {
+                                    ListView_Challenges.ItemsSource = list_challanges.OrderBy(u => u.costPoints).ToList();
+                                }
+                                else
+                                {
+                                    ListView_Challenges.ItemsSource = list_challanges.OrderByDescending(u => u.costPoints).ToList();
+                                }
+                                break;
+                            case "Pont jutalma":
+                                if (order_challs_y[i])
+                                {
+                                    ListView_Challenges.ItemsSource = list_challanges.OrderBy(u => u.rewardPoints).ToList();
+                                }
+                                else
+                                {
+                                    ListView_Challenges.ItemsSource = list_challanges.OrderByDescending(u => u.rewardPoints).ToList();
+                                }
+                                break;
+                            case "Kihívás kezdete":
+                                if (order_challs_y[i])
+                                {
+                                    ListView_Challenges.ItemsSource = list_challanges.OrderBy(u => u.startDate).ToList();
+                                }
+                                else
+                                {
+                                    ListView_Challenges.ItemsSource = list_challanges.OrderByDescending(u => u.startDate).ToList();
+                                }
+                                break;
+                            case "Kihívás vége":
+                                if (order_challs_y[i])
+                                {
+                                    ListView_Challenges.ItemsSource = list_challanges.OrderBy(u => u.endDate).ToList();
+                                }
+                                else
+                                {
+                                    ListView_Challenges.ItemsSource = list_challanges.OrderByDescending(u => u.endDate).ToList();
+                                }
+                                break;
+                        }
+                        order_challs_y[i] = !order_challs_y[i];
+                    }
+                }
+            }
+            catch { }
         }
         private void Report_SortHeaderClick(object sender, RoutedEventArgs e)
         {
@@ -2209,9 +2612,29 @@ namespace TisztaVaros
                 Get_Report_List();
             }
         }
+        private void Challenge_Date_Changed(object sender, EventArgs e)
+        {
+            if (!start_challenge_y)
+            {
+                Get_Challenge_List();
+            }
+        }
         private void RepDetail_ListView_Click(object sender, EventArgs e)
         {
             MessageBox.Show("Edit History");
+        }
+        public string Get_Pict_URL()
+        {
+            if (App.local_y) { return pict_path; }
+            else { return "https://tisztavaros.hu"; }
+        }
+        public string Corr_URL(string inpo)
+        {
+            if (App.local_y)
+            {
+                return inpo.Replace("/", "\\");
+            }
+            return inpo;
         }
     }
 }
