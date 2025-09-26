@@ -989,7 +989,7 @@ namespace TisztaVaros
         private void Call_GoogleMaps(object sender, EventArgs s)
         {
             string url = "https://www.google.com/maps/search/?api=1&query=" + Conv_Coords(sel_report.locationLat.ToString()) + "%2C"
-                + Conv_Coords(sel_report.locationLat.ToString()) + "&zoom=0"; ;
+                + Conv_Coords(sel_report.locationLng.ToString()) + "&zoom=0"; ;
             // https://www.google.com/maps/search/?api=1&query=47.5951518%2C-122.3316393
             //  47°41'17.5"N+19°10'06.6"E
             Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });

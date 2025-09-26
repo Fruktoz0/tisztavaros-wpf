@@ -764,7 +764,7 @@
                         </StackPanel>
                     </Grid>
                 </StackPanel>
-                <StackPanel Name="Main_Institutions" Background="#F0F0F0" Visibility="Visible">
+                <StackPanel Name="Main_Institutions" Background="#F0F0F0" Visibility="Hidden">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="330"/>
