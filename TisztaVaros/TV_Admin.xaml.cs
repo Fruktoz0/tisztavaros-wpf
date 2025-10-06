@@ -145,12 +145,12 @@ namespace TisztaVaros
             datePicker_From.SelectedDate = DateTime.Now;
             datePicker_Until.SelectedDate = DateTime.Now.AddDays(-14);
             CB_H_Report_DLong.ItemsSource = last_n_days;
-            CB_H_Report_DLong.SelectedValue = "2 hét";
+            CB_H_Report_DLong.SelectedValue = "1 hónap";
 
             datePickerC_From.SelectedDate = DateTime.Now;
             datePickerC_Until.SelectedDate = DateTime.Now.AddDays(-14);
             CB_H_Challenge_DLong.ItemsSource = last_n_days;
-            CB_H_Challenge_DLong.SelectedValue = "2 hét";
+            CB_H_Challenge_DLong.SelectedValue = "1 hónap";
         }
         private void TV_Admin_KeyDown(object sender, KeyEventArgs e)
         {
@@ -809,6 +809,9 @@ namespace TisztaVaros
             if (c_save_y)
             {
                 Category_Update();
+                c_save_y = false;
+                c_savenew_y = false;
+                H_Category_SaveColor();
             }
         }
         private async void Category_Update()
@@ -822,11 +825,19 @@ namespace TisztaVaros
             if (sel_cat != null)
             {
                 TV_Inst i_found = list_inst.Find(i => i.name == a_inst);
-                string mod_cat_id = await connection.Server_ModifyCategory(sel_cat.id, i_found.id);
-                if (mod_cat_id == "22")
+                if (H_Category_Name.Text != sel_cat.categoryName)
                 {
-                    MessageBox.Show("Nem sikerült az Új kategória hozzáadása!");
-                    return;
+                    await connection.Server_ModifyCategoryName(sel_cat.id, H_Category_Name.Text);
+                }
+                else
+                {
+                    string mod_cat_id = await connection.Server_ModifyCategory(sel_cat.categoryName, i_found.id);
+                    if (mod_cat_id == "22")
+                    {
+                        if (c_savenew_y) { MessageBox.Show("Nem sikerült a kategória módosítása!"); }
+                        else { MessageBox.Show("Nincs mit módosítani!"); }
+                        return;
+                    }
                 }
                 Get_Categories_List();
                 //Server_ModifywCategory(string name, string def_instId)
@@ -1397,8 +1408,8 @@ namespace TisztaVaros
             var item = (sender as ListView).SelectedItem;
             if (item != null)
             {
-                H_Category_Delete.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_Gray));
                 hw_now_y = true;
+                H_Category_Delete.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_Gray));
                 chk_cdata_y = true;
                 sel_cat = item as TV_Cats;
                 H_Category_Name.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_NotEmpty));
@@ -1417,6 +1428,7 @@ namespace TisztaVaros
                 {
                     H_Category_Reports_N.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(bc_Green));
                 }
+                hw_now_y = false;
                 SelCategory_CHK_Modified();
             }
         }
@@ -1543,13 +1555,11 @@ namespace TisztaVaros
                 c_savenew_y = false;
                 ListView_Categories.SelectedItem = sel_cat;
                 string c_name = H_Category_Name.Text;
-                string c_inst = CB_H_Category_Inst.Text;
+                string c_inst = CB_H_Category_Inst.SelectedItem.ToString();
                 bool sel_cinst_y = CB_H_Category_Inst.SelectedIndex > 0;
                 bool sel_cname_y = c_name != "";
                 TV_Cats cat_found = new();
-
                 if (sel_cname_y) { cat_found = list_cats.Find(c => c.categoryName.ToUpper() == c_name.ToUpper()); }
-
                 if (chk_cdata_y)
                 {
                     if (c_name == sel_cat.categoryName)
@@ -1569,6 +1579,7 @@ namespace TisztaVaros
                         H_Category_Name.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom(tb_NotEmpty));
                         c_savenew_y = true;
                     }
+                    c_save_y = c_save_y || c_name != sel_cat.categoryName;
                 }
                 else
                 {
@@ -1588,6 +1599,11 @@ namespace TisztaVaros
                         }
                         c_savenew_y = sel_cinst_y && sel_cname_y;
                     }
+                }
+                if (CB_H_Category_Inst.SelectedIndex == 0)
+                {
+                    c_save_y = false;
+                    c_savenew_y = false;
                 }
                 H_Category_SaveColor();
             }
@@ -1948,13 +1964,14 @@ namespace TisztaVaros
             if (c_savenew_y)
             {
                 string new_name = H_Category_Name.Text;
-                string new_cat_inst_id = list_inst.Find(u => u.name == CB_H_Category_Inst.SelectedItem).id;
+                string new_cat_inst_id = list_inst.Find(u => u.name == CB_H_Category_Inst.SelectedItem.ToString()).id;
                 string new_cat_id = await connection.Server_AddNewCategory(new_name, new_cat_inst_id);
                 if (new_cat_id == "22")
                 {
                     MessageBox.Show("Nem sikerült az Új kategória hozzáadása!");
                     return;
                 }
+                MessageBox.Show("Sikerült az Új kategória hozzáadása!");
                 Get_Categories_List();
                 H_Category_Save.Background = H_User_Search.Background;
                 H_Category_SaveNew.Background = H_User_Search.Background;
@@ -2101,7 +2118,7 @@ namespace TisztaVaros
             else
             {
                 int a_id = sel_report.id;
-                var ofd = new Microsoft.Win32.OpenFileDialog() { Filter = "JPEG Files (*.jpeg)|*.jpeg|PNG Files (*.png)|*.png|JPG Files (*.jpg)|*.jpg|GIF Files (*.gif)|*.gif" };
+                var ofd = new Microsoft.Win32.OpenFileDialog() { Filter = "All Files (*.*)|*.*|JPEG Files (*.jpeg)|*.jpeg|PNG Files (*.png)|*.png|JPG Files (*.jpg)|*.jpg|GIF Files (*.gif)|*.gif" };
                 var result = ofd.ShowDialog();
                 if (result == false) return;
                 MessageBox.Show(ofd.FileName);

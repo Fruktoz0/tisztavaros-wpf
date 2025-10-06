@@ -190,7 +190,7 @@
                                 Foreground="White" FontWeight="Bold" Padding="0,-3,0,0"/>
                     </Grid>
                 </StackPanel>
-                <StackPanel Name="Header_Users" Background="#FFFDF5" Visibility="Visible">
+                <StackPanel Name="Header_Users" Background="#FFFDF5" Visibility="Hidden">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="120"/>
@@ -351,7 +351,7 @@
                         <Image Grid.Row="2" Name="Rep_Control_Over_Up" Source="https://smd.hu/Team/Cursor_RepOver_Up.png" Margin="1159.5,24,70.5,21" Visibility="Hidden" Grid.RowSpan="2"/>
                     </Grid>
                 </StackPanel>
-                <StackPanel Name="Header_Categories" Background="#FFFDF5" Visibility="Hidden">
+                <StackPanel Name="Header_Categories" Background="#FFFDF5" Visibility="Visible">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="6"/>
@@ -460,7 +460,7 @@
                         </ListView>
                     </StackPanel>
                 </StackPanel>
-                <StackPanel Name="Main_Challenges" Background="#F0F0F0" Visibility="Visible">
+                <StackPanel Name="Main_Challenges" Background="#F0F0F0" Visibility="Hidden">
                     <Grid>
                         <StackPanel Name="Challenge_Detail" Background="#FFFFFF" Panel.ZIndex="2" Margin="550,12,14,12" Visibility="Visible">
                             <Border Margin="0" BorderThickness="1" CornerRadius="2" BorderBrush="#FFA4A4A4" Height="656">
@@ -568,7 +568,7 @@
                         </StackPanel>
                     </Grid>
                 </StackPanel>
-                <StackPanel Name="Main_Reports" Background="#F0F0F0" Visibility="Visible">
+                <StackPanel Name="Main_Reports" Background="#F0F0F0" Visibility="Hidden">
                     <Grid>
                         <StackPanel Name="Report_Detail" Background="#FFFFFF" Panel.ZIndex="2" Margin="387,12,14,12" Visibility="Visible">
                             <Border Margin="0" BorderThickness="1" CornerRadius="2" BorderBrush="#FFA4A4A4" Height="656">
@@ -728,7 +728,7 @@
                         </StackPanel>
                     </Grid>
                 </StackPanel>
-                <StackPanel Name="Main_Categories" Background="#F0F0F0" Visibility="Hidden">
+                <StackPanel Name="Main_Categories" Background="#F0F0F0" Visibility="Visible">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*"/>

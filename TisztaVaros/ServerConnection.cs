@@ -340,6 +340,35 @@ namespace TisztaVaros
             }
             return "22";
         }
+        public async Task<string> Server_ModifyCategoryName(string instId,string name)
+        {
+            string a_route = "/api/categories/modifyName";
+            string url = Get_URL() + a_route;
+            var jsonData = new
+            {
+                categoryId = instId,
+                categoryName = name
+            };
+            try
+            {
+                HttpClient client = new HttpClient();
+                HttpResponseMessage response = new HttpResponseMessage();
+                string stringifiedJson = JsonConvert.SerializeObject(jsonData);
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + a_token);
+                StringContent sendThis = new StringContent(stringifiedJson, Encoding.UTF8, "Application/JSON");
+                response = await client.PostAsync(url, sendThis);
+                response.EnsureSuccessStatusCode();
+                string responseText = await response.Content.ReadAsStringAsync();
+                TV_Cats mod_category = JsonConvert.DeserializeObject<TV_Cats>(responseText);
+                return mod_category.id;
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(a_route + "\n\n" + e.Message);
+            }
+            return "22";
+        }
+
         public async Task<string> Server_ModifyCategory(string name, string def_instId)
         {
             string a_route = "/api/categories/modify";
