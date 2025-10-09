@@ -110,7 +110,7 @@
                     <BitmapImage UriSource="https://smd.hu/Team/Icon/Icon_Inst_Big.png" />
                 </Image.Source>
             </Image>
-            <Button Grid.Row="7" x:Name="B_New_PSW" Click="Mod_Admin_Password" Content="Új Jelszó" Margin="15,10,15,281" Height="45" FontSize="17" Foreground="White" Background="#FFAC6AE6">
+            <Button Grid.Row="7" x:Name="B_New_PSW" Click="Mod_Admin_Password" Content="Új Jelszó" Margin="15,10,15,281" Height="45" FontSize="17" Foreground="White" Background="#6FB1A5">
                 <Button.BitmapEffect>
                     <DropShadowBitmapEffect Color="Gray" Direction="-80" ShadowDepth="5" Softness=".5" />
                 </Button.BitmapEffect>
